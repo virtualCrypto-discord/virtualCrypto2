@@ -28,7 +28,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         amount: amount,
         status: 0
       },
-      on_conflict: [set: [inc: amount]],
+      on_conflict: [inc: [amount: amount]],
       conflict_target: [:user_id, :money_id]
     )
   end
@@ -60,7 +60,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defp update_pool_amount(money_id, amount) do
     Money.Info
     |> where([a], a.id == ^money_id)
-    |> update(set: [inc: ^amount])
+    |> update([inc: [pool_amount: ^amount]])
     |> Repo.update_all([])
   end
 
@@ -101,7 +101,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Update reciver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update pool amount.
-      update_pool_amount(money.id, -amount)
+      {:ok,update_pool_amount(money.id, -amount)}
     else
       {:money, false} -> {:error, :not_found_money}
       {:pool_amount, false} -> {:error, :not_enough_pool_amount}
@@ -158,7 +158,7 @@ defmodule VirtualCrypto.Money do
 
   def give(kw) do
     Multi.new()
-    |> Multi.run(:pay, fn ->
+    |> Multi.run(:give, fn  _,_ ->
       VirtualCrypto.Money.InternalAction.give(
         Keyword.fetch!(kw, :receiver),
         Keyword.fetch!(kw, :amount),
