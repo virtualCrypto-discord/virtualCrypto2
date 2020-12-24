@@ -108,7 +108,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   def create(guild, name, unit, pool_amount) do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
-        #Check duplicate unit.
+         # Check duplicate unit.
          {:unit, nil} <- {:unit, get_money_by_unit(unit)} do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
@@ -120,8 +120,8 @@ defmodule VirtualCrypto.Money.InternalAction do
         unit: unit
       })
     else
-      {:guild,_}->{:error, :guild}
-      {:unit,_}->{:error, :unit}
+      {:guild, _} -> {:error, :guild}
+      {:unit, _} -> {:error, :unit}
     end
   end
 end
@@ -145,23 +145,24 @@ defmodule VirtualCrypto.Money do
     end)
     |> Repo.transaction()
   end
-  defp _create(_, _, _, _,0) do
 
+  defp _create(_, _, _, _, 0) do
   end
-  defp _create(guild, name, unit, pool_amount,retry) do
+
+  defp _create(guild, name, unit, pool_amount, retry) do
     case Multi.new()
-    |> Multi.run(:pay, fn ->
-      VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount,retry)
-    end)
-    |> Repo.transaction()
-    do
-      {:ok,_}-> {:ok}
-      {:error, :guild} ->  {:error, :guild}
+         |> Multi.run(:pay, fn ->
+           VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount, retry)
+         end)
+         |> Repo.transaction() do
+      {:ok, _} -> {:ok}
+      {:error, :guild} -> {:error, :guild}
       {:error, :unit} -> {:error, :unit}
-      {:error,_}-> _create(guild, name, unit, pool_amount,retry-1)
+      {:error, _} -> _create(guild, name, unit, pool_amount, retry - 1)
     end
   end
+
   def create(guild, name, unit, pool_amount) do
-    _create(guild,name,unit,pool_amount,5)
+    _create(guild, name, unit, pool_amount, 5)
   end
 end
