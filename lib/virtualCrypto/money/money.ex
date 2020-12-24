@@ -130,18 +130,27 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
 
-  def pay(sender_id, receiver_id, amount, money_unit) do
+  def pay(kw) do
     Multi.new()
     |> Multi.run(:pay, fn ->
-      VirtualCrypto.Money.InternalAction.pay(sender_id, receiver_id, amount, money_unit)
+      VirtualCrypto.Money.InternalAction.pay(
+        Keyword.fetch!(kw, :sender),
+        Keyword.fetch!(kw, :receiver),
+        Keyword.fetch!(kw, :amount),
+        Keyword.fetch!(kw, :unit)
+      )
     end)
     |> Repo.transaction()
   end
 
-  def give(receiver_id, amount, guild_id) do
+  def give(kw) do
     Multi.new()
     |> Multi.run(:pay, fn ->
-      VirtualCrypto.Money.InternalAction.give(receiver_id, amount, guild_id)
+      VirtualCrypto.Money.InternalAction.give(
+        Keyword.fetch!(kw, :receiver),
+        Keyword.fetch!(kw, :amount),
+        Keyword.fetch!(kw, :guild)
+      )
     end)
     |> Repo.transaction()
   end
@@ -162,7 +171,13 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  def create(guild, name, unit, pool_amount) do
-    _create(guild, name, unit, pool_amount, 5)
+  def create(kw) do
+    _create(
+      Keyword.fetch!(kw, :guild),
+      Keyword.fetch!(kw, :name),
+      Keyword.fetch!(kw, :unit),
+      Keyword.get(kw, :pool_amount, 0),
+      Keyword.get(kw, :retry_count, 5)
+    )
   end
 end
