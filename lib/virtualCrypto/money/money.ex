@@ -35,6 +35,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> update(set: [inc: ^amount])
     |> Repo.update_all([])
   end
+
   defp insert_user_if_not_exits(user_id) do
     Repo.insert(%Money.User{id: user_id, status: 0}, on_conflict: :nothing)
   end
@@ -45,12 +46,20 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> lock("FOR UPDATE")
     |> Repo.one()
   end
-  defp update_pool_amount(money_id,amount) do
+
+  defp get_money_by_guild_id(guild_id) do
+    Money.Info
+    |> where([m], m.guild_id == ^guild_id)
+    |> Repo.one()
+  end
+
+  defp update_pool_amount(money_id, amount) do
     Money.Info
     |> where([a], a.id == ^money_id)
     |> update(set: [inc: ^amount])
     |> Repo.update_all([])
   end
+
   def pay(sender_id, receiver_id, amount, money_unit) when is_integer(amount) and amount >= 1 do
     # Get money info by unit.
     with money <- get_money_by_unit(money_unit),
@@ -67,7 +76,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Upsert receiver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update sender amount.
-      {:ok,update_asset_amount(sender_asset.id, -amount)}
+      {:ok, update_asset_amount(sender_asset.id, -amount)}
     else
       {:money, false} -> {:error, :not_found_money}
       {:sender_asset, false} -> {:error, :not_found_sender_asset}
@@ -79,21 +88,40 @@ defmodule VirtualCrypto.Money.InternalAction do
   def give(receiver_id, amount, guild_id) do
     # Get money info by guild.
     with money <- get_money_by_guild_id_with_lock(guild_id),
-      # Is money exits?
-      {:money, true} <- {:money, money != nil},
-      # Check pool amount enough.
-      {:pool_amount, true} <- {:pool_amount, money.pool_amount >= amount},
-      # Insert reciver user if not exists.
-      {:ok, _} <- insert_user_if_not_exits(receiver_id),
-      # Update reciver amount.
-      {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount)
-    do
+         # Is money exits?
+         {:money, true} <- {:money, money != nil},
+         # Check pool amount enough.
+         {:pool_amount, true} <- {:pool_amount, money.pool_amount >= amount},
+         # Insert reciver user if not exists.
+         {:ok, _} <- insert_user_if_not_exits(receiver_id),
+         # Update reciver amount.
+         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update pool amount.
-      update_pool_amount(money.id,-amount)
+      update_pool_amount(money.id, -amount)
     else
       {:money, false} -> {:error, :not_found_money}
       {:pool_amount, false} -> {:error, :not_enough_pool_amount}
       err -> {:error, err}
+    end
+  end
+
+  def create(guild, name, unit, pool_amount) do
+    # Check duplicate guild.
+    with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
+        #Check duplicate unit.
+         {:unit, nil} <- {:unit, get_money_by_unit(unit)} do
+      # Insert new money info.
+      # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
+      Repo.insert(%Money.Info{
+        guild_id: guild,
+        pool_amount: pool_amount,
+        name: name,
+        status: 0,
+        unit: unit
+      })
+    else
+      {:guild,_}->{:error, :guild}
+      {:unit,_}->{:error, :unit}
     end
   end
 end
@@ -109,11 +137,31 @@ defmodule VirtualCrypto.Money do
     end)
     |> Repo.transaction()
   end
+
   def give(receiver_id, amount, guild_id) do
     Multi.new()
     |> Multi.run(:pay, fn ->
       VirtualCrypto.Money.InternalAction.give(receiver_id, amount, guild_id)
     end)
     |> Repo.transaction()
+  end
+  defp _create(_, _, _, _,0) do
+
+  end
+  defp _create(guild, name, unit, pool_amount,retry) do
+    case Multi.new()
+    |> Multi.run(:pay, fn ->
+      VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount,retry)
+    end)
+    |> Repo.transaction()
+    do
+      {:ok,_}-> {:ok}
+      {:error, :guild} ->  {:error, :guild}
+      {:error, :unit} -> {:error, :unit}
+      {:error,_}-> _create(guild, name, unit, pool_amount,retry-1)
+    end
+  end
+  def create(guild, name, unit, pool_amount) do
+    _create(guild,name,unit,pool_amount,5)
   end
 end
