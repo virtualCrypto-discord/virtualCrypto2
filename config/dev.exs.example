@@ -59,3 +59,5 @@ config :phoenix, :plug_init_mode, :runtime
 config :virtualCrypto, :command_post_url, ""
 
 config :virtualCrypto, :bot_token, ""
+
+config :virtualCrypto, :public_key, ""
