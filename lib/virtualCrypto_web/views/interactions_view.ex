@@ -1,13 +1,15 @@
 defmodule VirtualCryptoWeb.InteractionsView do
   use VirtualCryptoWeb, :view
 
-  def render( "interactions.json", %{ params: %{"type" => 1} } ) do
+  def render( "interactions.json", %{ params: %{"type" => 1} = params } ) do
+    IO.inspect params
     %{
       type: 1
     }
   end
 
   def render( "interactions.json", %{ params: params } = request ) do
+    IO.inspect params
     %{
       type: 4,
       data: %{

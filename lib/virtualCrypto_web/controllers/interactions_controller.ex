@@ -26,19 +26,19 @@ defmodule VirtualCryptoWeb.InteractionsController do
   end
 
   def index( conn, params ) do
-
+    IO.inspect conn
     public_key = Application.get_env(:virtualCrypto, :public_key)
     signature = get_signature conn.req_headers
     timestamp = get_timestamp conn.req_headers
-    body = conn.private.raw_body
-    result = Kcl.valid_signature?(
-      Base.decode16!(signature),
-      timestamp <> body,
-      Base.decode16!(public_key  |> String.upcase))
-    IO.inspect result
-    IO.inspect signature
-    IO.inspect timestamp
-    IO.inspect body
+    body = hd conn.assigns.raw_body
+    message = timestamp <> body
+
+    result = :public_key.verify(
+               message,
+               :none,
+               Base.decode16!(signature, case: :lower),
+               {:ed_pub, :ed25519 , Base.decode16!(public_key, case: :lower)}
+             )
     if result do
       render( conn, "interactions.json", params: params )
     else
