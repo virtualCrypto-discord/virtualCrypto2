@@ -124,6 +124,13 @@ defmodule VirtualCrypto.Money.InternalAction do
       {:unit, _} -> {:error, :unit}
     end
   end
+  def balance(user_id) do
+    from asset in Money.Asset,
+      join: info in Money.Info, on: asset.money_id == info.id,
+      where: asset.user_id == ^user_id,
+      select: {asset.amount,asset.status,info.name,info.unit,info.guild_id,info.status},
+      order_by: info.unit
+  end
 end
 
 defmodule VirtualCrypto.Money do
@@ -179,5 +186,8 @@ defmodule VirtualCrypto.Money do
       Keyword.get(kw, :pool_amount, 0),
       Keyword.get(kw, :retry_count, 5)
     )
+  end
+  def balance(kw) do
+    Repo.all(VirtualCrypto.Money.InternalAction.balance(Keyword.fetch!(kw, :user)))
   end
 end
