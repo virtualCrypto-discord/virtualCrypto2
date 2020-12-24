@@ -3,10 +3,14 @@ defmodule VirtualCrypto.Money.InternalAction do
   import Ecto.Query
   alias VirtualCrypto.Money
 
-  defp get_money_by_unit(money_unit) do
+  def get_money_by_unit(money_unit) do
     Money.Info
     |> where([m], m.unit == ^money_unit)
     |> Repo.one()
+  end
+
+  def get_money_by_name(name) do
+    Repo.get_by(Money.Info, name: name)
   end
 
   defp get_asset_with_lock(user_id, money_id) do
@@ -47,7 +51,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.one()
   end
 
-  defp get_money_by_guild_id(guild_id) do
+  def get_money_by_guild_id(guild_id) do
     Money.Info
     |> where([m], m.guild_id == ^guild_id)
     |> Repo.one()
@@ -124,11 +128,13 @@ defmodule VirtualCrypto.Money.InternalAction do
       {:unit, _} -> {:error, :unit}
     end
   end
+
   def balance(user_id) do
     from asset in Money.Asset,
-      join: info in Money.Info, on: asset.money_id == info.id,
+      join: info in Money.Info,
+      on: asset.money_id == info.id,
       where: asset.user_id == ^user_id,
-      select: {asset.amount,asset.status,info.name,info.unit,info.guild_id,info.status},
+      select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
       order_by: info.unit
   end
 end
@@ -187,7 +193,18 @@ defmodule VirtualCrypto.Money do
       Keyword.get(kw, :retry_count, 5)
     )
   end
+
   def balance(kw) do
     Repo.all(VirtualCrypto.Money.InternalAction.balance(Keyword.fetch!(kw, :user)))
+  end
+
+  def info(kw) do
+    with {:name, nil} <- {:name, Keyword.get(kw, :name)},
+         {:unit, nil} <- {:unit, Keyword.get(kw, :unit)} do
+      VirtualCrypto.Money.InternalAction.get_money_by_guild_id(Keyword.fetch!(kw, :guild))
+    else
+      {:name, name} -> VirtualCrypto.Money.InternalAction.get_money_by_name(name)
+      {:unit, unit} -> VirtualCrypto.Money.InternalAction.get_money_by_unit(unit)
+    end
   end
 end
