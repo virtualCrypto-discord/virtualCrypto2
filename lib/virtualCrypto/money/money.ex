@@ -173,8 +173,8 @@ defmodule VirtualCrypto.Money do
 
   defp _create(guild, name, unit, pool_amount, retry) do
     case Multi.new()
-         |> Multi.run(:pay, fn ->
-           VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount, retry)
+         |> Multi.run(:create, fn _,_ ->
+           VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount)
          end)
          |> Repo.transaction() do
       {:ok, _} -> {:ok}
