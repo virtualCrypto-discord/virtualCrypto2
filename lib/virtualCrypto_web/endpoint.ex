@@ -1,6 +1,12 @@
 defmodule VirtualCryptoWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :virtualCrypto
 
+  defp copy_req_body(conn, _) do
+    {:ok, body, _} = Plug.Conn.read_body(conn)
+    Plug.Conn.put_private(conn, :raw_body, body)
+  end
+  plug :copy_req_body
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
