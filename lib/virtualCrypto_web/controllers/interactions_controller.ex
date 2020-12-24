@@ -26,9 +26,8 @@ defmodule VirtualCryptoWeb.InteractionsController do
   end
 
   def index( conn, params ) do
-    IO.inspect conn
-    public_key = Application.get_env(:virtualCrypto, :public_key)
-    signature = get_signature conn.req_headers
+    public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+    signature = conn.req_header |> get_signature |> Base.decode16!(case: :lower)
     timestamp = get_timestamp conn.req_headers
     body = hd conn.assigns.raw_body
     message = timestamp <> body
@@ -36,9 +35,10 @@ defmodule VirtualCryptoWeb.InteractionsController do
     result = :public_key.verify(
                message,
                :none,
-               Base.decode16!(signature, case: :lower),
-               {:ed_pub, :ed25519 , Base.decode16!(public_key, case: :lower)}
+               signature,
+               {:ed_pub, :ed25519 , public_key}
              )
+
     if result do
       render( conn, "interactions.json", params: params )
     else
