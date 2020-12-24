@@ -36,7 +36,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defp update_asset_amount(asset_id, amount) do
     Money.Asset
     |> where([a], a.id == ^asset_id)
-    |> update(set: [inc: ^amount])
+    |> update([inc: [amount: ^amount]])
     |> Repo.update_all([])
   end
 
@@ -145,7 +145,7 @@ defmodule VirtualCrypto.Money do
 
   def pay(kw) do
     Multi.new()
-    |> Multi.run(:pay, fn ->
+    |> Multi.run(:pay, fn  _,_ ->
       VirtualCrypto.Money.InternalAction.pay(
         Keyword.fetch!(kw, :sender),
         Keyword.fetch!(kw, :receiver),
