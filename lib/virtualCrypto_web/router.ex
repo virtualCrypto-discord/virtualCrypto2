@@ -7,6 +7,7 @@ defmodule VirtualCryptoWeb.Router do
 
   scope "/api", VirtualCryptoWeb do
     pipe_through :api
+    post "/integrations/discord/interactions", InteractionsController, :index
   end
 
   # Enables LiveDashboard only for development
