@@ -19,5 +19,6 @@ defmodule VirtualCrypto.Money.Info do
     |> validate_required([:name, :unit, :status, :guild_id, :pool_amount])
     |> unique_constraint(:unit)
     |> unique_constraint(:guild_id)
+    |> unique_constraint(:name)
   end
 end
