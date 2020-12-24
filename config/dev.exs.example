@@ -56,6 +56,6 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
-config :command, :command_post_url, ""
+config :virtualCrypto, :command_post_url, ""
 
 config :virtualCrypto, :bot_token, ""
