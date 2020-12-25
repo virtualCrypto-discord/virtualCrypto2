@@ -1,4 +1,4 @@
-defmodule VirtualCrypto.Repo.Migrations.AddUserMoneyIndexToAssets do
+defmodule VirtualCrypto.Repo.Migrations.AddNameUniqueUniqueIndex do
   use Ecto.Migration
 
   def change do
