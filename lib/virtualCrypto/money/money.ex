@@ -2,6 +2,8 @@ defmodule VirtualCrypto.Money.InternalAction do
   alias VirtualCrypto.Repo
   import Ecto.Query
   alias VirtualCrypto.Money
+  defguard is_non_neg_integer(v) when is_integer(v) and v >= 0
+  defguard is_positive_integer(v) when is_integer(v) and v > 0
 
   def get_money_by_unit(money_unit) do
     Money.Info
@@ -64,7 +66,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-  def pay(sender_id, receiver_id, amount, money_unit) when is_integer(amount) and amount >= 1 do
+  def pay(sender_id, receiver_id, amount, money_unit)
+      when is_positive_integer(amount) do
     # Get money info by unit.
     with money <- get_money_by_unit(money_unit),
          # Is money exits?
@@ -89,7 +92,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def give(receiver_id, amount, guild_id) do
+  def give(receiver_id, amount, guild_id)
+      when is_positive_integer(amount) do
     # Get money info by guild.
     with money <- get_money_by_guild_id_with_lock(guild_id),
          # Is money exits?
@@ -109,7 +113,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def create(guild, name, unit, pool_amount) do
+  def create(guild, name, unit, pool_amount)
+      when is_non_neg_integer(pool_amount) do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
@@ -185,11 +190,7 @@ defmodule VirtualCrypto.Money do
     |> Repo.transaction()
   end
 
-  defp _create(_, _, _, _, 0) do
-    {:error, :retry_limit}
-  end
-
-  defp _create(guild, name, unit, pool_amount, retry) do
+  defp _create(guild, name, unit, pool_amount, retry) when retry > 0 do
     case Multi.new()
          |> Multi.run(:create, fn _, _ ->
            VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount)
@@ -200,6 +201,10 @@ defmodule VirtualCrypto.Money do
       {:error, :unit} -> {:error, :unit}
       {:error, _} -> _create(guild, name, unit, pool_amount, retry - 1)
     end
+  end
+
+  defp _create(_, _, _, _, _) do
+    {:error, :retry_limit}
   end
 
   @spec create(
