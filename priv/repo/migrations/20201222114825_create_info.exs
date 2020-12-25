@@ -6,7 +6,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreateInfo do
       add :name, :string
       add :unit, :string
       add :status, :integer
-      add :guild_id, :integer
+      add :guild_id, :bigint
       add :pool_amount, :integer
 
       timestamps()
