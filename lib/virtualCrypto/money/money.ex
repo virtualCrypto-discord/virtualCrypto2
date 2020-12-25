@@ -180,21 +180,25 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec give(receiver: non_neg_integer(), amount: non_neg_integer(), guild: non_neg_integer()) ::
-          {:ok}
+          {:ok,Ecto.Schema.t()}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def give(kw) do
+    guild = Keyword.fetch!(kw, :guild)
     case Multi.new()
     |> Multi.run(:give, fn _, _ ->
       VirtualCrypto.Money.InternalAction.give(
         Keyword.fetch!(kw, :receiver),
         Keyword.fetch!(kw, :amount),
-        Keyword.fetch!(kw, :guild)
+        guild
       )
     end)
+    |> Multi.run(:info, fn _,_ ->
+      {:ok,VirtualCrypto.Money.InternalAction.get_money_by_guild_id(guild)}
+    end)
     |> Repo.transaction() do
-      {:ok,_}-> {:ok}
+      {:ok, %{info: info}}-> {:ok,info}
       {:error, :give, :not_found_money,_} -> {:error, :not_found_money}
       {:error, :give, :not_found_sender_asset,_} ->{:error, :not_found_sender_asset}
       {:error, :give, :not_enough_amount,_} ->{:error, :not_enough_amount}

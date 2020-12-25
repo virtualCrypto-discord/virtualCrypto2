@@ -14,12 +14,26 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   end
 
-  def handle("pay", options, params) do
-
+  def handle("pay", %{"unit" => unit, "user" => receiver, "amount" => amount}, %{
+        "member" => %{"user" => %{"id" => sender}}
+      }) do
+    int_receiver = String.to_integer(receiver)
+    int_sender = String.to_integer(sender)
+    case VirtualCrypto.Money.pay(sender: int_sender,receiver: int_receiver,amount: amount, unit: unit) do
+      {:ok } -> {:ok,%{unit: unit,receiver: receiver,sender: sender, amount: amount}}
+      {:error, v } -> {:error, v}
+    end
   end
 
-  def handle("give", options, params) do
-
+  def handle("give", %{"user" => receiver, "amount" => amount}, %{
+    "guild_id" => guild
+  }) do
+    int_receiver = String.to_integer receiver
+    int_guild = String.to_integer  guild
+    case VirtualCrypto.Money.give(receiver: int_receiver,amount: amount,guild: int_guild) do
+      {:ok,%VirtualCrypto.Money.Info{unit: unit}} -> {:ok, {receiver,amount,unit}}
+      {:error, v } -> {:error, v}
+    end
   end
 
   def handle("create", options, %{ "guild_id" => guild_id } = params) do
@@ -41,21 +55,18 @@ defmodule VirtualCryptoWeb.CommandHandler do
       {:error, "実行には管理者権限が必要です。"}
     end
   end
+  def handle("create", options, params) do
+  end
 
   def handle("info", options, params) do
-
   end
 
   def handle("help", options, params) do
-
   end
 
   def handle("invite", options, params) do
-
   end
 
   def handle(_, options, params) do
-
   end
-
 end
