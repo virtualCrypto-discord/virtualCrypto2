@@ -43,12 +43,29 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "create.json", %{ params: params } ) do
+  def render( "create.json", %{ params: {:ok, message} } ) do
     %{
       type: 4,
       data: %{
         tts: false,
-        content: "Congrats on sending your command!",
+        embeds: [
+          %{
+            description: "\u2705 " <> message,
+            color: 0x38ea42
+          }
+        ],
+        allowed_mentions: []
+      }
+    }
+  end
+
+  def render( "create.json", %{ params: {:error, message} } ) do
+    %{
+      type: 3,
+      data: %{
+        tts: false,
+        flags: 64,
+        content: "エラー: " <> message,
         embeds: [],
         allowed_mentions: []
       }
