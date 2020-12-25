@@ -36,7 +36,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defp update_asset_amount(asset_id, amount) do
     Money.Asset
     |> where([a], a.id == ^asset_id)
-    |> update([inc: [amount: ^amount]])
+    |> update(inc: [amount: ^amount])
     |> Repo.update_all([])
   end
 
@@ -60,7 +60,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defp update_pool_amount(money_id, amount) do
     Money.Info
     |> where([a], a.id == ^money_id)
-    |> update([inc: [pool_amount: ^amount]])
+    |> update(inc: [pool_amount: ^amount])
     |> Repo.update_all([])
   end
 
@@ -101,7 +101,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Update reciver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update pool amount.
-      {:ok,update_pool_amount(money.id, -amount)}
+      {:ok, update_pool_amount(money.id, -amount)}
     else
       {:money, false} -> {:error, :not_found_money}
       {:pool_amount, false} -> {:error, :not_enough_pool_amount}
@@ -143,9 +143,20 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
 
+  @spec pay(
+          sender: non_neg_integer(),
+          receiver: non_neg_integer(),
+          amount: non_neg_integer(),
+          unit: String.t()
+        ) ::
+          {:ok, any()}
+          | {:error, :not_found_money}
+          | {:error, :not_found_sender_asset}
+          | {:error, :not_enough_amount}
+          | {:error, any()}
   def pay(kw) do
     Multi.new()
-    |> Multi.run(:pay, fn  _,_ ->
+    |> Multi.run(:pay, fn _, _ ->
       VirtualCrypto.Money.InternalAction.pay(
         Keyword.fetch!(kw, :sender),
         Keyword.fetch!(kw, :receiver),
@@ -156,9 +167,15 @@ defmodule VirtualCrypto.Money do
     |> Repo.transaction()
   end
 
+  @spec give(receiver: non_neg_integer(), amount: non_neg_integer(), guild: non_neg_integer()) ::
+          {:ok, any()}
+          | {:error, :not_found_money}
+          | {:error, :not_found_sender_asset}
+          | {:error, :not_enough_amount}
+          | {:error, any()}
   def give(kw) do
     Multi.new()
-    |> Multi.run(:give, fn  _,_ ->
+    |> Multi.run(:give, fn _, _ ->
       VirtualCrypto.Money.InternalAction.give(
         Keyword.fetch!(kw, :receiver),
         Keyword.fetch!(kw, :amount),
@@ -169,11 +186,12 @@ defmodule VirtualCrypto.Money do
   end
 
   defp _create(_, _, _, _, 0) do
+    {:error, :retry_limit}
   end
 
   defp _create(guild, name, unit, pool_amount, retry) do
     case Multi.new()
-         |> Multi.run(:create, fn _,_ ->
+         |> Multi.run(:create, fn _, _ ->
            VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount)
          end)
          |> Repo.transaction() do
@@ -184,6 +202,14 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  @spec create(
+          guild: non_neg_integer(),
+          name: String.t(),
+          unit: String.t(),
+          pool_amount: non_neg_integer(),
+          retry_count: pos_integer()
+        ) ::
+          {:ok} | {:error, :guild} | {:error, :unit} | {:error, :retry_limit}
   def create(kw) do
     _create(
       Keyword.fetch!(kw, :guild),
@@ -194,10 +220,32 @@ defmodule VirtualCrypto.Money do
     )
   end
 
+  @spec balance(user: non_neg_integer()) :: [
+          %{
+            amount: non_neg_integer(),
+            asset_status: non_neg_integer(),
+            name: String.t(),
+            unit: String.t(),
+            guild: non_neg_integer(),
+            money_status: non_neg_integer()
+          }
+        ]
   def balance(kw) do
     Repo.all(VirtualCrypto.Money.InternalAction.balance(Keyword.fetch!(kw, :user)))
+    |> Enum.map(fn {asset_amount, asset_status, info_name, info_unit, info_guild_id, info_status} ->
+      %{
+        amount: asset_amount,
+        asset_status: asset_status,
+        name: info_name,
+        unit: info_unit,
+        guild: info_guild_id,
+        money_status: info_status
+      }
+    end)
   end
 
+  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
+          Ecto.Schema.t() | nil
   def info(kw) do
     with {:name, nil} <- {:name, Keyword.get(kw, :name)},
          {:unit, nil} <- {:unit, Keyword.get(kw, :unit)} do
