@@ -40,12 +40,15 @@ defmodule VirtualCryptoWeb.InteractionsController do
     )
   end
 
-  def verified( conn, %{ "type" => 1 } = params ) do
+  def verified( conn, %{ "type" => 1 }) do
     render( conn, "pong.json" )
   end
 
-  def verified( conn, %{ "type" => 2, "data" => %{"name" => name} } = params) do
-    render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, params))
+  def verified( conn, %{"type" => 2, "data"=> %{"name" => name} = data} = params) do
+    options = Map.get(data,"options",[])
+      |> Enum.map(fn %{"name" => name, "value" => value} -> { name,value } end)
+      |> Map.new()
+    render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, options, params))
   end
 
   def verified( conn, _ ) do

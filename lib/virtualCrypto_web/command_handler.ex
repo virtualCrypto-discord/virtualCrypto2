@@ -1,35 +1,35 @@
 defmodule VirtualCryptoWeb.CommandHandler do
   @moduledoc false
 
-  def handle("bal", params) do
+  def handle("bal",options, params) do
 
   end
 
-  def handle("pay", params) do
+  def handle("pay", options, params) do
 
   end
 
-  def handle("give", params) do
+  def handle("give", options, params) do
 
   end
 
-  def handle("create", params) do
+  def handle("create", options, params) do
 
   end
 
-  def handle("info", params) do
+  def handle("info", options, params) do
 
   end
 
-  def handle("help", params) do
+  def handle("help", options, params) do
 
   end
 
-  def handle("invite", params) do
+  def handle("invite", options, params) do
 
   end
 
-  def handle(_, params) do
+  def handle(_, options, params) do
 
   end
 
