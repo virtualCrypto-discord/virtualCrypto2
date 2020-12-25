@@ -220,12 +220,32 @@ defmodule VirtualCrypto.Money do
     )
   end
 
-  @spec balance(user: non_neg_integer()) :: [Ecto.Schema.t()]
+  @spec balance(user: non_neg_integer()) :: [
+          %{
+            amount: non_neg_integer(),
+            asset_status: non_neg_integer(),
+            name: String.t(),
+            unit: String.t(),
+            guild: non_neg_integer(),
+            money_status: non_neg_integer()
+          }
+        ]
   def balance(kw) do
     Repo.all(VirtualCrypto.Money.InternalAction.balance(Keyword.fetch!(kw, :user)))
+    |> Enum.map(fn {asset_amount, asset_status, info_name, info_unit, info_guild_id, info_status} ->
+      %{
+        amount: asset_amount,
+        asset_status: asset_status,
+        name: info_name,
+        unit: info_unit,
+        guild: info_guild_id,
+        money_status: info_status
+      }
+    end)
   end
 
-  @spec info(name: String.t(),unit: String.t(),guild: non_neg_integer()) :: Ecto.Schema.t() | nil
+  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
+          Ecto.Schema.t() | nil
   def info(kw) do
     with {:name, nil} <- {:name, Keyword.get(kw, :name)},
          {:unit, nil} <- {:unit, Keyword.get(kw, :unit)} do
