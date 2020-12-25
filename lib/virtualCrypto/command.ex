@@ -124,7 +124,7 @@ defmodule VirtualCrypto.Command do
       {"Authorization", "Bot " <> Application.get_env(:virtualCrypto, :bot_token)},
       {"Content-Type", "application/json"}]
     url = Application.get_env(:virtualCrypto, :command_post_url)
-    commands = [give(), pay(), info(), create(), bal()]
+    commands = [give(), pay(), info(), create(), bal(), help(), invite()]
     commands |> Enum.each(fn (command) ->
       r = HTTPoison.post(url, (Jason.encode!(command)), headers)
       IO.inspect r
