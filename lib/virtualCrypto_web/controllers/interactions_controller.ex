@@ -27,7 +27,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
 
   def index( conn, params ) do
     public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
-    signature = conn.req_header |> get_signature |> Base.decode16!(case: :lower)
+    signature = conn.req_headers |> get_signature |> Base.decode16!(case: :lower)
     timestamp = get_timestamp conn.req_headers
     body = hd conn.assigns.raw_body
     message = timestamp <> body
