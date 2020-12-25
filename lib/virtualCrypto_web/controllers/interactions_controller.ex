@@ -25,26 +25,40 @@ defmodule VirtualCryptoWeb.InteractionsController do
     get_timestamp tail
   end
 
-  def index( conn, params ) do
+  def verify( conn ) do
     public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
-    signature = conn.req_header |> get_signature |> Base.decode16!(case: :lower)
+    signature = conn.req_headers |> get_signature |> Base.decode16!(case: :lower)
     timestamp = get_timestamp conn.req_headers
     body = hd conn.assigns.raw_body
     message = timestamp <> body
 
-    result = :public_key.verify(
-               message,
-               :none,
-               signature,
-               {:ed_pub, :ed25519 , public_key}
-             )
+    :public_key.verify(
+      message,
+      :none,
+      signature,
+      {:ed_pub, :ed25519 , public_key}
+    )
+  end
 
-    if result do
-      render( conn, "interactions.json", params: params )
-    else
-      conn
-      |> put_resp_content_type("text/plain")
-      |> send_resp(401, 'invalid request signature')
-    end
+  def verified( conn, %{ "type" => 1 } = params ) do
+    render( conn, "pong.json" )
+  end
+
+  def verified( conn, %{ "type" => 2, "data" => %{"name" => name} } = params) do
+    render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, params))
+  end
+
+  def verified( conn, _ ) do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(400, 'Type Not Found')
+  end
+
+  def index( conn, params ) do
+    if verify(conn),
+      do: verified(conn, params),
+      else: conn
+            |> put_resp_content_type("text/plain")
+            |> send_resp(401, 'invalid request signature')
   end
 end
