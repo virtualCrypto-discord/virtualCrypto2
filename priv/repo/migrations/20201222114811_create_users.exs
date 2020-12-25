@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreateUsers do
 
   def change do
     create table(:users, primary_key: false) do
-      add :id, :integer, primary_key: true
+      add :id, :bigint, primary_key: true
       add :status, :integer
 
       timestamps()

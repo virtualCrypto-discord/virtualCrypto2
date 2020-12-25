@@ -157,13 +157,12 @@ defmodule VirtualCrypto.Money do
           amount: non_neg_integer(),
           unit: String.t()
         ) ::
-          {:ok, any()}
+          {:ok}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
-          | {:error, any()}
   def pay(kw) do
-    Multi.new()
+    case Multi.new()
     |> Multi.run(:pay, fn _, _ ->
       VirtualCrypto.Money.InternalAction.pay(
         Keyword.fetch!(kw, :sender),
@@ -172,17 +171,21 @@ defmodule VirtualCrypto.Money do
         Keyword.fetch!(kw, :unit)
       )
     end)
-    |> Repo.transaction()
+    |> Repo.transaction() do
+      {:ok,_} ->{:ok}
+      {:error,:pay, :not_found_money,_} -> {:error, :not_found_money}
+      {:error,:pay, :not_found_sender_asset,_}->{:error, :not_found_sender_asset}
+      {:error,:pay, :not_enough_amount,_}->{:error, :not_enough_amount}
+    end
   end
 
   @spec give(receiver: non_neg_integer(), amount: non_neg_integer(), guild: non_neg_integer()) ::
-          {:ok, any()}
+          {:ok}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
-          | {:error, any()}
   def give(kw) do
-    Multi.new()
+    case Multi.new()
     |> Multi.run(:give, fn _, _ ->
       VirtualCrypto.Money.InternalAction.give(
         Keyword.fetch!(kw, :receiver),
@@ -190,7 +193,12 @@ defmodule VirtualCrypto.Money do
         Keyword.fetch!(kw, :guild)
       )
     end)
-    |> Repo.transaction()
+    |> Repo.transaction() do
+      {:ok,_}-> {:ok}
+      {:error, :give, :not_found_money,_} -> {:error, :not_found_money}
+      {:error, :give, :not_found_sender_asset,_} ->{:error, :not_found_sender_asset}
+      {:error, :give, :not_enough_amount,_} ->{:error, :not_enough_amount}
+    end
   end
 
   defp _create(guild, name, unit, pool_amount, retry) when retry > 0 do
@@ -200,9 +208,9 @@ defmodule VirtualCrypto.Money do
          end)
          |> Repo.transaction() do
       {:ok, _} -> {:ok}
-      {:error, :guild} -> {:error, :guild}
-      {:error, :unit} -> {:error, :unit}
-      {:error, _} -> _create(guild, name, unit, pool_amount, retry - 1)
+      {:error,:create, :guild,_} -> {:error, :guild}
+      {:error,:create ,:unit,_} -> {:error, :unit}
+      {:error,_,_, _} -> _create(guild, name, unit, pool_amount, retry - 1)
     end
   end
 
