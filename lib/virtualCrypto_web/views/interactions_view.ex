@@ -1,13 +1,13 @@
 defmodule VirtualCryptoWeb.InteractionsView do
   use VirtualCryptoWeb, :view
 
-  def render( "pong.json", _ ) do
+  def render( "pong.json" ) do
     %{
       type: 1
     }
   end
 
-  def render( "interactions.json", %{ params: params } = request ) do
+  def render( "interactions.json", %{ params: params } ) do
     %{
       type: 4,
       data: %{

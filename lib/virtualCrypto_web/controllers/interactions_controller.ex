@@ -40,14 +40,18 @@ defmodule VirtualCryptoWeb.InteractionsController do
     )
   end
 
-  def verified( conn, %{ "type" => type } = params ) do
-    case type do
-      1 -> render( conn, "pong.json", params: params )
-      2 -> render( conn, "interactions.json", params: params )
-      _ -> conn
-           |> put_resp_content_type("text/plain")
-           |> send_resp(404, 'Type Not Found')
-    end
+  def verified( conn, %{ "type" => 1 } = params ) do
+    render( conn, "pong.json" )
+  end
+
+  def verified( conn, %{ "type" => 2, "data" => %{"name" => name} } = params) do
+    render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, params))
+  end
+
+  def verified( conn, _ ) do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(400, 'Type Not Found')
   end
 
   def index( conn, params ) do

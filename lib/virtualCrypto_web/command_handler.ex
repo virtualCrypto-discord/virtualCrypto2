@@ -9,4 +9,28 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   end
 
+  def handle("give", params) do
+
+  end
+
+  def handle("create", params) do
+
+  end
+
+  def handle("info", params) do
+
+  end
+
+  def handle("help", params) do
+
+  end
+
+  def handle("invite", params) do
+
+  end
+
+  def handle(_, params) do
+
+  end
+
 end
