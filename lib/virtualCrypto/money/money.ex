@@ -118,7 +118,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
-         {:unit, nil} <- {:unit, get_money_by_unit(unit)} do
+         {:unit, nil} <- {:unit, get_money_by_unit(unit)},
+         {:name, nil} <- {:name, get_money_by_name(name)} do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
       Repo.insert(%Money.Info{
@@ -131,6 +132,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     else
       {:guild, _} -> {:error, :guild}
       {:unit, _} -> {:error, :unit}
+      {:name, _} -> {:error, :name}
+      err -> {:error, err}
     end
   end
 
@@ -214,7 +217,7 @@ defmodule VirtualCrypto.Money do
           pool_amount: non_neg_integer(),
           retry_count: pos_integer()
         ) ::
-          {:ok} | {:error, :guild} | {:error, :unit} | {:error, :retry_limit}
+          {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
   def create(kw) do
     _create(
       Keyword.fetch!(kw, :guild),
