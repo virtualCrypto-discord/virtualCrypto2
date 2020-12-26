@@ -37,25 +37,24 @@ defmodule VirtualCryptoWeb.CommandHandler do
   end
 
   def handle("create", options, %{ "guild_id" => guild_id } = params) do
-    {int_guild_id, _} = Integer.parse guild_id
-    {int_permissions, _} = Integer.parse params["member"]["permissions"]
+    int_guild_id = String.to_integer guild_id
+    int_permissions = String.to_integer params["member"]["permissions"]
+
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       if name_unit_check(options["name"], options["unit"]) do
         case VirtualCrypto.Money.create(guild: int_guild_id, name: options["name"], unit: options["unit"]) do
-          {:ok} -> {:ok, "通貨の作成に成功しました！ `/info " <> options["unit"] <> "`コマンドで通貨の情報をご覧ください。"}
-          {:error, :guild} -> {:error, "このギルドではすでに通貨が作成されています。"}
-          {:error, :unit} -> {:error, options["unit"] <> "という単位の通貨は存在しています。別の名前を使用してください。"}
-          {:error, :name} -> {:error, options["name"] <> "という名前の通貨は存在しています。別の名前を使用してください。"}
-          _ -> {:error, "不明なエラーが発生しました。時間を開けてもう一度実行してください。"}
+          {:ok} -> {:ok, :ok, options}
+          {:error, :guild} -> {:error, :guild, options}
+          {:error, :unit} -> {:error, :unit, options}
+          {:error, :name} -> {:error, :name, options}
+          _ -> {:error, :none, options}
         end
       else
-        {:error, "通貨の名前は2から32文字以内の英数字、単位は1から10文字以内の英数字を使ってください。"}
+        {:error, :invalid, options}
       end
     else
-      {:error, "実行には管理者権限が必要です。"}
+      {:error, :permission, options}
     end
-  end
-  def handle("create", options, params) do
   end
 
   def handle("info", options, params) do
