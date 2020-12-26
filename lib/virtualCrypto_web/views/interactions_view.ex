@@ -1,31 +1,6 @@
 defmodule VirtualCryptoWeb.InteractionsView do
   use VirtualCryptoWeb, :view
 
-  defp mention(id) do
-    "<@" <> id <> ">"
-  end
-
-  defp render_give_error(:not_found_money) do
-    "エラー: 通貨が存在しません。"
-  end
-
-  defp render_give_error(:not_found_sender_asset) do
-    "エラー: 通貨を持っていません。"
-  end
-
-  defp render_give_error(:not_enough_amount) do
-    "エラー: 通貨が不足しています。"
-  end
-  defp render_pay_error(:not_found_money) do
-    "エラー: 通貨は存在しません。"
-  end
-  defp render_pay_error(:not_found_sender_asset) do
-    "エラー: 通貨を持っていません。"
-  end
-  defp render_pay_error(:not_enough_amount)do
-    "エラー: 通貨が不足しています。"
-  end
-
   def render("pong.json", _) do
     %{
       type: 1
@@ -45,69 +20,16 @@ defmodule VirtualCryptoWeb.InteractionsView do
   end
 
   def render("pay.json", %{
-        params: {:ok, %{unit: unit, receiver: receiver, sender: sender, amount: amount}}
+        params: {res, v}
       }) do
-    %{
-      type: 3,
-      data: %{
-        embeds: [
-          %{
-            "description" =>
-              mention(sender) <>
-                "から" <>
-                mention(receiver) <> "へ" <> Integer.to_string(amount) <> unit <> "送金されました。",
-            color: 0x38EA42
-          }
-        ],
-        allowed_mentions: []
-      }
-    }
+    VirtualCryptoWeb.InteractionsView.Pay.render(res,v)
   end
 
-  def render("pay.json", %{
-        params: {:error, err}
-      }) do
-        %{
-          type: 3,
-          data: %{
-            tts: false,
-            flags: 64,
-            content: render_pay_error(err),
-            embeds: [],
-            allowed_mentions: []
-          }
-        }
+  def render("give.json", %{params: {res,v}}) do
+    VirtualCryptoWeb.InteractionsView.Give.render(res,v)
+
   end
 
-  def render("give.json", %{params: {:ok, {receiver, amount, unit}}}) do
-    %{
-      type: 3,
-      data: %{
-        tts: false,
-        embeds: [
-          %{
-            "description" =>
-              "\u2705 " <>
-                mention(receiver) <> "へ" <> Integer.to_string(amount) <> unit <> "発行されました。",
-            color: 0x38EA42
-          }
-        ],
-        allowed_mentions: []
-      }
-    }
-  end
-
-  def render("give.json", %{params: {:error, v}}) do
-    %{
-      type: 3,
-      data: %{
-        tts: false,
-        flags: 64,
-        content: render_give_error(v),
-        allowed_mentions: []
-      }
-    }
-  end
 
   def render("create.json", %{params: {:ok, message}}) do
     %{
