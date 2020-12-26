@@ -27,37 +27,10 @@ defmodule VirtualCryptoWeb.InteractionsView do
 
   def render("give.json", %{params: {res,v}}) do
     VirtualCryptoWeb.InteractionsView.Give.render(res,v)
-
   end
 
-
-  def render("create.json", %{params: {:ok, message}}) do
-    %{
-      type: 4,
-      data: %{
-        tts: false,
-        embeds: [
-          %{
-            description: "\u2705 " <> message,
-            color: 0x38EA42
-          }
-        ],
-        allowed_mentions: []
-      }
-    }
-  end
-
-  def render("create.json", %{params: {:error, message}}) do
-    %{
-      type: 3,
-      data: %{
-        tts: false,
-        flags: 64,
-        content: "エラー: " <> message,
-        embeds: [],
-        allowed_mentions: []
-      }
-    }
+  def render("create.json", %{params: {response, reason, options}}) do
+    VirtualCryptoWeb.InteractionsView.Create.render(response, reason, options)
   end
 
   def render("info.json", %{params: params}) do
