@@ -8,7 +8,6 @@ defmodule VirtualCrypto.Money.Info do
     field :pool_amount, :integer
     field :status, :integer
     field :unit, :string
-
     timestamps()
   end
 

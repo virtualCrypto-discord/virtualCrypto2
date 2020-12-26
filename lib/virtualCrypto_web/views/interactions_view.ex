@@ -1,13 +1,13 @@
 defmodule VirtualCryptoWeb.InteractionsView do
   use VirtualCryptoWeb, :view
 
-  def render( "pong.json", _ ) do
+  def render("pong.json", _) do
     %{
       type: 1
     }
   end
 
-  def render( "bal.json", %{ params: params } ) do
+  def render("bal.json", %{params: params}) do
     %{
       type: 4,
       data: %{
@@ -19,31 +19,19 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "pay.json", %{ params: params } ) do
-    %{
-      type: 4,
-      data: %{
-        tts: false,
-        content: "Congrats on sending your command!",
-        embeds: [],
-        allowed_mentions: []
-      }
-    }
+  def render("pay.json", %{
+        params: {res, v}
+      }) do
+    VirtualCryptoWeb.InteractionsView.Pay.render(res,v)
   end
 
-  def render( "give.json", %{ params: params } ) do
-    %{
-      type: 4,
-      data: %{
-        tts: false,
-        content: "Congrats on sending your command!",
-        embeds: [],
-        allowed_mentions: []
-      }
-    }
+  def render("give.json", %{params: {res,v}}) do
+    VirtualCryptoWeb.InteractionsView.Give.render(res,v)
+
   end
 
-  def render( "create.json", %{ params: {:ok, message} } ) do
+
+  def render("create.json", %{params: {:ok, message}}) do
     %{
       type: 4,
       data: %{
@@ -51,7 +39,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
         embeds: [
           %{
             description: "\u2705 " <> message,
-            color: 0x38ea42
+            color: 0x38EA42
           }
         ],
         allowed_mentions: []
@@ -59,7 +47,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "create.json", %{ params: {:error, message} } ) do
+  def render("create.json", %{params: {:error, message}}) do
     %{
       type: 3,
       data: %{
@@ -72,7 +60,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "info.json", %{ params: params } ) do
+  def render("info.json", %{params: params}) do
     %{
       type: 4,
       data: %{
@@ -84,7 +72,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "help.json", %{ params: params } ) do
+  def render("help.json", %{params: params}) do
     %{
       type: 4,
       data: %{
@@ -96,7 +84,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render( "invite.json", %{ params: params } ) do
+  def render("invite.json", %{params: params}) do
     %{
       type: 4,
       data: %{
