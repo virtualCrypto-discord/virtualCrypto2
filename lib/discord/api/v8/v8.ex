@@ -9,17 +9,14 @@ defmodule Discord.Api.V8 do
   end
 
   def get(paths, []) do
-    HTTPoison.start
     HTTPoison.get(@base_url <> Enum.join(paths, "/"), @base_headers)
   end
 
   def get(paths, params) do
-    HTTPoison.start
     HTTPoison.get(@base_url <> Enum.join(paths, "/") <> make_params(params), @base_headers)
   end
 
   def post(paths, body) do
-    HTTPoison.start
     HTTPoison.post(@base_url <> Enum.join(paths, "/"), Jason.encode!(body), @base_headers)
   end
 
