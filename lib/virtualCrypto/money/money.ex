@@ -113,8 +113,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def create(guild, name, unit, pool_amount)
-      when is_non_neg_integer(pool_amount) do
+  def create(guild, name, unit, creator, creator_amount, pool_amount)
+      when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
@@ -122,12 +122,24 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:name, nil} <- {:name, get_money_by_name(name)} do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
-      Repo.insert(%Money.Info{
-        guild_id: guild,
-        pool_amount: pool_amount,
-        name: name,
+      {:ok, info} =
+        Repo.insert(
+          %Money.Info{
+            guild_id: guild,
+            pool_amount: pool_amount,
+            name: name,
+            status: 0,
+            unit: unit
+          },
+          returning: true
+        )
+      # Insert creator asset.
+      # Always success.
+      Repo.insert!(%Money.Asset{
+        amount: creator_amount,
         status: 0,
-        unit: unit
+        user_id: creator,
+        money_id: info.id
       })
     else
       {:guild, _} -> {:error, :guild}
@@ -163,62 +175,77 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def pay(kw) do
     case Multi.new()
-    |> Multi.run(:pay, fn _, _ ->
-      VirtualCrypto.Money.InternalAction.pay(
-        Keyword.fetch!(kw, :sender),
-        Keyword.fetch!(kw, :receiver),
-        Keyword.fetch!(kw, :amount),
-        Keyword.fetch!(kw, :unit)
-      )
-    end)
-    |> Repo.transaction() do
-      {:ok,_} ->{:ok}
-      {:error,:pay, :not_found_money,_} -> {:error, :not_found_money}
-      {:error,:pay, :not_found_sender_asset,_}->{:error, :not_found_sender_asset}
-      {:error,:pay, :not_enough_amount,_}->{:error, :not_enough_amount}
+         |> Multi.run(:pay, fn _, _ ->
+           VirtualCrypto.Money.InternalAction.pay(
+             Keyword.fetch!(kw, :sender),
+             Keyword.fetch!(kw, :receiver),
+             Keyword.fetch!(kw, :amount),
+             Keyword.fetch!(kw, :unit)
+           )
+         end)
+         |> Repo.transaction() do
+      {:ok, _} -> {:ok}
+      {:error, :pay, :not_found_money, _} -> {:error, :not_found_money}
+      {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
+      {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
     end
   end
 
   @spec give(receiver: non_neg_integer(), amount: non_neg_integer(), guild: non_neg_integer()) ::
-          {:ok,Ecto.Schema.t()}
+          {:ok, Ecto.Schema.t()}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def give(kw) do
     guild = Keyword.fetch!(kw, :guild)
-    case Multi.new()
-    |> Multi.run(:give, fn _, _ ->
-      VirtualCrypto.Money.InternalAction.give(
-        Keyword.fetch!(kw, :receiver),
-        Keyword.fetch!(kw, :amount),
-        guild
-      )
-    end)
-    |> Multi.run(:info, fn _,_ ->
-      {:ok,VirtualCrypto.Money.InternalAction.get_money_by_guild_id(guild)}
-    end)
-    |> Repo.transaction() do
-      {:ok, %{info: info}}-> {:ok,info}
-      {:error, :give, :not_found_money,_} -> {:error, :not_found_money}
-      {:error, :give, :not_found_sender_asset,_} ->{:error, :not_found_sender_asset}
-      {:error, :give, :not_enough_amount,_} ->{:error, :not_enough_amount}
-    end
-  end
 
-  defp _create(guild, name, unit, pool_amount, retry) when retry > 0 do
     case Multi.new()
-         |> Multi.run(:create, fn _, _ ->
-           VirtualCrypto.Money.InternalAction.create(guild, name, unit, pool_amount)
+         |> Multi.run(:give, fn _, _ ->
+           VirtualCrypto.Money.InternalAction.give(
+             Keyword.fetch!(kw, :receiver),
+             Keyword.fetch!(kw, :amount),
+             guild
+           )
+         end)
+         |> Multi.run(:info, fn _, _ ->
+           {:ok, VirtualCrypto.Money.InternalAction.get_money_by_guild_id(guild)}
          end)
          |> Repo.transaction() do
-      {:ok, _} -> {:ok}
-      {:error,:create, :guild,_} -> {:error, :guild}
-      {:error,:create ,:unit,_} -> {:error, :unit}
-      {:error,_,_, _} -> _create(guild, name, unit, pool_amount, retry - 1)
+      {:ok, %{info: info}} -> {:ok, info}
+      {:error, :give, :not_found_money, _} -> {:error, :not_found_money}
+      {:error, :give, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
+      {:error, :give, :not_enough_amount, _} -> {:error, :not_enough_amount}
     end
   end
 
-  defp _create(_, _, _, _, _) do
+  defp _create(guild, name, unit, creator, creator_amount, pool_amount, retry) when retry > 0 do
+    case Multi.new()
+         |> Multi.run(:create, fn _, _ ->
+           VirtualCrypto.Money.InternalAction.create(
+             guild,
+             name,
+             unit,
+             creator,
+             creator_amount,
+             pool_amount
+           )
+         end)
+         |> Repo.transaction() do
+      {:ok, _} ->
+        {:ok}
+
+      {:error, :create, :guild, _} ->
+        {:error, :guild}
+
+      {:error, :create, :unit, _} ->
+        {:error, :unit}
+
+      {:error, _, _, _} ->
+        _create(guild, name, unit, creator, creator_amount, pool_amount, retry - 1)
+    end
+  end
+
+  defp _create(_, _, _, _, _, _, _) do
     {:error, :retry_limit}
   end
 
@@ -227,7 +254,9 @@ defmodule VirtualCrypto.Money do
           name: String.t(),
           unit: String.t(),
           pool_amount: non_neg_integer(),
-          retry_count: pos_integer()
+          retry_count: pos_integer(),
+          creator: non_neg_integer(),
+          creator_amount: pos_integer()
         ) ::
           {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
   def create(kw) do
@@ -235,6 +264,8 @@ defmodule VirtualCrypto.Money do
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
+      Keyword.fetch!(kw, :creator),
+      Keyword.fetch!(kw, :creator_amount),
       Keyword.get(kw, :pool_amount, 0),
       Keyword.get(kw, :retry_count, 5)
     )
