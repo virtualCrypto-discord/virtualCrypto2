@@ -1,4 +1,4 @@
-defmodule VirtualCrypto.Repo.Migrations.CreateUsers do
+defmodule VirtualCrypto.Repo.Migrations.CreateDiscordUsers do
   use Ecto.Migration
 
   def change do
