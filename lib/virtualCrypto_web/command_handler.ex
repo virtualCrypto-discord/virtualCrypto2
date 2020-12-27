@@ -10,8 +10,11 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("bal",options, params) do
-
+  def handle("bal",_options, %{
+    "member" => %{"user" => %{"id" => executor}}
+  }) do
+    int_executor = String.to_integer(executor)
+    VirtualCrypto.Money.balance(user: int_executor)
   end
 
   def handle("pay", %{"unit" => unit, "user" => receiver, "amount" => amount}, %{

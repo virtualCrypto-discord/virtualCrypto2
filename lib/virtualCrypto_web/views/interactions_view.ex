@@ -8,15 +8,7 @@ defmodule VirtualCryptoWeb.InteractionsView do
   end
 
   def render("bal.json", %{params: params}) do
-    %{
-      type: 4,
-      data: %{
-        tts: false,
-        content: "Congrats on sending your command!",
-        embeds: [],
-        allowed_mentions: []
-      }
-    }
+    VirtualCryptoWeb.InteractionsView.Bal.render(params)
   end
 
   def render("pay.json", %{
