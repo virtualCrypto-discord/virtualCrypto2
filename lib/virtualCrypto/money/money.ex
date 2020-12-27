@@ -15,9 +15,12 @@ defmodule VirtualCrypto.Money.InternalAction do
     Repo.get_by(Money.Info, name: name)
   end
 
-  defp get_asset_with_lock(user_id, money_id) do
+  defp get_asset_with_lock(discord_user_id, money_id) do
     Money.Asset
-    |> where([a], a.user_id == ^user_id and a.money_id == ^money_id)
+    |> join(:inner, [a], d in Money.DiscordUser,
+      on: d.user_id == a.user_id and d.discord_user_id == ^discord_user_id
+    )
+    |> where([a], a.money_id == ^money_id)
     |> lock("FOR UPDATE")
     |> Repo.one()
   end
@@ -42,8 +45,37 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-  defp insert_user_if_not_exits(user_id) do
-    Repo.insert(%Money.User{id: user_id, status: 0}, on_conflict: :nothing)
+  # !! This may not work discord_user deletion !!
+  def insert_user_if_not_exits(discord_user_id) do
+    user = Repo.get_by(Money.DiscordUser, discord_id: discord_user_id)
+
+    if user == nil do
+      # Not found.
+      Repo.query!("SAVEPOINT insert_user_if_not_exits;")
+      # Insert user that will connect discord_user.
+      {:ok, user} = Repo.insert(%Money.User{status: 0}, returning: true)
+      # Insert discord_user connected inserted user.
+      # This will conflict when race condition.
+      case Repo.insert(%Money.DiscordUser{user_id: user.id, discord_id: discord_user_id},
+             on_conflict: :nothing,
+             returning: true
+           ) do
+        {:ok, %Money.DiscordUser{id: nil}} ->
+          # Conflicted.
+          # Rollback user insertion.
+          Repo.query!(" ROLLBACK TO SAVEPOINT insert_user_if_not_exits;")
+          # !! This may not work discord_user deletion !!
+          discord_user = Repo.get_by(Money.DiscordUser, discord_id: discord_user_id)
+          {:ok, discord_user.user_id}
+
+        {:ok, _} ->
+          # Not conflicted.
+          {:ok, user.id}
+      end
+    else
+      # Found
+      {:ok, user.id}
+    end
   end
 
   defp get_money_by_guild_id_with_lock(guild_id) do
@@ -66,22 +98,22 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-  def pay(sender_id, receiver_id, amount, money_unit)
+  def pay(sender_discord_id, receiver_discord_id, amount, money_unit)
       when is_positive_integer(amount) do
     # Get money info by unit.
     with money <- get_money_by_unit(money_unit),
          # Is money exits?
          {:money, true} <- {:money, money != nil},
          # Get sender asset by sender id and money id.
-         sender_asset <- get_asset_with_lock(sender_id, money.id),
+         sender_asset <- get_asset_with_lock(sender_discord_id, money.id),
          # Is sender asset exsits?
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
          {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
          # Insert reciver user if not exists.
-         {:ok, _} <- insert_user_if_not_exits(receiver_id),
+         {:ok, user_id} <- insert_user_if_not_exits(receiver_discord_id),
          # Upsert receiver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
+         {:ok, _} <- upsert_asset_amount(user_id, money.id, amount) do
       # Update sender amount.
       {:ok, update_asset_amount(sender_asset.id, -amount)}
     else
@@ -92,7 +124,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def give(receiver_id, amount, guild_id)
+  def give(receiver_discord_id, amount, guild_id)
       when is_positive_integer(amount) do
     # Get money info by guild.
     with money <- get_money_by_guild_id_with_lock(guild_id),
@@ -101,9 +133,9 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Check pool amount enough.
          {:pool_amount, true} <- {:pool_amount, money.pool_amount >= amount},
          # Insert reciver user if not exists.
-         {:ok, _} <- insert_user_if_not_exits(receiver_id),
+         {:ok, receiver_user_id} <- insert_user_if_not_exits(receiver_discord_id),
          # Update reciver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
+         {:ok, _} <- upsert_asset_amount(receiver_user_id, money.id, amount) do
       # Update pool amount.
       {:ok, update_pool_amount(money.id, -amount)}
     else
@@ -133,6 +165,7 @@ defmodule VirtualCrypto.Money.InternalAction do
           },
           returning: true
         )
+
       # Insert creator asset.
       # Always success.
       Repo.insert!(%Money.Asset{
@@ -149,11 +182,12 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def balance(user_id) do
+  def balance(discord_user_id) do
     from asset in Money.Asset,
       join: info in Money.Info,
       on: asset.money_id == info.id,
-      where: asset.user_id == ^user_id,
+      join: discord_users in Money.DiscordUser,
+      on: discord_users.discord_id == ^discord_user_id and asset.user_id == discord_users.user_id,
       select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
       order_by: info.unit
   end
