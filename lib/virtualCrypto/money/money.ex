@@ -145,13 +145,14 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def create(guild, name, unit, creator, creator_amount, pool_amount)
+  def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
       when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
          {:unit, nil} <- {:unit, get_money_by_unit(unit)},
-         {:name, nil} <- {:name, get_money_by_name(name)} do
+         {:name, nil} <- {:name, get_money_by_name(name)},
+         {:ok, creator_user_id} <- insert_user_if_not_exits(creator_discord_id) do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
       {:ok, info} =
@@ -171,7 +172,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       Repo.insert!(%Money.Asset{
         amount: creator_amount,
         status: 0,
-        user_id: creator,
+        user_id: creator_user_id,
         money_id: info.id
       })
     else
