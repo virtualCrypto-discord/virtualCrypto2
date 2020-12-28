@@ -31,12 +31,7 @@ defmodule VirtualCrypto.Command do
           "name" => "amount",
           "description" => "送信する通貨の量です。",
           "type" => 4,
-          "required" => true,
-          "choices" => [
-            %{"name" => "1", "value" => 1},
-            %{"name" => "10", "value" => 10},
-            %{"name" => "100", "value" => 100}
-          ]
+          "required" => true
         }
       ]
     }
@@ -105,6 +100,12 @@ defmodule VirtualCrypto.Command do
           "name" => "unit",
           "description" => "新しい通貨の単位です。",
           "type" => 3,
+          "required" => true
+        },
+        %{
+          "name" => "amount",
+          "description" => "通貨の初期発行枚数です。あなたの所持金となります。",
+          "type" => 4,
           "required" => true
         }
       ]
