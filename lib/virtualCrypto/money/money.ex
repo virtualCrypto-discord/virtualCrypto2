@@ -119,7 +119,9 @@ defmodule VirtualCrypto.Money.InternalAction do
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
          {:unit, nil} <- {:unit, get_money_by_unit(unit)},
-         {:name, nil} <- {:name, get_money_by_name(name)} do
+         {:name, nil} <- {:name, get_money_by_name(name)},
+         # Create creator user
+         {:ok, _} <- insert_user_if_not_exits(creator) do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
       {:ok, info} =
