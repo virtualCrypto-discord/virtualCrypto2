@@ -14,7 +14,7 @@ defmodule VirtualCryptoWeb.InteractionsView.Create do
   end
 
   defp render_error :invalid, _ do
-    "通貨の名前は2から32文字以内の英数字、単位は1から10文字以内の英数字を使ってください。"
+    "通貨の名前は2から32文字以内の英数字、単位は1から10文字以内の英小文字を使ってください。"
   end
 
   defp render_error :permission, _ do

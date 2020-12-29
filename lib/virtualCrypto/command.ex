@@ -92,13 +92,13 @@ defmodule VirtualCrypto.Command do
       "options": [
         %{
           "name" => "name",
-          "description" => "新しい通貨の通貨名です。",
+          "description" => "新しい通貨の通貨名です。2~32文字までの英数字です。",
           "type" => 3,
           "required" => true
         },
         %{
           "name" => "unit",
-          "description" => "新しい通貨の単位です。",
+          "description" => "新しい通貨の単位です。1~10文字の英子文字です。",
           "type" => 3,
           "required" => true
         },
