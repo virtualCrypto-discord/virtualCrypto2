@@ -25,7 +25,7 @@ defmodule VirtualCryptoWeb.InteractionsView.Create do
     "不明なエラーが発生しました。時間を開けてもう一度実行してください。"
   end
 
-  def render(:ok, options) do
+  def render(:ok, :ok, options) do
     %{
       type: 4,
       data: %{

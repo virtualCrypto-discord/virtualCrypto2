@@ -46,13 +46,19 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   end
 
-  def handle("create", options, %{ "guild_id" => guild_id } = params) do
+  def handle("create", options, %{ "guild_id" => guild_id, "member" => %{"user" => user} } = params) do
     int_guild_id = String.to_integer guild_id
+    int_user_id = String.to_integer user["id"]
     int_permissions = String.to_integer params["member"]["permissions"]
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       if name_unit_check(options["name"], options["unit"]) do
-        case VirtualCrypto.Money.create(guild: int_guild_id, name: options["name"], unit: options["unit"]) do
+        case VirtualCrypto.Money.create(
+               guild: int_guild_id,
+               name: options["name"],
+               unit: options["unit"],
+               creator: int_user_id,
+               creator_amount: options["amount"]) do
           {:ok} -> {:ok, :ok, options}
           {:error, :guild} -> {:error, :guild, options}
           {:error, :unit} -> {:error, :unit, options}
