@@ -137,7 +137,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         )
       # Insert creator asset.
       # Always success.
-      Repo.insert!(%Money.Asset{
+      Repo.insert(%Money.Asset{
         amount: creator_amount,
         status: 0,
         user_id: creator,
