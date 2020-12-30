@@ -187,6 +187,16 @@ defmodule VirtualCrypto.Money.InternalAction do
       group_by: info.id,
       select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
   end
+  @reset_pool_amount """
+  UPDATE info
+  SET pool_amount = (temp.distribution_volume+199)/200
+  FROM (SELECT money_id,SUM(amount) AS distribution_volume FROM assets GROUP BY money_id) AS temp
+  WHERE temp.money_id = info.id
+  ;
+  """
+  def reset_pool_amount() do
+    Ecto.Adapters.SQL.query!(@reset_pool_amount);
+  end
 end
 
 defmodule VirtualCrypto.Money do
@@ -360,7 +370,9 @@ defmodule VirtualCrypto.Money do
         nil
     end
   end
-
-  def reset_pool_amount(guild) do
+  @spec reset_pool_amount()::nil
+  def reset_pool_amount() do
+    VirtualCrypto.Money.InternalAction.reset_pool_amount();
+    nil
   end
 end
