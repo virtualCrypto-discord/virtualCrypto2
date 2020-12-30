@@ -135,6 +135,7 @@ defmodule VirtualCrypto.Money.InternalAction do
           },
           returning: true
         )
+
       # Insert creator asset.
       # Always success.
       Repo.insert(%Money.Asset{
@@ -158,6 +159,33 @@ defmodule VirtualCrypto.Money.InternalAction do
       where: asset.user_id == ^user_id,
       select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
       order_by: info.unit
+  end
+
+  def info(:guild, guild_id) do
+    from asset in Money.Asset,
+      join: info in Money.Info,
+      on: asset.money_id == info.id,
+      where: info.guild_id == ^guild_id,
+      group_by: info.id,
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+  end
+
+  def info(:name, name) do
+    from asset in Money.Asset,
+      join: info in Money.Info,
+      on: asset.money_id == info.id,
+      where: info.name == ^name,
+      group_by: info.id,
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+  end
+
+  def info(:unit, unit) do
+    from asset in Money.Asset,
+      join: info in Money.Info,
+      on: asset.money_id == info.id,
+      where: info.unit == ^unit,
+      group_by: info.id,
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
   end
 end
 
@@ -298,14 +326,41 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
-          Ecto.Schema.t() | nil
+          %{
+            amount: non_neg_integer(),
+            name: String.t(),
+            unit: String.t(),
+            guild: non_neg_integer(),
+            money_status: non_neg_integer(),
+            pool_amount: non_neg_integer()
+          }
+          | nil
   def info(kw) do
-    with {:name, nil} <- {:name, Keyword.get(kw, :name)},
-         {:unit, nil} <- {:unit, Keyword.get(kw, :unit)} do
-      VirtualCrypto.Money.InternalAction.get_money_by_guild_id(Keyword.fetch!(kw, :guild))
-    else
-      {:name, name} -> VirtualCrypto.Money.InternalAction.get_money_by_name(name)
-      {:unit, unit} -> VirtualCrypto.Money.InternalAction.get_money_by_unit(unit)
+    raw =
+      with {:name, nil} <- {:name, Keyword.get(kw, :name)},
+           {:unit, nil} <- {:unit, Keyword.get(kw, :unit)},
+           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)} do
+        raise "Invalid Argument. Must supply one or more arguments."
+      else
+        {atom, key} -> Repo.one(VirtualCrypto.Money.InternalAction.info(atom, key))
+      end
+
+    case raw do
+      {amount, info_name, info_unit, info_guild_id, info_status,pool_amount} ->
+        %{
+          amount: amount,
+          name: info_name,
+          unit: info_unit,
+          guild: info_guild_id,
+          money_status: info_status,
+          pool_amount: pool_amount
+        }
+
+      nil ->
+        nil
     end
+  end
+
+  def reset_pool_amount(guild) do
   end
 end
