@@ -189,10 +189,9 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
   @reset_pool_amount """
   UPDATE info
-  SET info.pool_amount = (assets.distribution_volume+199)/200
-  FROM (SELECT money_id,SUM(amount) FROM assets GROUP BY money_id
-  )
-  WHERE assets.money_id = info.id
+  SET pool_amount = (temp.distribution_volume+199)/200
+  FROM (SELECT money_id,SUM(amount) AS distribution_volume FROM assets GROUP BY money_id) AS temp
+  WHERE temp.money_id = info.id
   ;
   """
   def reset_pool_amount() do
