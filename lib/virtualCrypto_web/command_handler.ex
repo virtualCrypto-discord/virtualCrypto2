@@ -73,7 +73,11 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("info", options, params) do
+  def handle("info", options, %{ "guild_id" => guild_id } = params) do
+    case VirtualCrypto.Money.info name: options["name"], unit: options["unit"], guild: guild_id do
+      nil -> {:error, nil, nil, options}
+      info -> {:ok, info, Discord.Api.V8.get_guild(guild_id), options}
+    end
   end
 
   def handle("help", options, params) do
