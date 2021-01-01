@@ -1,5 +1,7 @@
 defmodule VirtualCryptoWeb.CommandHandler do
   @moduledoc false
+  @bot_invite_url "https://discord.com/api/oauth2/authorize?client_id=754196279315398666&permissions=379968&scope=applications.commands%20bot"
+  @guild_invite_url "https://discord.gg/Hgp5DpG"
 
   def name_unit_check(name, unit) do
     with true <- Regex.match?(~r/[a-zA-Z0-9]{2,32}/, name),
@@ -83,7 +85,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle("help", options, params) do
   end
 
-  def handle("invite", options, params) do
+  def handle("invite", _, _) do
+    {@bot_invite_url, @guild_invite_url}
   end
 
   def handle(_, options, params) do
