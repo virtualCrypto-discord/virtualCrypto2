@@ -195,7 +195,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   ;
   """
   def reset_pool_amount() do
-    Ecto.Adapters.SQL.query!(@reset_pool_amount);
+    Ecto.Adapters.SQL.query!(Repo,@reset_pool_amount);
   end
 end
 
