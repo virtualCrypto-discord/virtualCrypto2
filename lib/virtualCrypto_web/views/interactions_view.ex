@@ -41,14 +41,12 @@ defmodule VirtualCryptoWeb.InteractionsView do
     }
   end
 
-  def render("invite.json", %{params: params}) do
+  def render("invite.json", %{params: {bot_invite_url, guild_invite_url}}) do
     %{
-      type: 4,
+      type: 3,
       data: %{
-        tts: false,
-        content: "Congrats on sending your command!",
-        embeds: [],
-        allowed_mentions: []
+        flags: 64,
+        content: ~s/VirtualCryptoの招待: #{bot_invite_url}\nVirtualCryptoのサポートサーバー: #{guild_invite_url}/
       }
     }
   end
