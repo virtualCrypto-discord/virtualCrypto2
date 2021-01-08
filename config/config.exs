@@ -14,7 +14,7 @@ config :virtualCrypto,
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "A/SrOULNNrea5K+dL0aCBe2nQzCiXNduURF8NeXOJ9g5TbBZZcUjEHePFDINzTk0",
-  render_errors: [view: VirtualCryptoWeb.ErrorView, accepts: ~w(json), layout: false],
+  render_errors: [view: VirtualCryptoWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: VirtualCrypto.PubSub,
   live_view: [signing_salt: "5bW/V9s1"]
 
