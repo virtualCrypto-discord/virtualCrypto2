@@ -17,7 +17,8 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
+      'index': './elm/src/Index.elm'
     },
     output: {
       filename: '[name].js',
@@ -41,7 +42,17 @@ module.exports = (env, options) => {
             'css-loader',
             'sass-loader',
           ],
-        }
+        },
+        {
+          test: /\.elm$/,
+          exclude: [/elm-stuff/, /node_modules/],
+          use: {
+            loader: 'elm-webpack-loader',
+            options: {
+              cwd: path.resolve(__dirname, 'elm')
+            }
+          }
+        },
       ]
     },
     plugins: [
