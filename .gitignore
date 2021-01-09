@@ -35,3 +35,14 @@ npm-debug.log
 /priv/static/
 /config/dev.exs
 
+
+# Created by https://www.toptal.com/developers/gitignore/api/elm
+# Edit at https://www.toptal.com/developers/gitignore?templates=elm
+
+### Elm ###
+# elm-package generated files
+assets/elm/elm-stuff/
+# elm-repl generated files
+repl-temp-*
+
+# End of https://www.toptal.com/developers/gitignore/api/elm
