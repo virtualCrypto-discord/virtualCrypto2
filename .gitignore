@@ -22,8 +22,27 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 virtualCrypto-*.tar
 
+# If NPM crashes, it generates a log, let's ignore it too.
+npm-debug.log
+
+# The directory NPM downloads your dependencies sources to.
+/assets/node_modules/
+
+
 # Since we are building assets from assets/,
 # we ignore priv/static. You may want to comment
 # this depending on your deployment strategy.
 /priv/static/
 /config/dev.exs
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/elm
+# Edit at https://www.toptal.com/developers/gitignore?templates=elm
+
+### Elm ###
+# elm-package generated files
+assets/elm/elm-stuff/
+# elm-repl generated files
+repl-temp-*
+
+# End of https://www.toptal.com/developers/gitignore/api/elm
