@@ -33,8 +33,6 @@ defmodule VirtualCrypto.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-#      {:phoenix_live_view, "~> 0.15.3"},
-      {:floki, ">= 0.27.0", only: :test},
       {:phoenix, "~> 1.5.7"},
       {:phoenix_ecto, "~> 4.1"},
       {:ecto_sql, "~> 3.4"},
