@@ -1,5 +1,9 @@
 /* This file is for your main application css. */
-@import "./phoenix.css";
+//@import "./phoenix.css";
+$info: #6221ed;
+
+
+@import "../node_modules/bulma/bulma.sass";
 
 /* Alerts and form errors */
 .alert {

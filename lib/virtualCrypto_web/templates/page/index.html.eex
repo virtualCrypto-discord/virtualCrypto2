@@ -1,8 +1,2 @@
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/index.js") %>"></script>
 <div id="elm-index"></div>
-<script type="text/javascript">
-import '/js/index.js'
-Elm.Index.init({
-    node: document.getElementById("elm-index")
-})
-
-</script>
