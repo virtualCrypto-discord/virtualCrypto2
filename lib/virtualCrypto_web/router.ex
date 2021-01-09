@@ -18,6 +18,10 @@ defmodule VirtualCryptoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    get "/login", LoginController, :index
+
+    get "/callback/discord", DiscordCallbackController, :index
   end
 
   scope "/api", VirtualCryptoWeb do

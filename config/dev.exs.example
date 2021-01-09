@@ -69,3 +69,5 @@ config :virtualCrypto, :command_post_url, ""
 config :virtualCrypto, :bot_token, ""
 
 config :virtualCrypto, :public_key, ""
+
+config :virtualCrypto, :login_url, ""
