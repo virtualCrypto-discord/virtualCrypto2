@@ -7,7 +7,7 @@ main =
   div [class "navbar mt-1"] [
     div [class "navbar-bland"] [
       span [class "navbar-item"] [
-        a [href "/", class "is-text-black is-size-2"] [text "VirtualCrypto"]
+        a [href "/", class "has-text-black is-size-2"] [text "VirtualCrypto"]
       ]
     ]
     , div [class "navbar-end"] [
