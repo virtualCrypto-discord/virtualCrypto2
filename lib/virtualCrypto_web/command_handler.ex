@@ -4,7 +4,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
   @guild_invite_url "https://discord.gg/Hgp5DpG"
 
   def name_unit_check(name, unit) do
-    with true <- Regex.match?(~r/[a-zA-Z0-9]{2,32}/, name),
+    with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
       Regex.match?(~r/[a-z]{1,10}/, unit)
       do true
     else
