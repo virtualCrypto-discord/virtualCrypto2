@@ -11,14 +11,18 @@ main =
       ]
     ]
     , div [class "navbar-end"] [
-      div [class "navbar-item"] [
-        header_button "/invite" "Botの招待"
-        , header_button "/support" "サポートサーバー"
-        , header_button "/document" "使い方"
-        , header_button "/login" "ログイン"
-      ]
+      header_buttons
     ]
   ]
+
+header_buttons: Html msg
+header_buttons =
+  div [class "navbar-item"] [
+          header_button "/invite" "Botの招待"
+          , header_button "/support" "サポートサーバー"
+          , header_button "/document" "使い方"
+          , header_button "/login" "ログイン"
+        ]
 
 
 header_button: String -> String -> Html msg

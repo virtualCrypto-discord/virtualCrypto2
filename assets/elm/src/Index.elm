@@ -23,4 +23,4 @@ main =
 
 large_button: String -> String -> Html msg
 large_button url text_ =
-    a [href url, class "button is-info is-outlined mx-2 is-large px-6"] [text text_]
+    a [href url, class "button is-info mx-2 is-large px-6"] [text text_]
