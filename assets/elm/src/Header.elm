@@ -31,10 +31,10 @@ subscriptions _ =
 
 view: Model -> Html msg
 view model =
-  div [class "navbar mt-1"] [
+  div [class "navbar mt-1 mx-2"] [
     div [class "navbar-bland"] [
       span [class "navbar-item"] [
-        a [href "/", class "has-text-black is-size-2"] [text "VirtualCrypto"]
+        a [href "/", class "has-text-black is-size-3"] [text "VirtualCrypto"]
       ]
     ]
     , div [class "navbar-end"] [
