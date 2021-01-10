@@ -18,6 +18,10 @@ defmodule VirtualCryptoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    get "/login", LoginController, :index
+
+    get "/callback/discord", DiscordCallbackController, :index
   end
 
   scope "/api", VirtualCryptoWeb do
@@ -38,7 +42,7 @@ defmodule VirtualCryptoWeb.Router do
     scope "/" do
       pipe_through :browser
 #      pipe_through [:fetch_session, :protect_from_forgery, :browser]
-      live_dashboard "/dashboard", metrics: VirtualCryptoWeb.Telemetry
+      live_dashboard "/dashboard", ecto_repos: [VirtualCrypto.Repo], metrics: VirtualCryptoWeb.Telemetry
     end
   end
 end
