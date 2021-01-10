@@ -8,7 +8,16 @@
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/header.js") %>"></script>
   </head>
   <body>
-    <div id="elm-header"></div>
+    <%= content_tag(
+      :div,
+      raw(""),
+      id: "elm-header",
+      data: [is_login: is_login(@conn),
+             user_name: get_username(@conn),
+             user_id: get_user_id(@conn),
+             user_avatar: get_user_avatar(@conn)
+             ])
+    %>
     <main role="main" class="container">
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
