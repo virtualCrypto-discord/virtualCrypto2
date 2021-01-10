@@ -71,3 +71,9 @@ config :virtualCrypto, :bot_token, ""
 config :virtualCrypto, :public_key, ""
 
 config :virtualCrypto, :login_url, ""
+
+config :virtualCrypto, :client_id, ""
+
+config :virtualCrypto, :client_secret, ""
+
+config :virtualCrypto, :redirect_uri, ""

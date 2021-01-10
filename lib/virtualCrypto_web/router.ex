@@ -42,7 +42,7 @@ defmodule VirtualCryptoWeb.Router do
     scope "/" do
       pipe_through :browser
 #      pipe_through [:fetch_session, :protect_from_forgery, :browser]
-      live_dashboard "/dashboard", metrics: VirtualCryptoWeb.Telemetry
+      live_dashboard "/dashboard", ecto_repos: [VirtualCrypto.Repo], metrics: VirtualCryptoWeb.Telemetry
     end
   end
 end
