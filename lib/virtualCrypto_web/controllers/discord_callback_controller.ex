@@ -13,7 +13,6 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
       token,
       refresh_token
     )
-    IO.inspect response
     conn
     |> put_session(
          :user,

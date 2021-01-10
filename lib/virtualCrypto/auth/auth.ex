@@ -11,7 +11,7 @@ defmodule VirtualCrypto.Auth do
   end
 
   def update_user(user_id, token, refresh_token) do
-    Money.Asset
+    Auth.DiscordUser
     |> where([u], u.discord_user_id == ^user_id)
     |> update(set: [token: ^token, refresh_token: ^refresh_token])
     |> Repo.update_all([])
@@ -29,7 +29,7 @@ defmodule VirtualCrypto.Auth do
         discord_user_id: user_id,
         token: token,
         refresh_token: refresh_token,
-      }, on_conflict: :replace_all
+      }, on_conflict: :replace_all, conflict_target: :discord_user_id
     )
   end
 
