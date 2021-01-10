@@ -10,7 +10,9 @@ defmodule VirtualCryptoWeb.AuthPlug do
         conn
         |> redirect(external: Application.get_env(:virtualCrypto, :login_url))
         |> halt()
-      _ -> conn
+      user ->
+        VirtualCrypto.Auth.refresh_user(user.id)
+        conn
     end
   end
 end
