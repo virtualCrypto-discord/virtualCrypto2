@@ -30,4 +30,18 @@ defmodule Discord.Api.V8.Oauth2 do
                       |> OAuth2.Client.get("https://discord.com/api/users/@me")
     Jason.decode!(response.body)
   end
+
+  @spec refresh_token(String.t()) :: OAuth2.Client | :error
+  def refresh_token(refresh_token_) do
+    try do
+      client = @client_data
+               |> Keyword.merge([strategy: OAuth2.Strategy.Refresh])
+               |> OAuth2.Client.new()
+               |> OAuth2.Client.put_param(:refresh_token, refresh_token_)
+               |> OAuth2.Client.get_token!()
+      {:ok, client}
+    rescue
+      err -> {:error, err}
+    end
+  end
 end
