@@ -20,6 +20,7 @@ defmodule VirtualCryptoWeb.Router do
     get "/", PageController, :index
 
     get "/login", LoginController, :index
+    get "/logout", LogoutController, :index
 
     get "/callback/discord", DiscordCallbackController, :index
   end
