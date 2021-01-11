@@ -7,8 +7,12 @@ main =
   div [] [
     div [class "columns"] [
         div [class "column is-three-fifths"] [
-          div [class "is-size-1 has-text-centered", style "margin-top" "80px"] [text "コミュニティのための画期的な経済システム。"]
-          , div [class "is-size-4 has-text-centred"] [text "記念品や対価、報酬などに使えるあなたのサーバー固有の通貨を作成しましょう。"]
+          section [class "hero"] [
+            div [class "hero-body"] [div [class "container"] [
+              div [class "is-size-1 title", style "margin-top" "80px"] [text "コミュニティのための画期的な経済システム。"]
+              , div [class "is-size-4 subtitle"] [text "記念品や対価、報酬などに使えるあなたのサーバー固有の通貨を作成しましょう。"]
+            ]]
+          ]
           , div [class "columns"] [
             div [class "column mt-5 has-text-centered"] [
               large_button "/invite" "Botを招待する"

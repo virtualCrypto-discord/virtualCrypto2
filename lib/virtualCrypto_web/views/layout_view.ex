@@ -2,7 +2,7 @@ defmodule VirtualCryptoWeb.LayoutView do
   use VirtualCryptoWeb, :view
 
   def is_login(conn) do
-    if conn.private.plug_session["user"] == nil, do: false, else: true
+    conn.private.plug_session["user"] != nil
   end
 
   def get_username(conn) do
