@@ -12,7 +12,11 @@ defmodule VirtualCryptoWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  pipeline :oauth2 do
     plug :fetch_session
+    plug VirtualCryptoWeb.ApiAuthPlug
   end
 
   scope "/", VirtualCryptoWeb do
@@ -32,7 +36,12 @@ defmodule VirtualCryptoWeb.Router do
     pipe_through :api
     post "/integrations/discord/interactions", InteractionsController, :index
 
-    get "/local/user/me", LocalApiController, :me
+    scope "/v1", V1 do
+      pipe_through :oauth2
+
+      get "/user/@me", UserController, :me
+      get "/balance/@me", UserController, :balance
+    end
   end
 
   # Enables LiveDashboard only for development

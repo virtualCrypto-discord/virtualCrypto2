@@ -8,6 +8,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
     refresh_token = token_data["refresh_token"]
     user_data = Discord.Api.V8.Oauth2.get_user_info(client, token)
     user_id = String.to_integer(user_data["id"])
+    {:ok, jwt, _} = VirtualCrypto.Guardian.encode_and_sign(%{id: user_id})
     response = VirtualCrypto.Auth.insert_user(
       user_id,
       token,
@@ -17,12 +18,14 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
     |> put_session(
          :user,
          %{
+           # This is discord user id
            id: user_id,
            username: user_data["username"],
            avatar: user_data["avatar"],
            discriminator: user_data["discriminator"]
          }
        )
+    |> put_session(:jwt, jwt)
     |> put_flash(:info, "ログイン成功しました")
     |> redirect(to: "/")
     |> halt()
