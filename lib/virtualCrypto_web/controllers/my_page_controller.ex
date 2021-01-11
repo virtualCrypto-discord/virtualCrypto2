@@ -5,9 +5,6 @@ defmodule VirtualCryptoWeb.MyPageController do
 
   def index(conn, _) do
     user = conn.private.plug_session["user"]
-    render(conn,
-           "me.html",
-           user: user.id,
-           balance: VirtualCrypto.Money.balance(user: user.id))
+    render conn, "me.html"
   end
 end
