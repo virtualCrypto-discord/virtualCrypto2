@@ -153,4 +153,9 @@ balanceTableView content =
   ]
 
 balanceView: Balance -> Html msg
-balanceView balance = text balance.name
+balanceView balance =
+  tr [] [
+    th [] [text balance.name]
+    , td [] [text balance.unit]
+    , td [] [text (String.fromInt balance.amount)]
+  ]
