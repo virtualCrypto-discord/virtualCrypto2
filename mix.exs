@@ -47,7 +47,8 @@ defmodule VirtualCrypto.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.7"},
       {:ecto_psql_extras, "~> 0.2"},
-      {:oauth2, "~> 2.0"}
+      {:oauth2, "~> 2.0"},
+      {:guardian, "~> 2.0"}
     ]
   end
 
