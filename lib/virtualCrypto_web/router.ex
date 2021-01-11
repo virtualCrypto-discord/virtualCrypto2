@@ -40,7 +40,7 @@ defmodule VirtualCryptoWeb.Router do
       pipe_through :oauth2
 
       get "/user/@me", UserController, :me
-      get "/balance/@me", UserController, :balance
+      get "/balance/@me", BalanceController, :balance
     end
   end
 

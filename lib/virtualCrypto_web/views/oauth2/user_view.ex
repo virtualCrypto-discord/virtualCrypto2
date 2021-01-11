@@ -9,8 +9,4 @@ defmodule VirtualCryptoWeb.V1.UserView do
       discriminator: params.discriminator
     }
   end
-
-  def render("balance.json", %{params: %{data: data}}) do
-    data
-  end
 end

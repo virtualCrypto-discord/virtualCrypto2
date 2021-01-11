@@ -15,10 +15,4 @@ defmodule VirtualCryptoWeb.V1.UserController do
       }
     )
   end
-
-  def balance(conn, _) do
-    user = get_session(conn, :user)
-    balance_ = VirtualCrypto.Money.balance(user: user.id)
-    render( conn, "balance.json", params: %{data: balance_})
-  end
 end
