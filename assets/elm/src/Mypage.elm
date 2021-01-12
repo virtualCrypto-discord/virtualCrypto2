@@ -134,11 +134,10 @@ userProfileView model =
         ul [class "menu-list"] [
           li [] [a [class "is-active has-text-weight-bold py-3 mt-2"] [text "Dashboard"]]
         ]
-      --, menuLabel "ウォレット"
-      --, ul [class "menu-list"] [
-      --    li [] [a [class "has-text-weight-bold py-3 mt-2"] [text "所持通貨"]]
-      --  , li [] [a [class "has-text-weight-bold py-3 mt-2"] [text "取引履歴"]]
-      --  ]
+      , menuLabel "操作"
+      , ul [class "menu-list"] [
+          li [] [a [class "has-text-weight-bold py-3 mt-2 has-text-danger", href "/logout"] [text "ログアウト"]]
+        ]
       ]
     ]
   , div [class "column"] [
