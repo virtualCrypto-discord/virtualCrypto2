@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.DiscordCallbackController do
   use VirtualCryptoWeb, :controller
-  import Plug.Conn, only: [halt: 1, put_session: 3]
+  import Plug.Conn, only: [halt: 1, put_session: 3,configure_session: 2]
 
   defp save_token(conn, client) do
     token_data = Jason.decode!(client.token.access_token)
@@ -27,6 +27,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
        )
     |> put_session(:jwt, jwt)
     |> put_flash(:info, "ログイン成功しました")
+    |> configure_session(renew: true)
     |> redirect(to: "/")
     |> halt()
   end
