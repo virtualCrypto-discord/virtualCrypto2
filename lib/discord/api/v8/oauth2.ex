@@ -1,7 +1,6 @@
 defmodule Discord.Api.V8.Oauth2 do
   use OAuth2.Strategy
 
-  @base_url "https://discord.com/api/v6"
   @client_data [
     strategy: OAuth2.Strategy.AuthCode,
     client_id: Application.get_env(:virtualCrypto, :client_id),
@@ -12,7 +11,7 @@ defmodule Discord.Api.V8.Oauth2 do
   ]
 
   @spec exchange_code(String.t(), String.t()) :: OAuth2.Client | :error
-  def exchange_code(code, scope \\ "identify") do
+  def exchange_code(code, _scope \\ "identify") do
     client = OAuth2.Client.new(@client_data)
     try do
       client
@@ -23,7 +22,7 @@ defmodule Discord.Api.V8.Oauth2 do
     end
   end
 
-  def get_user_info(client, token) do
+  def get_user_info(_client, token) do
     {:ok, response} = @client_data
                       |> Keyword.merge([token: token])
                       |> OAuth2.Client.new()
