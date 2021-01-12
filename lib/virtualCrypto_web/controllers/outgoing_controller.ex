@@ -9,7 +9,7 @@ defmodule VirtualCryptoWeb.OutgoingController do
 
   def guild(conn, _) do
     conn
-    |> redirect(external: Application.get_env(:virtualCrypto, :guild_url))
+    |> redirect(external: Application.get_env(:virtualCrypto, :support_guild_invite_url))
     |> halt()
   end
 end

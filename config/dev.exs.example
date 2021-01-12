@@ -80,6 +80,6 @@ config :virtualCrypto, :redirect_uri, ""
 
 config :virtualCrypto, :invite_url, ""
 
-config :virtualCrypto, :guild_url, ""
+config :virtualCrypto, :support_guild_invite_url, ""
 
 config :virtualCrypto, VirtualCrypto.Guardian, issuer: "virtualCrypto", secret_key: ""
