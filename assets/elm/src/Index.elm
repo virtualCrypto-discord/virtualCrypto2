@@ -5,10 +5,10 @@ import Html.Attributes exposing (..)
 
 main =
   div [] [
-    section [class "hero"] [
+    section [class "hero", style "margin-top" "80px"] [
       div [class "hero-body"] [
         div [class "container"] [
-          div [class "is-size-1 title", style "margin-top" "80px"] [text "コミュニティのための画期的な経済システム。"]
+          div [class "is-size-1 title"] [text "コミュニティのための画期的な経済システム。"]
         , div [class "is-size-4 subtitle"] [text "記念品や対価、報酬などに使えるあなたのサーバー固有の通貨を作成しましょう。"]
         , large_button "/invite" "Botを招待する"
         , large_button "/document" "使い方を見る"
