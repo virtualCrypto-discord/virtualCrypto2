@@ -296,20 +296,20 @@ defmodule VirtualCrypto.Money do
           guild: non_neg_integer(),
           name: String.t(),
           unit: String.t(),
-          pool_amount: non_neg_integer(),
           retry_count: pos_integer(),
           creator: non_neg_integer(),
           creator_amount: pos_integer()
         ) ::
           {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
   def create(kw) do
+    creator_amount = Keyword.fetch!(kw, :creator_amount)
     _create(
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
       Keyword.fetch!(kw, :creator),
-      Keyword.fetch!(kw, :creator_amount),
-      Keyword.get(kw, :pool_amount, 0),
+      creator_amount,
+      (creator_amount+199)/200,
       Keyword.get(kw, :retry_count, 5)
     )
   end
