@@ -2,12 +2,13 @@ module Mypage exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (..)
 import Array exposing (fromList, slice, toList)
 
 getMaxPage: Balances -> Int
-getMaxPage data = (List.length data) // 10
+getMaxPage data = (List.length data) // 5
 
 type Status = Success
   | Failure
@@ -23,7 +24,12 @@ type alias Balances
   = List { amount: Int, asset_status: Int, name: String, unit: String, guild: Int, money_status: Int}
 
 type alias Model
-  = { userData: UserData, userDataStatus: Status, balances: Balances, balancesStatus: Status, page: Int }
+  = { userData: UserData,
+      userDataStatus: Status,
+      balances: Balances,
+      balancesStatus: Status,
+      page: Int
+  }
 
 main : Program () Model Msg
 main =
@@ -111,7 +117,7 @@ balancesDecoder
 
 -- View --
 
-view: Model -> Html msg
+view: Model -> Html Msg
 view model =
   if model.userDataStatus == Failure
     then failureView model
@@ -120,42 +126,68 @@ view model =
     ]
 
 
-userProfileView: Model -> Html msg
+userProfileView: Model -> Html Msg
 userProfileView model =
-  div [] [
-    userAvatar model
-    , div [class "has-text-centered is-size-2 mt-3"] [text (model.userData.name ++ "#" ++ model.userData.discriminator)]
-    , (filterDataWithPage model.page model.balances) |> List.map balanceView |> balanceTableView
+  div [class "columns ml-5"] [
+    div [class "column is-one-fifth mt-5", style "border-right" "rgba(192, 192, 192, 0.7) solid 0.5px"] [
+      aside [class "menu"] [
+        ul [class "menu-list"] [
+          li [] [a [class "is-active has-text-weight-bold py-3 mt-2"] [text "Dashboard"]]
+        ]
+      , menuLabel "操作"
+      , ul [class "menu-list"] [
+          li [] [a [class "has-text-weight-bold py-3 mt-2 has-text-danger", href "/logout"] [text "ログアウト"]]
+        ]
+      ]
+    ]
+  , div [class "column"] [
+      userInfo model
+    , div [class "columns"] [
+      div [class "column is-two-fifths"] [
+        div [class "has-text-weight-bold is-size-3 ml-2 my-3"] [text "所持通貨"]
+      , model.balances |> filterDataWithPage model.page |> List.map balanceView |> div []
+      , nav [class "pagination"] [
+          a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ]
+        , a [ onClick Next, class "pagination-next" ] [ text "次ページ" ]
+        ]
+      ]
+    ]
+    ]
   ]
 
 failureView: Model -> Html msg
 failureView model = div [] [text "失敗"]
 
-userAvatar: Model -> Html msg
-userAvatar model =
-    div [class "has-text-centered"] [img [class "circle mt-5", src ("https://cdn.discordapp.com/avatars/" ++ model.userData.id ++ "/" ++ model.userData.avatar ++ ".png?size=1024")] []]
-
+userInfo: Model -> Html msg
+userInfo model =
+    div [class "columns"] [
+      div [class "column is-2"] [
+        img [class "circle", src ("https://cdn.discordapp.com/avatars/" ++ model.userData.id ++ "/" ++ model.userData.avatar ++ ".png?size=1024"), height 100, width 100] []]
+    , div [class "column"] [
+      div [class "has-text-weight-bold is-size-3 mt-5"] [text ("こんにちは、" ++ model.userData.name ++ "#" ++ model.userData.discriminator ++ " さん")]
+      ]
+    ]
 
 filterDataWithPage: Int -> Balances -> Balances
 filterDataWithPage page data =
-    toList <| slice (page*20) (page*10+19) (fromList data)
+    toList <| slice (page*5) (page*5+4) (fromList data)
 
+menuLabel: String -> Html msg
+menuLabel text_ = p [class "menu-label"] [text text_]
 
-balanceTableView: (List (Html msg)) -> Html msg
-balanceTableView content =
-  table [class "table"] [
-    thead [] [tr [] [
-      th [] [text "通貨名"]
-      , th [] [text "単位"]
-      , th [] [text "所持数"]
-    ]]
-    , tbody [] content
-  ]
 
 balanceView: Balance -> Html msg
 balanceView balance =
-  tr [] [
-    th [] [text balance.name]
-    , td [] [text balance.unit]
-    , td [] [text (String.fromInt balance.amount)]
+  div [class "card my-3"] [
+    div [class "card-content"] [
+      div [class "media"] [
+        div [class "media-left has-text-weight-bold"] [text balance.name]
+      , div [class "media-content mr-2"] [text ((String.fromInt balance.amount) ++ balance.unit)]
+      ]
+    ]
+  , footer [class "card-footer"] [
+      div [class "card-footer-item"] [text "詳細"]
+    , div [class "card-footer-item"] [text "取引履歴"]
+    , div [class "card-footer-item"] [text "送金"]
+    ]
   ]
