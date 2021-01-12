@@ -1,7 +1,12 @@
 /* This file is for your main application css. */
 //@import "./phoenix.css";
-$info: #6221ed;
+$info: rgba(98, 33, 237, 1);
 
+$menu-item-radius: 20px;
+
+$menu-item-active-background-color: rgba(98, 33, 237, 0.17);
+
+$menu-item-active-color: rgba(98, 33, 237, 0.8);
 
 @import "../node_modules/bulma/bulma.sass";
 
