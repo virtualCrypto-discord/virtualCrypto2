@@ -1,10 +1,10 @@
-defmodule VirtualCrypto.Money.User do
+defmodule VirtualCrypto.User.User do
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "users" do
-    field :discord_id, :integer,null: true
-    field :application_id, :integer,null: true
+    field :discord_id, :integer
+    field :application_id, :integer
     field :status, :integer
 
     timestamps()
