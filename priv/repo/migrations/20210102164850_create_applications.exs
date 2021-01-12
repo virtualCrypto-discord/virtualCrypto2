@@ -9,10 +9,10 @@ defmodule VirtualCrypto.Repo.Migrations.CreateApplication do
     create table(:applications) do
       add :status, :integer
       add :client_id, :uuid
-      add :client_secret,:binary
-      add :response_types, {:array,  :"openid_connect_response_types"}, default: ["code"]
-      add :grant_types, {:array,  :"openid_connect_grant_types"}, default: ["authorization_code"]
-      add :application_type, :"openid_connect_application_type", default: "web"
+      add :client_secret,:string
+      add :response_types, {:array,  :openid_connect_response_types}, default: ["code"]
+      add :grant_types, {:array,  :openid_connect_grant_types}, default: ["authorization_code"]
+      add :application_type, :openid_connect_application_type, default: "web"
       add :client_name, :string, null: true
       add :client_uri, :string, null: true
       add :logo_uri, :string, null: true
