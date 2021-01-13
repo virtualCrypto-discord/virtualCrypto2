@@ -39,6 +39,9 @@ defmodule VirtualCryptoWeb.Router do
     get "/callback/discord", DiscordCallbackController, :index
 
     get "/me", MyPageController, :index
+
+    get "/document", DocumentController, :index
+    get "/document/commands", DocumentController, :commands
   end
 
   scope "/api", VirtualCryptoWeb do

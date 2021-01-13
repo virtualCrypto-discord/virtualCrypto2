@@ -48,7 +48,8 @@ defmodule VirtualCrypto.MixProject do
       {:httpoison, "~> 1.7"},
       {:ecto_psql_extras, "~> 0.2"},
       {:oauth2, "~> 2.0"},
-      {:guardian, "~> 2.0"}
+      {:guardian, "~> 2.0"},
+      {:earmark, "~> 1.4.13" }
     ]
   end
 
