@@ -1,1 +1,7 @@
-<p>準備中です✌️</p>
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/commands.js") %>"></script>
+<%= content_tag(
+    :div,
+    raw(""),
+    id: "elm-commands",
+    data: [raw: @md])
+%>

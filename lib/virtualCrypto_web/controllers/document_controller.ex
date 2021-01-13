@@ -6,6 +6,8 @@ defmodule VirtualCryptoWeb.DocumentController do
   end
 
   def commands(conn, _) do
-    render(conn, "commands.html")
+    {:ok, md} = File.read "./docs/parsed/commands.md.html"
+    IO.inspect md
+    render conn, "commands.html", md: md
   end
 end

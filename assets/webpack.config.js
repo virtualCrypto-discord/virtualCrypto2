@@ -22,6 +22,7 @@ module.exports = (env, options) => {
       'header': './js/header.js',
       'mypage': './js/mypage.js',
       'document': './js/document.js',
+      'commands': './js/commands.js',
     },
     output: {
       filename: '[name].js',
