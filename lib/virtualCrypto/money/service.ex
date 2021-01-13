@@ -44,8 +44,6 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-
-
   defp get_money_by_guild_id_with_lock(guild_id) do
     Money.Info
     |> where([m], m.guild_id == ^guild_id)
@@ -170,7 +168,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.guild_id == ^guild_id,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
 
   def info(:name, name) do
@@ -179,7 +178,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.name == ^name,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
 
   def info(:unit, unit) do
@@ -188,8 +188,10 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.unit == ^unit,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
+
   @reset_pool_amount """
   UPDATE info
   SET pool_amount = (temp.distribution_volume+199)/200
@@ -198,7 +200,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   ;
   """
   def reset_pool_amount() do
-    Ecto.Adapters.SQL.query!(Repo,@reset_pool_amount);
+    Ecto.Adapters.SQL.query!(Repo, @reset_pool_amount)
   end
 end
 
@@ -303,13 +305,14 @@ defmodule VirtualCrypto.Money do
           {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
   def create(kw) do
     creator_amount = Keyword.fetch!(kw, :creator_amount)
+
     _create(
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
       Keyword.fetch!(kw, :creator),
       creator_amount,
-      (creator_amount+199)/200,
+      div(creator_amount + 199, 200),
       Keyword.get(kw, :retry_count, 5)
     )
   end
@@ -359,7 +362,7 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, info_name, info_unit, info_guild_id, info_status,pool_amount} ->
+      {amount, info_name, info_unit, info_guild_id, info_status, pool_amount} ->
         %{
           amount: amount,
           name: info_name,
@@ -373,9 +376,10 @@ defmodule VirtualCrypto.Money do
         nil
     end
   end
-  @spec reset_pool_amount()::nil
+
+  @spec reset_pool_amount() :: nil
   def reset_pool_amount() do
-    VirtualCrypto.Money.InternalAction.reset_pool_amount();
+    VirtualCrypto.Money.InternalAction.reset_pool_amount()
     nil
   end
 end
