@@ -5,7 +5,7 @@ defmodule VirtualCrypto.Money.Claim do
   schema "claims" do
     field :amount, :integer
     field :message, :string
-    field :status, :integer
+    field :status, :string
     field :claimant_user, :id
     field :payer_user, :id
 
