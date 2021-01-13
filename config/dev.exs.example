@@ -83,3 +83,5 @@ config :virtualCrypto, :invite_url, ""
 config :virtualCrypto, :support_guild_invite_url, ""
 
 config :virtualCrypto, VirtualCrypto.Guardian, issuer: "virtualCrypto", secret_key: ""
+
+config :virtualCrypto, :site_url, ""

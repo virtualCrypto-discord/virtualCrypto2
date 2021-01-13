@@ -23,6 +23,7 @@ module.exports = (env, options) => {
       'mypage': './js/mypage.js',
       'document': './js/document.js',
       'commands': './js/commands.js',
+      'authorize': './js/authorize.js',
     },
     output: {
       filename: '[name].js',

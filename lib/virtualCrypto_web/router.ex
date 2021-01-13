@@ -8,8 +8,14 @@ defmodule VirtualCryptoWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
-
-
+  pipeline :browser_auth do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug VirtualCryptoWeb.AuthPlug
+  end
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -50,6 +56,18 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
+  scope "/oauth2",VirtualCryptoWeb do
+    scope "/authorize" do
+      pipe_through :browser_auth
+
+      get "/",Oauth2Controller,:authorize
+      post "/",Oauth2Controller,:authorize_action
+    end
+    scope "/token" do
+      pipe_through :api
+      post "/",Oauth2Controller,:token
+    end
+  end
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

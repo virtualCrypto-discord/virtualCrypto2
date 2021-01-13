@@ -1,0 +1,17 @@
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/authorize.js") %>"></script>
+<%= content_tag(
+    :div,
+    raw(""),
+    id: "elm-authorize",
+    data: case Map.get(@session,:state) do
+      nil -> []
+      state -> [state: state]
+    end ++ [
+    redirect_uri: @session.redirect_uri,
+    scope: @session.scope,
+    client_id: @session.client_id,
+    csrf_token: get_csrf_token(),
+    response_type: @session.response_type,
+    guild_id: @session.guild_id,
+  ])
+%>
