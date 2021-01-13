@@ -119,13 +119,92 @@ defmodule VirtualCrypto.Command do
     }
   end
 
+  def claim do
+    %{
+      "name" => "claim",
+      "description" => "請求に関するコマンドです。",
+      "options" => [
+        %{
+          "name" => "list",
+          "description" => "請求の一覧を表示します。",
+          "type" => 1,
+          "options" => []
+        },
+        %{
+          "name" => "make",
+          "description" => "請求を作成します。",
+          "type" => 1,
+          "options" => [
+            %{
+              "name" => "user",
+              "description" => "請求先のユーザーです。",
+              "type" => 6,
+              "required" => true
+            },
+            %{
+              "name" => "unit",
+              "description" => "請求する通貨の単位です。",
+              "type" => 3,
+              "required" => true
+            },
+            %{
+              "name" => "amount",
+              "description" => "請求する通貨の枚数です。",
+              "type" => 4,
+              "required" => true
+            }
+          ]
+        },
+        %{
+          "name" => "approve",
+          "description" => "請求を承諾し支払います。",
+          "type" => 1,
+          "options" => [
+            %{
+              "name" => "id",
+              "description" => "請求の番号です。/claim listで確認できます。",
+              "type" => 4,
+              "required" => true
+            }
+          ]
+        },
+        %{
+          "name" => "deny",
+          "description" => "請求を拒否します。",
+          "type" => 1,
+          "options" => [
+            %{
+              "name" => "id",
+              "description" => "請求の番号です。/claim listで確認できます。",
+              "type" => 4,
+              "required" => true
+            }
+          ]
+        },
+        %{
+          "name" => "cancel",
+          "description" => "自分が送った請求をキャンセルします。",
+          "type" => 1,
+          "options" => [
+            %{
+              "name" => "id",
+              "description" => "請求の番号です。/claim listで確認できます。",
+              "type" => 4,
+              "required" => true
+            }
+          ]
+        }
+      ]
+    }
+  end
+
   def post_all do
     HTTPoison.start
     headers = [
       {"Authorization", "Bot " <> Application.get_env(:virtualCrypto, :bot_token)},
       {"Content-Type", "application/json"}]
     url = Application.get_env(:virtualCrypto, :command_post_url)
-    commands = [give(), pay(), info(), create(), bal(), help(), invite()]
+    commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
     commands |> Enum.each(fn (command) ->
       r = HTTPoison.post(url, (Jason.encode!(command)), headers)
       IO.inspect r
