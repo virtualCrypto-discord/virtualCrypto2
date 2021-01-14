@@ -6,7 +6,6 @@ defmodule VirtualCrypto.Repo.Migrations.CreateClaims do
 
     create table(:claims) do
       add :amount, :integer
-      add :message, :text
       add :status, :virtual_crypto_claim_status
       add :claimant_user_id, :bigint
       add :payer_user_id, :bigint
