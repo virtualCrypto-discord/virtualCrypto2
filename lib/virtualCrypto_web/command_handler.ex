@@ -89,15 +89,15 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
     case VirtualCrypto.Money.info(name: options["name"], unit: options["unit"], guild: guild_id) do
       nil ->
-        {:error, nil, nil, nil, options}
+        {:error, nil, nil, nil}
 
       info ->
-        balance =
-          VirtualCrypto.Money.balance(user: int_user_id)
-          |> Enum.filter(fn x -> x.unit == info.unit end)
-          |> hd
+        case VirtualCrypto.Money.balance(user: int_user_id)
+          |> Enum.filter(fn x -> x.unit == info.unit end) do
+            [balance] -> {:ok, info, balance.amount, Discord.Api.V8.get_guild(guild_id)}
+            [] -> {:ok, info, 0, Discord.Api.V8.get_guild(guild_id)}
 
-        {:ok, info, balance.amount, Discord.Api.V8.get_guild(guild_id), options}
+          end
     end
   end
 
