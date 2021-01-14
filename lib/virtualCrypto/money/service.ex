@@ -237,54 +237,76 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def create_claim(claimant_user, payer_user, unit, amount, message) do
-    info = Money.Info |> where([i], i.unit == ^ unit) |> Repo.one()
-    %Money.Claim{
-      amount: amount,
-      message: message,
-      status: "pending",
-      claimant_user_id: claimant_user.id,
-      payer_user_id: payer_user.id,
-      money_info_id: info.id
-    }
-    |> Repo.insert()
+    r = Repo.transaction(fn -> info = Money.Info |> where([i], i.unit == ^ unit) |> Repo.one()
+                               %Money.Claim{
+                                 amount: amount,
+                                 message: message,
+                                 status: "pending",
+                                 claimant_user_id: claimant_user.id,
+                                 payer_user_id: payer_user.id,
+                                 money_info_id: info.id
+                               }
+                               |> Repo.insert() end)
+    case r do
+      {:ok, v} -> v
+      v -> v
+    end
   end
 
   def approve_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    {result, _} =
-      Money.Claim
-      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
-      |> update(set: [status: "approved"])
-      |> Repo.update_all([])
-    case result do
-      0 -> {:error, :not_found}
-      _ -> {:ok, result}
+    r = Repo.transaction(fn ->
+      {result, _} =
+        Money.Claim
+        |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+        |> update(set: [status: "approved"])
+        |> Repo.update_all([])
+      case result do
+        0 -> {:error, :not_found}
+        _ -> {:ok, result}
+      end
+    end)
+    case r do
+      {:ok, v} -> v
+      v -> v
     end
   end
 
   def deny_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    {result, _} =
-      Money.Claim
-      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
-      |> update(set: [status: "denied"])
-      |> Repo.update_all([])
-    case result do
-      0 -> {:error, :not_found}
-      _ -> {:ok, result}
+    r = Repo.transaction(fn ->
+      {result, _} =
+        Money.Claim
+        |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+        |> update(set: [status: "denied"])
+        |> Repo.update_all([])
+      case result do
+        0 -> {:error, :not_found}
+        _ -> {:ok, result}
+      end
+    end)
+    case r do
+      {:ok, v} -> v
+      v -> v
     end
   end
 
   def cancel_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    {result, _} =
-      Money.Claim
-      |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
-      |> update(set: [status: "canceled"])
-      |> Repo.update_all([])
-    case result do
-      0 -> {:error, :not_found}
-      _ -> {:ok, result}
+    r = Repo.transaction(fn ->
+      {result, _} =
+        Money.Claim
+        |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
+        |> update(set: [status: "canceled"])
+        |> Repo.update_all([])
+      case result do
+        0 -> {:error, :not_found}
+        _ -> {:ok, result}
+      end
+    end)
+    case r do
+      {:ok, v} -> v
+      v -> v
     end
   end
 end
