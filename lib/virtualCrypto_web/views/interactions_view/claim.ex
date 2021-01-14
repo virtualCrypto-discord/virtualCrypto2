@@ -7,7 +7,9 @@ defmodule VirtualCryptoWeb.InteractionsView.Claim do
   def render_error(:not_enough_amount) do
     "お金が足りません。"
   end
-
+  def render_error(:money_not_found) do
+    "指定された通貨は存在しません。"
+  end
   def render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn claim ->

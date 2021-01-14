@@ -106,8 +106,10 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle("claim", %{"subcommand" => "make"} = options, %{"member" => %{"user" => user}} = params) do
     int_payer_id = options["sub_options"]["user"] |> String.to_integer
     int_user_id = user["id"] |> String.to_integer
-    {:ok, claim} = VirtualCrypto.Money.create_claim(int_user_id, int_payer_id, options["sub_options"]["unit"], options["sub_options"]["amount"], (if options["sub_options"]["message"], do: options["sub_options"]["message"], else: ""))
-    {:ok, "make", claim}
+    case VirtualCrypto.Money.create_claim(int_user_id, int_payer_id, options["sub_options"]["unit"], options["sub_options"]["amount"], (if options["sub_options"]["message"], do: options["sub_options"]["message"], else: "")) do
+      {:ok,claim} -> {:ok, "make", claim}
+      {:error,:money_not_found} -> {:error, "make", :money_not_found}
+    end
   end
 
   def handle("claim", %{"subcommand" => "approve"} = options, %{"member" => %{"user" => user}} = params) do
