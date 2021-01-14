@@ -10,4 +10,8 @@ defmodule VirtualCrypto.User do
       Repo.get_by(VirtualCrypto.User.User, discord_id: discord_id)
     end
   end
+
+  def get_user_by_id(id) do
+    Repo.get_by(VirtualCrypto.User.User, id: id)
+  end
 end

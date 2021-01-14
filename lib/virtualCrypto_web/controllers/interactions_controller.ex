@@ -25,6 +25,19 @@ defmodule VirtualCryptoWeb.InteractionsController do
     get_timestamp tail
   end
 
+  defp parse_options(options) do
+    options
+    |> Enum.map(fn option ->
+      case option do
+        %{"name" => name, "options" => options_} -> [{"subcommand",name}, {"sub_options",parse_options options_}]
+        %{"name" => name, "value" => value} -> { name,value }
+        %{"name" => name} -> {"subcommand", name}
+      end
+    end)
+    |> List.flatten
+    |> Map.new
+  end
+
   def verify( conn ) do
     public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
     signature = conn.req_headers |> get_signature |> Base.decode16!(case: :lower)
@@ -46,8 +59,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
 
   def verified( conn, %{"type" => 2, "data"=> %{"name" => name} = data} = params) do
     options = Map.get(data,"options",[])
-      |> Enum.map(fn %{"name" => name, "value" => value} -> { name,value } end)
-      |> Map.new()
+      |> parse_options
     render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, options, params))
   end
 
