@@ -489,7 +489,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def approve_claim(id, discord_user_id) do
     claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
-    with false <- claim == nil,
+    with true <- claim != nil,
       true <- claim.status == "pending",
       user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
       info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),

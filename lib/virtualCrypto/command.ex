@@ -152,6 +152,12 @@ defmodule VirtualCrypto.Command do
               "description" => "請求する通貨の枚数です。",
               "type" => 4,
               "required" => true
+            },
+            %{
+              "name" => "message",
+              "description" => "請求先の相手に見せるメッセージです。省略可能。",
+              "type" => 3,
+              "required" => false
             }
           ]
         },

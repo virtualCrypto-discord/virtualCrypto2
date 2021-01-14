@@ -97,6 +97,46 @@ defmodule VirtualCryptoWeb.CommandHandler do
     {@bot_invite_url, @guild_invite_url}
   end
 
-  def handle(_, options, params) do
+  def handle("claim", %{"subcommand" => "list"} = options, %{"member" => %{"user" => user}} = params) do
+    int_user_id = String.to_integer(user["id"])
+    {sent_claims, received_claims} = VirtualCrypto.Money.get_pending_claims(int_user_id)
+    {:ok, "list", Enum.slice(sent_claims, 0, 10), Enum.slice(received_claims, 0, 10)}
+  end
+
+  def handle("claim", %{"subcommand" => "make"} = options, %{"member" => %{"user" => user}} = params) do
+    int_payer_id = options["sub_options"]["user"] |> String.to_integer
+    int_user_id = user["id"] |> String.to_integer
+    {:ok, claim} = VirtualCrypto.Money.create_claim(int_user_id, int_payer_id, options["sub_options"]["unit"], options["sub_options"]["amount"], (if options["sub_options"]["message"], do: options["sub_options"]["message"], else: ""))
+    {:ok, "make", claim}
+  end
+
+  def handle("claim", %{"subcommand" => "approve"} = options, %{"member" => %{"user" => user}} = params) do
+    id = options["sub_options"]["id"]
+    int_user_id = user["id"]
+    case VirtualCrypto.Money.approve_claim(id, int_user_id) do
+      {:ok} -> {:ok, "approve", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
+      {:error, err} -> {:error, "approve", err}
+    end
+  end
+
+  def handle("claim", %{"subcommand" => "deny"} = options, %{"member" => %{"user" => user}} = params) do
+    id = options["sub_options"]["id"]
+    int_user_id = user["id"]
+    case VirtualCrypto.Money.deny_claim(id, int_user_id) do
+      {:ok} -> {:ok, "deny", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
+      {:error, err} -> {:error, "deny", err}
+    end
+  end
+
+  def handle("claim", %{"subcommand" => "cancel"} = options, %{"member" => %{"user" => user}} = params) do
+    id = options["sub_options"]["id"]
+    int_user_id = user["id"]
+    case VirtualCrypto.Money.cancel_claim(id, int_user_id) do
+      {:ok} -> {:ok, "cancel", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
+      {:error, err} -> {:error, "cancel", err}
+    end
+  end
+
+  def handle _, _, _ do
   end
 end
