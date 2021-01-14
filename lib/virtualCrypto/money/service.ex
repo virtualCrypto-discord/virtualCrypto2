@@ -494,7 +494,7 @@ defmodule VirtualCrypto.Money do
            true <- claim.status == "pending",
            user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
            info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
-           {:ok} <- pay(sender: discord_user_id, receiver: user.discord_id, amount: claim.amount, unit: info.unit),
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.pay(discord_user_id, user.discord_id, claim.amount, info.unit),
            {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, discord_user_id)
         do
         {:ok}
