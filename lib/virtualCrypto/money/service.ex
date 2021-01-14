@@ -255,58 +255,40 @@ defmodule VirtualCrypto.Money.InternalAction do
 
   def approve_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    r = Repo.transaction(fn ->
-      {result, _} =
-        Money.Claim
-        |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
-        |> update(set: [status: "approved"])
-        |> Repo.update_all([])
-      case result do
-        0 -> {:error, :not_found}
-        _ -> {:ok, result}
-      end
-    end)
-    case r do
-      {:ok, v} -> v
-      v -> v
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "approved"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
     end
   end
 
   def deny_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    r = Repo.transaction(fn ->
-      {result, _} =
-        Money.Claim
-        |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
-        |> update(set: [status: "denied"])
-        |> Repo.update_all([])
-      case result do
-        0 -> {:error, :not_found}
-        _ -> {:ok, result}
-      end
-    end)
-    case r do
-      {:ok, v} -> v
-      v -> v
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "denied"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
     end
   end
 
   def cancel_claim(id, discord_user_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
-    r = Repo.transaction(fn ->
-      {result, _} =
-        Money.Claim
-        |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
-        |> update(set: [status: "canceled"])
-        |> Repo.update_all([])
-      case result do
-        0 -> {:error, :not_found}
-        _ -> {:ok, result}
-      end
-    end)
-    case r do
-      {:ok, v} -> v
-      v -> v
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "canceled"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
     end
   end
 end
@@ -510,36 +492,47 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def approve_claim(id, discord_user_id) do
-    claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
-    with true <- claim != nil,
-      true <- claim.status == "pending",
-      user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
-      info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
-      {:ok} <- pay(sender: discord_user_id, receiver: user.discord_id, amount: claim.amount, unit: info.unit),
-      {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, discord_user_id)
-    do
-      {:ok}
-    else
-      false -> {:error, :not_found}
-      nil -> {:error, :not_found}
-      err -> err
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+      with true <- claim != nil,
+           true <- claim.status == "pending",
+           user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
+           info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
+           {:ok} <- pay(sender: discord_user_id, receiver: user.discord_id, amount: claim.amount, unit: info.unit),
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
     end
+
   end
 
   @spec cancel_claim(Integer.t(), Integer.t()) ::
           {:ok}
           | {:error, :not_found}
   def cancel_claim(id, discord_user_id) do
-    claim = VirtualCrypto.Money.InternalAction.get_sent_claim(id, discord_user_id)
-    with false <- claim == nil,
-      true <- claim.status == "pending",
-      {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, discord_user_id)
-    do
-      {:ok}
-    else
-      false -> {:error, :not_found}
-      nil -> {:error, :not_found}
-      err -> err
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_sent_claim(id, discord_user_id)
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
     end
   end
 
@@ -547,16 +540,21 @@ defmodule VirtualCrypto.Money do
           {:ok}
           | {:error, :not_found}
   def deny_claim(id, discord_user_id) do
-    claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
-    with false <- claim == nil,
-      true <- claim.status == "pending",
-      {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, discord_user_id)
-    do
-      {:ok}
-    else
-      false -> {:error, :not_found}
-      nil -> {:error, :not_found}
-      err -> err
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
     end
   end
 
