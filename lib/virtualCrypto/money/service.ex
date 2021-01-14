@@ -237,16 +237,16 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def create_claim(claimant_user, payer_user, unit, amount, message) do
-    r = Repo.transaction(fn -> info = Money.Info |> where([i], i.unit == ^ unit) |> Repo.one()
-                               %Money.Claim{
-                                 amount: amount,
-                                 message: message,
-                                 status: "pending",
-                                 claimant_user_id: claimant_user.id,
-                                 payer_user_id: payer_user.id,
-                                 money_info_id: info.id
-                               }
-                               |> Repo.insert() end)
+    info = Money.Info |> where([i], i.unit == ^ unit) |> Repo.one()
+    %Money.Claim{
+      amount: amount,
+      message: message,
+      status: "pending",
+      claimant_user_id: claimant_user.id,
+      payer_user_id: payer_user.id,
+      money_info_id: info.id
+    }
+    |> Repo.insert()
     case r do
       {:ok, v} -> v
       v -> v
