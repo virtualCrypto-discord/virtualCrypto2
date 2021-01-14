@@ -236,12 +236,11 @@ defmodule VirtualCrypto.Money.InternalAction do
     {sent_claims, received_claims}
   end
 
-  def create_claim(claimant_user, payer_user, unit, amount, message) do
+  def create_claim(claimant_user, payer_user, unit, amount) do
     case Money.Info |> where([i], i.unit == ^ unit) |> Repo.one() do
       nil -> {:error,:money_not_found}
       info -> %Money.Claim{
         amount: amount,
-        message: message,
         status: "pending",
         claimant_user_id: claimant_user.id,
         payer_user_id: payer_user.id,
@@ -557,10 +556,10 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec create_claim(Integer.t(), Integer.t(), String.t(), Integer.t(), String.t()) :: {:ok,VirtualCrypto.Money.Claim}|{:error,:money_not_found}
-  def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount, message) do
+  @spec create_claim(Integer.t(), Integer.t(), String.t(), Integer.t()) :: {:ok,VirtualCrypto.Money.Claim}|{:error,:money_not_found}
+  def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do
     {:ok, claimant_user} = VirtualCrypto.User.insert_user_if_not_exits(claimant_discord_user_id)
     {:ok, payer_user} = VirtualCrypto.User.insert_user_if_not_exits(payer_discord_user_id)
-    VirtualCrypto.Money.InternalAction.create_claim(claimant_user, payer_user, unit, amount, message)
+    VirtualCrypto.Money.InternalAction.create_claim(claimant_user, payer_user, unit, amount)
   end
 end
