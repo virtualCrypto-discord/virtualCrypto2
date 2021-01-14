@@ -247,10 +247,6 @@ defmodule VirtualCrypto.Money.InternalAction do
       money_info_id: info.id
     }
     |> Repo.insert()
-    case r do
-      {:ok, v} -> v
-      v -> v
-    end
   end
 
   def approve_claim(id, discord_user_id) do
