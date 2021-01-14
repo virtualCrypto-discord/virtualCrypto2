@@ -64,19 +64,15 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
-config :virtualCrypto, :command_post_url, ""
+config :virtualCrypto, :command_post_url, "https://discord.com/api/v8/applications/${application_id}/guilds/${guild_id}/commands"
 
 config :virtualCrypto, :bot_token, ""
 
 config :virtualCrypto, :public_key, ""
 
-config :virtualCrypto, :login_url, ""
-
 config :virtualCrypto, :client_id, ""
 
 config :virtualCrypto, :client_secret, ""
-
-config :virtualCrypto, :redirect_uri, ""
 
 config :virtualCrypto, :invite_url, ""
 
