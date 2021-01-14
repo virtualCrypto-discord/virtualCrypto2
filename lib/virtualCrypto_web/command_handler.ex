@@ -130,7 +130,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   def handle("claim", %{"subcommand" => "cancel"} = options, %{"member" => %{"user" => user}} = params) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"]
+    int_user_id = user["id"] |> String.to_integer
     case VirtualCrypto.Money.cancel_claim(id, int_user_id) do
       {:ok} -> {:ok, "cancel", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
       {:error, err} -> {:error, "cancel", err}
