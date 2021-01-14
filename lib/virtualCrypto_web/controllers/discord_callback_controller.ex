@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.DiscordCallbackController do
   use VirtualCryptoWeb, :controller
-  import Plug.Conn, only: [halt: 1, put_session: 3,configure_session: 2]
+  import Plug.Conn, only: [halt: 1, put_session: 3,configure_session: 2,get_session: 2,delete_session: 2]
 
   defp save_token(conn, client) do
     token_data = Jason.decode!(client.token.access_token)
@@ -9,7 +9,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
     user_data = Discord.Api.V8.Oauth2.get_user_info(client, token)
     user_id = String.to_integer(user_data["id"])
     {:ok, jwt, _} = VirtualCrypto.Guardian.encode_and_sign(%{id: user_id})
-    response = VirtualCrypto.Auth.insert_user(
+    VirtualCrypto.Auth.insert_user(
       user_id,
       token,
       refresh_token
@@ -32,14 +32,23 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
     |> halt()
   end
 
-  def index(conn, _params) do
-    case Discord.Api.V8.Oauth2.exchange_code(_params["code"]) do
-      :error ->
+  def index(conn, %{"state" => state, "code" => code}) do
+    case conn|>get_session(:discord_oauth2_state) do
+      ^state ->
+        case Discord.Api.V8.Oauth2.exchange_code(code) do
+          :error ->
+            conn
+            |> put_flash(:error, "Invalid code!")
+            |> redirect(to: "/")
+            |> halt()
+          client -> save_token(conn, client)
+        end
+      _ ->
         conn
-        |> put_flash(:error, "Invalid code!")
+        |> put_flash(:error, "Invalid state!")
         |> redirect(to: "/")
         |> halt()
-      client -> save_token(conn, client)
     end
+    conn |> delete_session(:discord_oauth2_state)
   end
 end
