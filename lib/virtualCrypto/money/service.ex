@@ -57,6 +57,12 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.one()
   end
 
+  def get_money_by_id(id) do
+    Money.Info
+    |> where([m], m.id == ^id)
+    |> Repo.one()
+  end
+
   defp update_pool_amount(money_id, amount) do
     Money.Info
     |> where([a], a.id == ^money_id)
@@ -201,6 +207,85 @@ defmodule VirtualCrypto.Money.InternalAction do
   """
   def reset_pool_amount() do
     Ecto.Adapters.SQL.query!(Repo, @reset_pool_amount)
+  end
+
+  def get_claim_by_id(id) do
+    Money.Claim
+    |> where([c], c.id == ^id)
+    |> Repo.one()
+  end
+
+  def get_sent_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    Money.Claim
+    |> where([c], c.id == ^id and c.claimant_user_id == ^user.id)
+    |> Repo.one()
+  end
+
+  def get_received_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    Money.Claim
+    |> where([c], c.id == ^id and c.payer_user_id == ^user.id)
+    |> Repo.one()
+  end
+
+  def get_claims_by_discord_user_id(discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    sent_claims = Money.Claim |> where([c], c.claimant_user_id == ^user.id) |> Repo.all()
+    received_claims = Money.Claim |> where([c], c.payer_user_id == ^user.id) |> Repo.all()
+    {sent_claims, received_claims}
+  end
+
+  def create_claim(claimant_user, payer_user, unit, amount, message) do
+    info = Money.Info |> where([i], i.unit == ^ unit) |> Repo.one()
+    %Money.Claim{
+      amount: amount,
+      message: message,
+      status: "pending",
+      claimant_user_id: claimant_user.id,
+      payer_user_id: payer_user.id,
+      money_info_id: info.id
+    }
+    |> Repo.insert()
+  end
+
+  def approve_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "approved"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
+  end
+
+  def deny_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "denied"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
+  end
+
+  def cancel_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "canceled"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
   end
 end
 
@@ -381,5 +466,82 @@ defmodule VirtualCrypto.Money do
   def reset_pool_amount() do
     VirtualCrypto.Money.InternalAction.reset_pool_amount()
     nil
+  end
+
+  @spec get_pending_claims(Integer.t()) :: {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+  def get_pending_claims(discord_user_id) do
+    {sent, received} = VirtualCrypto.Money.InternalAction.get_claims_by_discord_user_id(discord_user_id)
+    sent_ = sent |> Enum.filter(fn claim -> claim.status == "pending" end)
+    received_ = received |> Enum.filter(fn claim -> claim.status == "pending" end)
+    {sent_, received_}
+  end
+
+  @spec get_all_claims(Integer.t()) :: {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+  def get_all_claims(discord_user_id) do
+    VirtualCrypto.Money.InternalAction.get_claims_by_discord_user_id(discord_user_id)
+  end
+
+  @spec approve_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+          | {:error, :not_found_money}
+          | {:error, :not_found_sender_asset}
+          | {:error, :not_enough_amount}
+  def approve_claim(id, discord_user_id) do
+    claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+    with false <- claim == nil,
+      true <- claim.status == "pending",
+      user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
+      info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
+      {:ok} <- pay(sender: discord_user_id, receiver: user.discord_id, amount: claim.amount, unit: info.unit),
+      {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, discord_user_id)
+    do
+      {:ok}
+    else
+      false -> {:error, :not_found}
+      nil -> {:error, :not_found}
+      err -> err
+    end
+  end
+
+  @spec cancel_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+  def cancel_claim(id, discord_user_id) do
+    claim = VirtualCrypto.Money.InternalAction.get_sent_claim(id, discord_user_id)
+    with false <- claim == nil,
+      true <- claim.status == "pending",
+      {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, discord_user_id)
+    do
+      {:ok}
+    else
+      false -> {:error, :not_found}
+      nil -> {:error, :not_found}
+      err -> err
+    end
+  end
+
+  @spec deny_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+  def deny_claim(id, discord_user_id) do
+    claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+    with false <- claim == nil,
+      true <- claim.status == "pending",
+      {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, discord_user_id)
+    do
+      {:ok}
+    else
+      false -> {:error, :not_found}
+      nil -> {:error, :not_found}
+      err -> err
+    end
+  end
+
+  @spec create_claim(Integer.t(), Integer.t(), String.t(), Integer.t(), String.t()) :: VirtualCrypto.Money.Claim
+  def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount, message) do
+    {:ok, claimant_user} = VirtualCrypto.User.insert_user_if_not_exits(claimant_discord_user_id)
+    {:ok, payer_user} = VirtualCrypto.User.insert_user_if_not_exits(payer_discord_user_id)
+    VirtualCrypto.Money.InternalAction.create_claim(claimant_user, payer_user, unit, amount, message)
   end
 end
