@@ -112,7 +112,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   def handle("claim", %{"subcommand" => "approve"} = options, %{"member" => %{"user" => user}} = params) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"]
+    int_user_id = user["id"] |> String.to_integer
     case VirtualCrypto.Money.approve_claim(id, int_user_id) do
       {:ok} -> {:ok, "approve", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
       {:error, err} -> {:error, "approve", err}
@@ -121,7 +121,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   def handle("claim", %{"subcommand" => "deny"} = options, %{"member" => %{"user" => user}} = params) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"]
+    int_user_id = user["id"] |> String.to_integer
     case VirtualCrypto.Money.deny_claim(id, int_user_id) do
       {:ok} -> {:ok, "deny", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
       {:error, err} -> {:error, "deny", err}
