@@ -34,6 +34,7 @@ npm-debug.log
 # this depending on your deployment strategy.
 /priv/static/
 /config/dev.exs
+/config/prod.secret.exs
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/elm
