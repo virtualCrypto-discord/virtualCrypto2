@@ -34,7 +34,7 @@ view model =
   div [class "columns"] [
     div [class "column is-2"] []
   , div [class "column is-6"] [
-      htmlData model
+      div [class "content"] [htmlData model]
     ]
   ]
 

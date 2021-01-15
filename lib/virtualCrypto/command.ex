@@ -44,7 +44,7 @@ defmodule VirtualCrypto.Command do
       "options": [
         %{
           "name" => "unit",
-          "description" => "検索したい通貨の単位です。",
+          "description" => "送信したい通貨の単位です。",
           "type" => 3,
           "required" => true
         },
