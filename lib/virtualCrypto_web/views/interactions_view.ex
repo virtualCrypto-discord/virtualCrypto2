@@ -25,8 +25,8 @@ defmodule VirtualCryptoWeb.InteractionsView do
     VirtualCryptoWeb.InteractionsView.Create.render(response, reason, options)
   end
 
-  def render("info.json", %{params: {response, data, user_amount, guild, options}}) do
-    VirtualCryptoWeb.InteractionsView.Info.render(response, data, user_amount, guild, options)
+  def render("info.json", %{params: {response, data, user_amount, guild}}) do
+    VirtualCryptoWeb.InteractionsView.Info.render(response, data, user_amount, guild)
   end
 
   def render("help.json", %{params: {bot_invite_url, guild_invite_url, site_url}}) do

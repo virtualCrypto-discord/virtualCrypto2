@@ -1,12 +1,8 @@
 defmodule VirtualCryptoWeb.InteractionsView.Info do
   import VirtualCryptoWeb.InteractionsView.Util
 
-  def render_error(%{}) do
-    "エラー: このサーバーでは通貨は作成されていません。"
-  end
-
-  def render_error(_) do
-    "エラー: そのような名前や単位の通貨は存在しません。"
+  def render_error() do
+    "エラー: 通貨が見つかりませんでした。"
   end
 
   def render_title(data) do
@@ -28,20 +24,20 @@ defmodule VirtualCryptoWeb.InteractionsView.Info do
     ~s/あなたが持っている量: #{user_amount}#{data.unit}\n/
   end
 
-  def render(:error, _, _, _, options) do
+  def render(:error, _, _, _) do
     %{
       type: 3,
       data: %{
         tts: false,
         flags: 64,
-        content: render_error(options),
+        content: render_error(),
         embeds: [],
         allowed_mentions: []
       }
     }
   end
 
-  def render(:ok, data, user_amount, guild, _) do
+  def render(:ok, data, user_amount, guild) do
     %{
       type: 3,
       data: %{
