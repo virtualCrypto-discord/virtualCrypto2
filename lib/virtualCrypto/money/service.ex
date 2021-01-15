@@ -1,7 +1,9 @@
 defmodule VirtualCrypto.Money.InternalAction do
   alias VirtualCrypto.Repo
-  import Ecto.Query
   alias VirtualCrypto.Money
+  alias VirtualCrypto.User.User
+  import Ecto.Query
+  import VirtualCrypto.User
   defguard is_non_neg_integer(v) when is_integer(v) and v >= 0
   defguard is_positive_integer(v) when is_integer(v) and v > 0
 
@@ -42,10 +44,6 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-  defp insert_user_if_not_exits(user_id) do
-    Repo.insert(%Money.User{id: user_id, status: 0}, on_conflict: :nothing)
-  end
-
   defp get_money_by_guild_id_with_lock(guild_id) do
     Money.Info
     |> where([m], m.guild_id == ^guild_id)
@@ -59,6 +57,12 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.one()
   end
 
+  def get_money_by_id(id) do
+    Money.Info
+    |> where([m], m.id == ^id)
+    |> Repo.one()
+  end
+
   defp update_pool_amount(money_id, amount) do
     Money.Info
     |> where([a], a.id == ^money_id)
@@ -66,12 +70,14 @@ defmodule VirtualCrypto.Money.InternalAction do
     |> Repo.update_all([])
   end
 
-  def pay(sender_id, receiver_id, amount, money_unit)
+  def pay(sender_discord_id, receiver_discord_id, amount, money_unit)
       when is_positive_integer(amount) do
     # Get money info by unit.
     with money <- get_money_by_unit(money_unit),
          # Is money exits?
          {:money, true} <- {:money, money != nil},
+         # Get sender id.
+         {:ok, %User{id: sender_id}} <- insert_user_if_not_exits(sender_discord_id),
          # Get sender asset by sender id and money id.
          sender_asset <- get_asset_with_lock(sender_id, money.id),
          # Is sender asset exsits?
@@ -79,7 +85,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Has sender enough amount?
          {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
          # Insert reciver user if not exists.
-         {:ok, _} <- insert_user_if_not_exits(receiver_id),
+         {:ok, %User{id: receiver_id}} <- insert_user_if_not_exits(receiver_discord_id),
          # Upsert receiver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update sender amount.
@@ -92,7 +98,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def give(receiver_id, amount, guild_id)
+  def give(receiver_discord_id, amount, guild_id)
       when is_positive_integer(amount) do
     # Get money info by guild.
     with money <- get_money_by_guild_id_with_lock(guild_id),
@@ -101,19 +107,19 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Check pool amount enough.
          {:pool_amount, true} <- {:pool_amount, money.pool_amount >= amount},
          # Insert reciver user if not exists.
-         {:ok, _} <- insert_user_if_not_exits(receiver_id),
+         {:ok, %User{id: receiver_id}} <- insert_user_if_not_exits(receiver_discord_id),
          # Update reciver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
       # Update pool amount.
       {:ok, update_pool_amount(money.id, -amount)}
     else
       {:money, false} -> {:error, :not_found_money}
-      {:pool_amount, false} -> {:error, :not_enough_pool_amount}
+      {:pool_amount, false} -> {:error, :not_enough_amount}
       err -> {:error, err}
     end
   end
 
-  def create(guild, name, unit, creator, creator_amount, pool_amount)
+  def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
       when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
@@ -121,7 +127,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:unit, nil} <- {:unit, get_money_by_unit(unit)},
          {:name, nil} <- {:name, get_money_by_name(name)},
          # Create creator user
-         {:ok, _} <- insert_user_if_not_exits(creator) do
+         {:ok, %User{id: creator_id}} <- insert_user_if_not_exits(creator_discord_id) do
       # Insert new money info.
       # This operation may occur serialization(If transaction isolation level serializable.) or constraint(If other transaction isolation level) error.
       {:ok, info} =
@@ -141,7 +147,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       Repo.insert(%Money.Asset{
         amount: creator_amount,
         status: 0,
-        user_id: creator,
+        user_id: creator_id,
         money_id: info.id
       })
     else
@@ -152,11 +158,12 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def balance(user_id) do
+  def balance(discord_user_id) do
     from asset in Money.Asset,
       join: info in Money.Info,
       on: asset.money_id == info.id,
-      where: asset.user_id == ^user_id,
+      join: users in User,
+      on: users.discord_id == ^discord_user_id and users.id == asset.user_id,
       select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
       order_by: info.unit
   end
@@ -167,7 +174,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.guild_id == ^guild_id,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
 
   def info(:name, name) do
@@ -176,7 +184,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.name == ^name,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
 
   def info(:unit, unit) do
@@ -185,8 +194,10 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.unit == ^unit,
       group_by: info.id,
-      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.status,info.pool_amount}
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
   end
+
   @reset_pool_amount """
   UPDATE info
   SET pool_amount = (temp.distribution_volume+199)/200
@@ -195,7 +206,88 @@ defmodule VirtualCrypto.Money.InternalAction do
   ;
   """
   def reset_pool_amount() do
-    Ecto.Adapters.SQL.query!(Repo,@reset_pool_amount);
+    Ecto.Adapters.SQL.query!(Repo, @reset_pool_amount)
+  end
+
+  def get_claim_by_id(id) do
+    Money.Claim
+    |> where([c], c.id == ^id)
+    |> Repo.one()
+  end
+
+  def get_sent_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    Money.Claim
+    |> where([c], c.id == ^id and c.claimant_user_id == ^user.id)
+    |> Repo.one()
+  end
+
+  def get_received_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    Money.Claim
+    |> where([c], c.id == ^id and c.payer_user_id == ^user.id)
+    |> Repo.one()
+  end
+
+  def get_claims_by_discord_user_id(discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    sent_claims = Money.Claim |> where([c], c.claimant_user_id == ^user.id) |> Repo.all()
+    received_claims = Money.Claim |> where([c], c.payer_user_id == ^user.id) |> Repo.all()
+    {sent_claims, received_claims}
+  end
+
+  def create_claim(claimant_user, payer_user, unit, amount) do
+    case Money.Info |> where([i], i.unit == ^ unit) |> Repo.one() do
+      nil -> {:error,:money_not_found}
+      info -> %Money.Claim{
+        amount: amount,
+        status: "pending",
+        claimant_user_id: claimant_user.id,
+        payer_user_id: payer_user.id,
+        money_info_id: info.id
+      }
+      |> Repo.insert()
+    end
+
+  end
+
+  def approve_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "approved"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
+  end
+
+  def deny_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.payer_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "denied"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
+  end
+
+  def cancel_claim(id, discord_user_id) do
+    {:ok, user} = VirtualCrypto.User.insert_user_if_not_exits(discord_user_id)
+    {result, _} =
+      Money.Claim
+      |> where([c], c.id == ^id and c.claimant_user_id == ^user.id and c.status == "pending")
+      |> update(set: [status: "canceled"])
+      |> Repo.update_all([])
+    case result do
+      0 -> {:error, :not_found}
+      _ -> {:ok, result}
+    end
   end
 end
 
@@ -293,20 +385,21 @@ defmodule VirtualCrypto.Money do
           guild: non_neg_integer(),
           name: String.t(),
           unit: String.t(),
-          pool_amount: non_neg_integer(),
           retry_count: pos_integer(),
           creator: non_neg_integer(),
           creator_amount: pos_integer()
         ) ::
           {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
   def create(kw) do
+    creator_amount = Keyword.fetch!(kw, :creator_amount)
+
     _create(
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
       Keyword.fetch!(kw, :creator),
-      Keyword.fetch!(kw, :creator_amount),
-      Keyword.get(kw, :pool_amount, 0),
+      creator_amount,
+      div(creator_amount + 199, 200),
       Keyword.get(kw, :retry_count, 5)
     )
   end
@@ -356,7 +449,7 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, info_name, info_unit, info_guild_id, info_status,pool_amount} ->
+      {amount, info_name, info_unit, info_guild_id, info_status, pool_amount} ->
         %{
           amount: amount,
           name: info_name,
@@ -370,9 +463,103 @@ defmodule VirtualCrypto.Money do
         nil
     end
   end
-  @spec reset_pool_amount()::nil
+
+  @spec reset_pool_amount() :: nil
   def reset_pool_amount() do
-    VirtualCrypto.Money.InternalAction.reset_pool_amount();
+    VirtualCrypto.Money.InternalAction.reset_pool_amount()
     nil
+  end
+
+  @spec get_pending_claims(Integer.t()) :: {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+  def get_pending_claims(discord_user_id) do
+    {sent, received} = VirtualCrypto.Money.InternalAction.get_claims_by_discord_user_id(discord_user_id)
+    sent_ = sent |> Enum.filter(fn claim -> claim.status == "pending" end)
+    received_ = received |> Enum.filter(fn claim -> claim.status == "pending" end)
+    {sent_, received_}
+  end
+
+  @spec get_all_claims(Integer.t()) :: {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+  def get_all_claims(discord_user_id) do
+    VirtualCrypto.Money.InternalAction.get_claims_by_discord_user_id(discord_user_id)
+  end
+
+  @spec approve_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+          | {:error, :not_found_money}
+          | {:error, :not_found_sender_asset}
+          | {:error, :not_enough_amount}
+  def approve_claim(id, discord_user_id) do
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+      with true <- claim != nil,
+           true <- claim.status == "pending",
+           user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
+           info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.pay(discord_user_id, user.discord_id, claim.amount, info.unit),
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
+    end
+
+  end
+
+  @spec cancel_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+  def cancel_claim(id, discord_user_id) do
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_sent_claim(id, discord_user_id)
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
+    end
+  end
+
+  @spec deny_claim(Integer.t(), Integer.t()) ::
+          {:ok}
+          | {:error, :not_found}
+  def deny_claim(id, discord_user_id) do
+    case Repo.transaction(fn ->
+      claim = VirtualCrypto.Money.InternalAction.get_received_claim(id, discord_user_id)
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, discord_user_id)
+        do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
+      {:ok, v} -> v
+      v -> v
+    end
+  end
+
+  @spec create_claim(Integer.t(), Integer.t(), String.t(), Integer.t()) :: {:ok,VirtualCrypto.Money.Claim}|{:error,:money_not_found}
+  def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do
+    {:ok, claimant_user} = VirtualCrypto.User.insert_user_if_not_exits(claimant_discord_user_id)
+    {:ok, payer_user} = VirtualCrypto.User.insert_user_if_not_exits(payer_discord_user_id)
+    VirtualCrypto.Money.InternalAction.create_claim(claimant_user, payer_user, unit, amount)
   end
 end

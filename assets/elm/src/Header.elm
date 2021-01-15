@@ -47,7 +47,7 @@ header_buttons model =
   div [class "navbar-item"] [
           header_button "/invite" "Botの招待"
           , header_button "/support" "サポートサーバー"
-          , header_button "/document" "使い方"
+          , header_button "/document" "ドキュメント"
           , if model.is_login
               then header_button "/me" "マイページ"
               else header_button "/login" "ログイン"

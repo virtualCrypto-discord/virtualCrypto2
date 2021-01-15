@@ -4,10 +4,12 @@
   "license": "MIT",
   "scripts": {
     "deploy": "webpack --mode production",
+    "deploy-dev": "webpack --mode development",
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
     "bulma": "^0.9.1",
+    "highlight.js": "^10.5.0",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html"
   },

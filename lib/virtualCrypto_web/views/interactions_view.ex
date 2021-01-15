@@ -53,4 +53,8 @@ defmodule VirtualCryptoWeb.InteractionsView do
       }
     }
   end
+
+  def render("claim.json", %{params: params}) do
+    VirtualCryptoWeb.InteractionsView.Claim.render(params)
+  end
 end

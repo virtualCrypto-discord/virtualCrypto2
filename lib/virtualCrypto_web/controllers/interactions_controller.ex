@@ -5,7 +5,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
     nil
   end
 
-  defp get_signature [{"x-signature-ed25519", value} | tail] do
+  defp get_signature [{"x-signature-ed25519", value} | _tail] do
     value
   end
 
@@ -17,12 +17,25 @@ defmodule VirtualCryptoWeb.InteractionsController do
     nil
   end
 
-  defp get_timestamp [{"x-signature-timestamp", value} | tail] do
+  defp get_timestamp [{"x-signature-timestamp", value} | _tail] do
     value
   end
 
   defp get_timestamp [_ | tail] do
     get_timestamp tail
+  end
+
+  defp parse_options(options) do
+    options
+    |> Enum.map(fn option ->
+      case option do
+        %{"name" => name, "options" => options_} -> [{"subcommand",name}, {"sub_options",parse_options options_}]
+        %{"name" => name, "value" => value} -> { name,value }
+        %{"name" => name} -> {"subcommand", name}
+      end
+    end)
+    |> List.flatten
+    |> Map.new
   end
 
   def verify( conn ) do
@@ -46,8 +59,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
 
   def verified( conn, %{"type" => 2, "data"=> %{"name" => name} = data} = params) do
     options = Map.get(data,"options",[])
-      |> Enum.map(fn %{"name" => name, "value" => value} -> { name,value } end)
-      |> Map.new()
+      |> parse_options
     render( conn, name <> ".json", params: VirtualCryptoWeb.CommandHandler.handle(name, options, params))
   end
 

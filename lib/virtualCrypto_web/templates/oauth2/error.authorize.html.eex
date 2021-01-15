@@ -1,0 +1,12 @@
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/authorize.js") %>"></script>
+<div>
+  <strong>エラーが発生しました</strong>
+  <br>
+  詳細については連携アプリケーションの開発者にお問い合わせください。
+  問題が解決しない場合はVirtaulCrypto運営にお問い合わせください。
+  <br>
+  <%= to_string(@error)%>
+  <br>
+  <%= to_string(@desc)%>
+
+</div>
