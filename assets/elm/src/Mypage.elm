@@ -147,8 +147,8 @@ userProfileView model =
         div [class "has-text-weight-bold is-size-3 ml-2 my-3"] [text "所持通貨"]
       , model.balances |> filterDataWithPage model.page |> List.map balanceView |> div []
       , nav [class "pagination"] [
-          a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ]
-        , a [ onClick Next, class "pagination-next" ] [ text "次ページ" ]
+          if model.page /= 0 then a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ] else text ""
+        , if model.page /= getMaxPage(model.balances) then a [ onClick Next, class "pagination-next" ] [ text "次ページ" ] else text ""
         ]
       ]
     ]

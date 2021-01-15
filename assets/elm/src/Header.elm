@@ -3,9 +3,9 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-type alias Flags = { is_login: Bool, name: String, id: String, avatar: String }
+type alias Model = Bool
 
-main : Program Flags Model Msg
+main : Program Model Model Msg
 main =
   Browser.element
     { init = init
@@ -14,11 +14,9 @@ main =
     , subscriptions = subscriptions
     }
 
-type alias Model = { is_login: Bool, name: String, id: String, avatar: String }
+type Msg = No
 
-type Msg = Nothing
-
-init: Flags -> ( Model, Cmd Msg )
+init: Model -> ( Model, Cmd Msg )
 init data = (data, Cmd.none)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -48,7 +46,7 @@ header_buttons model =
           header_button "/invite" "Botの招待"
           , header_button "/support" "サポートサーバー"
           , header_button "/document" "ドキュメント"
-          , if model.is_login
+          , if model
               then header_button "/me" "マイページ"
               else header_button "/login" "ログイン"
         ]
