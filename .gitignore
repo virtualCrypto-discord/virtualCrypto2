@@ -49,3 +49,9 @@ repl-temp-*
 # End of https://www.toptal.com/developers/gitignore/api/elm
 
 docs/parsed/*.html
+
+# ssl files
+
+priv/ssl/key.pem
+priv/ssl/cert.pem
+
