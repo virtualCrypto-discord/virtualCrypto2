@@ -32,6 +32,8 @@ import_config "#{Mix.env()}.exs"
 
 config :virtualCrypto, VirtualCrypto.Scheduler,
   debug_logging: false,
+  overlap: false,
+  timezone: :utc,
   jobs: [
-    {"00 9 * * *", fn -> VirtualCrypto.Money.reset_pool_amount() end}
+    {"@daily", fn -> VirtualCrypto.Money.reset_pool_amount() end}
   ]
