@@ -5,7 +5,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
     nil
   end
 
-  defp get_signature [{"x-signature-ed25519", value} | tail] do
+  defp get_signature [{"x-signature-ed25519", value} | _tail] do
     value
   end
 
@@ -17,7 +17,7 @@ defmodule VirtualCryptoWeb.InteractionsController do
     nil
   end
 
-  defp get_timestamp [{"x-signature-timestamp", value} | tail] do
+  defp get_timestamp [{"x-signature-timestamp", value} | _tail] do
     value
   end
 
