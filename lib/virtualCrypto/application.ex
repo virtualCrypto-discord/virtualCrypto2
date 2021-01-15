@@ -14,9 +14,11 @@ defmodule VirtualCrypto.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: VirtualCrypto.PubSub},
       # Start the Endpoint (http/https)
-      VirtualCryptoWeb.Endpoint
+      VirtualCryptoWeb.Endpoint,
       # Start a worker by calling: VirtualCrypto.Worker.start_link(arg)
       # {VirtualCrypto.Worker, arg}
+
+      VirtualCrypto.Scheduler
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
