@@ -6,7 +6,7 @@ defmodule Discord.Api.V8.Oauth2 do
     client_secret: Application.get_env(:virtualCrypto, :client_secret),
     token_url: "https://discord.com/api/oauth2/token",
     authorize_url: "https://discord.com/api/oauth2/authorize",
-    redirect_uri: Application.get_env(:virtualCrypto, :redirect_uri),
+    redirect_uri: Application.get_env(:virtualCrypto, :discord_oauth2_redirect_uri),
   ]
   @spec authorize_url(String.t()) :: String.t()
   def authorize_url(state) do
