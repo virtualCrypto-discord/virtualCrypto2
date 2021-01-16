@@ -7,7 +7,9 @@ defmodule VirtualCryptoWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_virtualCrypto_key",
-    signing_salt: "E66iB1bz"
+    signing_salt: "E66iB1bz",
+    same_site: "Lax",
+    secure: true
   ]
 
   socket "/socket", VirtualCryptoWeb.UserSocket,
