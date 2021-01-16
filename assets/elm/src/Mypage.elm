@@ -8,6 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (..)
+import Url.Builder exposing (absolute)
 
 
 getMaxPage : Balances -> Int
@@ -112,19 +113,17 @@ subscriptions _ =
 
 getUserData : Cmd Msg
 getUserData =
-    Http.get
-        { url = "http://localhost:4000/api/v1/user/@me"
-        , expect = Http.expectJson GotUserData userDataDecoder
-        }
-
+  Http.get
+    { url = absolute ["api", "v1", "user", "@me" ] []
+    , expect = Http.expectJson GotUserData userDataDecoder
+    }
 
 getBalances : Cmd Msg
 getBalances =
-    Http.get
-        { url = "http://localhost:4000/api/v1/balance/@me"
-        , expect = Http.expectJson GotBalances balancesDecoder
-        }
-
+  Http.get
+    { url = absolute ["api", "v1", "balance", "@me" ] []
+    , expect = Http.expectJson GotBalances balancesDecoder
+    }
 
 userDataDecoder : Decoder UserData
 userDataDecoder =
