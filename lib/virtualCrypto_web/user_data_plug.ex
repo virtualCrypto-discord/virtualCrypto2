@@ -1,6 +1,5 @@
 defmodule VirtualCryptoWeb.UserDataPlug do
   import Plug.Conn, only: [get_session: 2, assign: 3]
-  import Phoenix.Controller, only: [redirect: 2]
 
   def init(opts), do: opts
 
