@@ -8,11 +8,11 @@ defmodule VirtualCryptoWeb.UserDataPlug do
     case get_session(conn, :user) do
       nil ->
         conn
-        |> assign(:logined, false)
+        |> assign(:logged_in, false)
       user ->
         VirtualCrypto.Auth.refresh_user(user.id)
         conn
-        |> assign(:logined, true)
+        |> assign(:logged_in, true)
         |> assign(:user_id, user.id)
         |> assign(:user_name, user.username)
         |> assign(:user_discriminator, user.discriminator)
