@@ -1,6 +1,5 @@
 defmodule VirtualCryptoWeb.UserDataPlug do
   import Plug.Conn, only: [get_session: 2, assign: 3]
-  import Phoenix.Controller, only: [redirect: 2]
 
   def init(opts), do: opts
 
@@ -8,11 +7,11 @@ defmodule VirtualCryptoWeb.UserDataPlug do
     case get_session(conn, :user) do
       nil ->
         conn
-        |> assign(:logined, false)
+        |> assign(:logged_in, false)
       user ->
         VirtualCrypto.Auth.refresh_user(user.id)
         conn
-        |> assign(:logined, true)
+        |> assign(:logged_in, true)
         |> assign(:user_id, user.id)
         |> assign(:user_name, user.username)
         |> assign(:user_discriminator, user.discriminator)

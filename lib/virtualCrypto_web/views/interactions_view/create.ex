@@ -1,5 +1,4 @@
 defmodule VirtualCryptoWeb.InteractionsView.Create do
-  import VirtualCryptoWeb.InteractionsView.Util
 
   defp render_error :guild, _ do
     "このギルドではすでに通貨が作成されています。"
@@ -31,7 +30,7 @@ defmodule VirtualCryptoWeb.InteractionsView.Create do
       data: %{
         embeds: [
           %{
-            description: "\u2705 通貨の作成に成功しました！ `/info " <> options["unit"] <> "`コマンドで通貨の情報をご覧ください。",
+            description: ~s"\u2705 通貨の作成に成功しました！ `/info unit: #{options["unit"]}`コマンドで通貨の情報をご覧ください。",
             color: 0x38EA42
           }
         ],

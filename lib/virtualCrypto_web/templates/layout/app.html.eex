@@ -12,7 +12,7 @@
       :div,
       raw(""),
       id: "elm-header",
-      data: [is_login: is_login(@conn),
+      data: [is_logged_in: is_logged_in?(@conn),
              user_name: get_username(@conn),
              user_id: get_user_id(@conn),
              user_avatar: get_user_avatar(@conn)
