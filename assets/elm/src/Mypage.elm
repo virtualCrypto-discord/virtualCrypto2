@@ -83,14 +83,14 @@ subscriptions _ =
 getUserData : Cmd Msg
 getUserData =
   Http.get
-    { url = "http://localhost/api/v1/user/@me"
+    { url = "/api/v1/user/@me"
     , expect = Http.expectJson GotUserData userDataDecoder
     }
 
 getBalances : Cmd Msg
 getBalances =
   Http.get
-    { url = "http://localhost/api/v1/balance/@me"
+    { url = "/api/v1/balance/@me"
     , expect = Http.expectJson GotBalances balancesDecoder
     }
 
