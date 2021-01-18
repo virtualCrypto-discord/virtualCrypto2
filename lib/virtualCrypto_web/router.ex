@@ -25,6 +25,14 @@ defmodule VirtualCryptoWeb.Router do
     plug VirtualCryptoWeb.ApiAuthPlug
   end
 
+  scope "/document", VirtualCryptoWeb do
+    pipe_through :browser
+
+    get "/", DocumentController, :index
+    get "/about", DocumentController, :about
+    get "/commands", DocumentController, :commands
+  end
+
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
 
@@ -39,9 +47,6 @@ defmodule VirtualCryptoWeb.Router do
     get "/callback/discord", DiscordCallbackController, :index
 
     get "/me", MyPageController, :index
-
-    get "/document", DocumentController, :index
-    get "/document/commands", DocumentController, :commands
   end
 
   scope "/api", VirtualCryptoWeb do

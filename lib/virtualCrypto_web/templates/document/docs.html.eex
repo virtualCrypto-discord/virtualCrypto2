@@ -1,0 +1,7 @@
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/docs.js") %>"></script>
+<%= content_tag(
+    :div,
+    raw(""),
+    id: "elm-docs",
+    data: [raw: @md])
+%>
