@@ -1,5 +1,4 @@
 module Document exposing (..)
-import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
@@ -16,20 +15,20 @@ main =
     ]
   , div [class "tile is-ancestor mt-5 notification is-white"] [
       div [class "tile is-8", style "margin" "0 auto"] [
-        div [class "tile is-parent"] [
-          article [class "tile is-child notification is-primary box"] [
-            p [class "title"] [a [style "text-decoration" "none", href "/document/commands"] [text "コマンド"]]
-          , p [class "subtitle"] [a [style "text-decoration" "none", href "/document/commands"] [text "VirtualCryptoのDiscord Botで使用できるコマンドについて"]]
-          , div [class "content"] []
-          ]
-        ]
-      , div [class "tile is-parent"] [
-          article [class "tile is-child notification is-primary box"] [
-            p [class "title"] [a [style "text-decoration" "none"] [text "API(準備中)"]]
-          , p [class "subtitle"] [a [style "text-decoration" "none"] [text "VirtualCryptoのAPIの使用方法について"]]
-          , div [class "content"] []
-          ]
-        ]
+        documentButton "VirtualCrypto" "VirtualCryptoの仕組みについて" "/document/about"
+      , documentButton "コマンド" "VirtualCryptoのDiscord Botで使用できるコマンドについて" "/document/commands"
+      , documentButton "API(準備中)" "VirtualCryptoのAPIの使用方法について" ""
       ]
     ]
   ]
+
+
+documentButton: String -> String -> String -> Html msg
+documentButton title desc url =
+    div [class "tile is-parent"] [
+        article [class "tile is-child notification is-primary box"] [
+        p [class "title"] [a [style "text-decoration" "none", href url] [text title]]
+        , p [class "subtitle"] [a [style "text-decoration" "none", href url] [text desc]]
+        , div [class "content"] []
+        ]
+    ]
