@@ -2,7 +2,6 @@ module Mypage exposing (..)
 
 import Array exposing (fromList, slice, toList)
 import Browser
-import Commands exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)

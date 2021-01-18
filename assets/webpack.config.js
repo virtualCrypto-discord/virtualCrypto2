@@ -22,7 +22,7 @@ module.exports = (env, options) => {
       'header': './js/header.js',
       'mypage': './js/mypage.js',
       'document': './js/document.js',
-      'commands': './js/commands.js',
+      'docs': './js/docs.js',
       'authorize': './js/authorize.js',
     },
     output: {

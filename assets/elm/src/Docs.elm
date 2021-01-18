@@ -1,4 +1,4 @@
-module Commands exposing (..)
+module Docs exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)

@@ -24,4 +24,11 @@ defmodule VirtualCrypto.MarkdownParser do
   def write_parsed(data, filename) do
     File.write(~s/.\/docs\/parsed\/#{filename}.html/, data)
   end
+
+  def parse_all() do
+    {:ok, files} = File.ls "./docs"
+    files
+    |> Enum.filter(fn file -> String.ends_with?(file, ".md") end)
+    |> Enum.each(fn file -> parse file end)
+  end
 end
