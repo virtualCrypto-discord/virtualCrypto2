@@ -21,7 +21,13 @@ defmodule VirtualCrypto.DiscordAuth do
   def update_user(user_id, token, expires, refresh_token) do
     DiscordAuth.DiscordUser
     |> where([u], u.discord_user_id == ^user_id)
-    |> update(set: [token: ^token, refresh_token: ^refresh_token,expires: ^(expires|>NaiveDateTime.truncate(:second))])
+    |> update(
+      set: [
+        token: ^token,
+        refresh_token: ^refresh_token,
+        expires: ^(expires |> NaiveDateTime.truncate(:second))
+      ]
+    )
     |> Repo.update_all([])
   end
 
@@ -31,7 +37,7 @@ defmodule VirtualCrypto.DiscordAuth do
     |> Repo.one()
   end
 
-  def insert_user(discord_user_id, token, expires ,refresh_token) do
+  def insert_user(discord_user_id, token, expires, refresh_token) do
     Repo.transaction(fn ->
       {:ok, vc} = User.insert_user_if_not_exists(discord_user_id)
 
@@ -40,7 +46,7 @@ defmodule VirtualCrypto.DiscordAuth do
           %DiscordAuth.DiscordUser{
             discord_user_id: discord_user_id,
             token: token,
-            expires: expires|>NaiveDateTime.truncate(:second),
+            expires: expires |> NaiveDateTime.truncate(:second),
             refresh_token: refresh_token
           },
           on_conflict: :replace_all,
@@ -52,15 +58,20 @@ defmodule VirtualCrypto.DiscordAuth do
   end
 
   def refresh_user(user_id) do
-    user = get_user_from_id(user_id)
-    expire_time = NaiveDateTime.add(user.updated_at, 604_800)
+    case get_user_from_id(user_id) do
+      nil ->
+        nil
 
-    with true <- NaiveDateTime.diff(expire_time, NaiveDateTime.utc_now()) <= 60 * 15,
-         {:ok, client} <- Discord.Api.V8.OAuth2.refresh_token(user.refresh_token) do
-      update_token(user_id, client)
-    else
-      false -> user
-      _ -> :error
+      user ->
+        expire_time = NaiveDateTime.add(user.updated_at, 604_800)
+
+        with true <- NaiveDateTime.diff(expire_time, NaiveDateTime.utc_now()) <= 60 * 15,
+             {:ok, client} <- Discord.Api.V8.OAuth2.refresh_token(user.refresh_token) do
+          update_token(user_id, client)
+        else
+          false -> user
+          _ -> :error
+        end
     end
   end
 
