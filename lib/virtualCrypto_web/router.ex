@@ -48,7 +48,9 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/me", MyPageController, :index
   end
-
+  scope "/", VirtualCryptoWeb do
+    get "/sw.js", ServiceWorkerController, :index
+  end
   scope "/api", VirtualCryptoWeb do
     pipe_through :api
     post "/integrations/discord/interactions", InteractionsController, :index
