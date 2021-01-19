@@ -206,8 +206,8 @@ defmodule VirtualCrypto.Command do
     url = Application.get_env(:virtualCrypto, :command_post_url)
     commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
     commands |> Enum.each(fn (command) ->
-      r = HTTPoison.post(url, (Jason.encode!(command)), headers)
-      IO.inspect r
+      {:ok, r} = HTTPoison.post(url, (Jason.encode!(command)), headers)
+      IO.inspect r.status_code
     end)
   end
 end
