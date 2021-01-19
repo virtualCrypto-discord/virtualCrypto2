@@ -5,7 +5,7 @@ defmodule VirtualCryptoWeb.LogoutController do
 
   def index(conn, _params) do
     conn
-    |> delete_session(:user)
+    |> configure_session(drop: true)
     |> put_flash(:info, "ログアウトしました")
     |> redirect(to: "/")
     |> halt()
