@@ -1,5 +1,5 @@
-import localforage from "localforage";
 import "regenerator-runtime/runtime";
+import localforage from "localforage";
 localforage.setDriver(localforage.INDEXEDDB);
 
 
@@ -7,8 +7,13 @@ function onFetchCallbackPage(ev) {
   async function asyncAction(){
     const res = await fetch(ev.request);
     const headers = res.headers;
-    await localforage.setItem("access-token", headers.get("x-access-token"));
-    const url = new URL(headers.get("x-redirect-to") || "/", new URL(ev.request.url).origin);
+    const access_token =  headers.get("x-access-token");
+    if(!access_token){
+      return res;
+    }
+    await localforage.setItem("access-token",access_token);
+    const redirect_to = new URL(headers.get("x-redirect-to") || "/");
+    const url = new URL(redirect_to, new URL(ev.request.url).origin);
     return Response.redirect(url,302);
   }
   ev.respondWith(asyncAction());
@@ -39,9 +44,7 @@ self.addEventListener("fetch", (ev) => {
 });
 self.addEventListener("install", (ev) => {
   console.log("installed");
-  ev.waitUntil(self.skipWaiting());
 });
-self.addEventListener("activate", function (ev) {
+self.addEventListener("activate", function () {
   console.log("activated");
-  ev.waitUntil(clients.claim());
 });
