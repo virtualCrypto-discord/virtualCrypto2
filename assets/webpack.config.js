@@ -25,6 +25,7 @@ module.exports = (env, options) => {
       'docs': './js/docs.js',
       'authorize': './js/authorize.js',
       'credential-manager-sw': './js/credential-manager-sw.js',
+      'credential-manager-cb': './js/credential-manager-cb.js',
     },
     output: {
       filename: '[name].js',
