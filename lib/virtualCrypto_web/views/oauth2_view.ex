@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.Oauth2View do
   use VirtualCryptoWeb, :view
-  import Phoenix.Controller, only: [get_csrf_token: 0, get_flash: 2, view_module: 1]
+  import Phoenix.Controller, only: [get_csrf_token: 0]
 
   def render("success.code.token.json", %{params: params}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
