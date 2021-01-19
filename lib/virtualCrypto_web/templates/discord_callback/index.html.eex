@@ -1,0 +1,7 @@
+    
+    <%= content_tag(
+      :script,
+      raw(""),
+      src: Routes.static_path(@conn, "/js/credential-manager-cb.js"),
+      data: [redirect_to: @redirect_to,access_token: @access_token])
+    %>
