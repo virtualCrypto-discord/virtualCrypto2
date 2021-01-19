@@ -23,5 +23,10 @@
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <%= @inner_content %>
     </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register("/sw.js", {scope: '/'}).catch(console.error);
+      }
+    </script>
   </body>
 </html>
