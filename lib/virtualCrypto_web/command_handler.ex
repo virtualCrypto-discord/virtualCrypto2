@@ -1,4 +1,6 @@
 defmodule VirtualCryptoWeb.CommandHandler do
+  alias VirtualCrypto.Money
+  alias VirtualCrypto.Money.DiscordService
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -17,7 +19,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
         "member" => %{"user" => %{"id" => executor}}
       }) do
     int_executor = String.to_integer(executor)
-    VirtualCrypto.Money.balance(user: int_executor)
+    Money.balance(DiscordService, user: int_executor)
   end
 
   def handle("pay", %{"unit" => unit, "user" => receiver, "amount" => amount}, %{
@@ -26,7 +28,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_receiver = String.to_integer(receiver)
     int_sender = String.to_integer(sender)
 
-    case VirtualCrypto.Money.pay(
+    case Money.pay(
+           DiscordService,
            sender: int_sender,
            receiver: int_receiver,
            amount: amount,
@@ -92,12 +95,11 @@ defmodule VirtualCryptoWeb.CommandHandler do
         {:error, nil, nil, nil}
 
       info ->
-        case VirtualCrypto.Money.balance(user: int_user_id)
-          |> Enum.filter(fn x -> x.unit == info.unit end) do
-            [balance] -> {:ok, info, balance.amount, Discord.Api.V8.get_guild(guild_id)}
-            [] -> {:ok, info, 0, Discord.Api.V8.get_guild(guild_id)}
-
-          end
+        case Money.balance(DiscordService, user: int_user_id)
+             |> Enum.filter(fn x -> x.unit == info.unit end) do
+          [balance] -> {:ok, info, balance.amount, Discord.Api.V8.get_guild(guild_id)}
+          [] -> {:ok, info, 0, Discord.Api.V8.get_guild(guild_id)}
+        end
     end
   end
 
@@ -109,48 +111,78 @@ defmodule VirtualCryptoWeb.CommandHandler do
     {@bot_invite_url, @guild_invite_url}
   end
 
-  def handle("claim", %{"subcommand" => "list"} = options, %{"member" => %{"user" => user}} = params) do
+  def handle(
+        "claim",
+        %{"subcommand" => "list"},
+        %{"member" => %{"user" => user}}
+      ) do
     int_user_id = String.to_integer(user["id"])
-    {sent_claims, received_claims} = VirtualCrypto.Money.get_pending_claims(int_user_id)
+    {sent_claims, received_claims} = Money.get_pending_claims(DiscordService, int_user_id)
     {:ok, "list", Enum.slice(sent_claims, 0, 10), Enum.slice(received_claims, 0, 10)}
   end
 
-  def handle("claim", %{"subcommand" => "make"} = options, %{"member" => %{"user" => user}} = params) do
-    int_payer_id = options["sub_options"]["user"] |> String.to_integer
-    int_user_id = user["id"] |> String.to_integer
-    case VirtualCrypto.Money.create_claim(int_user_id, int_payer_id, options["sub_options"]["unit"], options["sub_options"]["amount"]) do
-      {:ok,claim} -> {:ok, "make", claim}
-      {:error,:money_not_found} -> {:error, "make", :money_not_found}
+  def handle(
+        "claim",
+        %{"subcommand" => "make"} = options,
+        %{"member" => %{"user" => user}}
+      ) do
+    int_payer_id = options["sub_options"]["user"] |> String.to_integer()
+    int_user_id = user["id"] |> String.to_integer()
+
+    case Money.create_claim(
+           DiscordService,
+           int_user_id,
+           int_payer_id,
+           options["sub_options"]["unit"],
+           options["sub_options"]["amount"]
+         ) do
+      {:ok, claim} -> {:ok, "make", claim}
+      {:error, :money_not_found} -> {:error, "make", :money_not_found}
     end
   end
 
-  def handle("claim", %{"subcommand" => "approve"} = options, %{"member" => %{"user" => user}} = params) do
+  def handle(
+        "claim",
+        %{"subcommand" => "approve"} = options,
+        %{"member" => %{"user" => user}}
+      ) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"] |> String.to_integer
-    case VirtualCrypto.Money.approve_claim(id, int_user_id) do
+    int_user_id = user["id"] |> String.to_integer()
+
+    case Money.approve_claim(DiscordService, id, int_user_id) do
       {:ok} -> {:ok, "approve", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
       {:error, err} -> {:error, "approve", err}
     end
   end
 
-  def handle("claim", %{"subcommand" => "deny"} = options, %{"member" => %{"user" => user}} = params) do
+  def handle(
+        "claim",
+        %{"subcommand" => "deny"} = options,
+        %{"member" => %{"user" => user}}
+      ) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"] |> String.to_integer
-    case VirtualCrypto.Money.deny_claim(id, int_user_id) do
-      {:ok} -> {:ok, "deny", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
+    int_user_id = user["id"] |> String.to_integer()
+
+    case Money.deny_claim(DiscordService, id, int_user_id) do
+      {:ok} -> {:ok, "deny", Money.get_claim_by_id(id)}
       {:error, err} -> {:error, "deny", err}
     end
   end
 
-  def handle("claim", %{"subcommand" => "cancel"} = options, %{"member" => %{"user" => user}} = params) do
+  def handle(
+        "claim",
+        %{"subcommand" => "cancel"} = options,
+        %{"member" => %{"user" => user}}
+      ) do
     id = options["sub_options"]["id"]
-    int_user_id = user["id"] |> String.to_integer
-    case VirtualCrypto.Money.cancel_claim(id, int_user_id) do
-      {:ok} -> {:ok, "cancel", VirtualCrypto.Money.InternalAction.get_claim_by_id(id)}
+    int_user_id = user["id"] |> String.to_integer()
+
+    case Money.cancel_claim(DiscordService, id, int_user_id) do
+      {:ok} -> {:ok, "cancel", Money.get_claim_by_id(id)}
       {:error, err} -> {:error, "cancel", err}
     end
   end
 
-  def handle _, _, _ do
+  def handle(_, _, _) do
   end
 end
