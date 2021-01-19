@@ -40,10 +40,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
       :user,
       %{
         # This is discord user id
-        id: vc.id,
-        username: user_data["username"],
-        avatar: user_data["avatar"],
-        discriminator: user_data["discriminator"]
+        id: vc.id
       }
     )
     |> put_resp_header("x-access-token", access_token)
