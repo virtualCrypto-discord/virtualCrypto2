@@ -8,6 +8,7 @@ defmodule VirtualCryptoWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
+
   pipeline :browser_auth do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -16,6 +17,7 @@ defmodule VirtualCryptoWeb.Router do
     plug :put_secure_browser_headers
     plug VirtualCryptoWeb.AuthPlug
   end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -38,7 +40,6 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/", PageController, :index
 
-    get "/login", LoginController, :index
     get "/logout", LogoutController, :index
 
     get "/invite", OutgoingController, :bot
@@ -47,8 +48,14 @@ defmodule VirtualCryptoWeb.Router do
     get "/callback/discord", DiscordCallbackController, :index
 
     get "/me", MyPageController, :index
-  end
 
+    get "/document", DocumentController, :index
+    get "/document/commands", DocumentController, :commands
+  end
+  
+  scope "/", VirtualCryptoWeb do
+    get "/sw.js", ServiceWorkerController, :index
+  end
   scope "/api", VirtualCryptoWeb do
     pipe_through :api
     post "/integrations/discord/interactions", InteractionsController, :index
@@ -61,18 +68,20 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
-  scope "/oauth2",VirtualCryptoWeb do
+  scope "/oauth2", VirtualCryptoWeb do
     scope "/authorize" do
       pipe_through :browser_auth
 
-      get "/",Oauth2Controller,:authorize
-      post "/",Oauth2Controller,:authorize_action
+      get "/", Oauth2Controller, :authorize
+      post "/", Oauth2Controller, :authorize_action
     end
+
     scope "/token" do
       pipe_through :api
-      post "/",Oauth2Controller,:token
+      post "/", Oauth2Controller, :token
     end
   end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
@@ -85,8 +94,10 @@ defmodule VirtualCryptoWeb.Router do
 
     scope "/" do
       pipe_through :browser
-#      pipe_through [:fetch_session, :protect_from_forgery, :browser]
-      live_dashboard "/dashboard", ecto_repos: [VirtualCrypto.Repo], metrics: VirtualCryptoWeb.Telemetry
+      #      pipe_through [:fetch_session, :protect_from_forgery, :browser]
+      live_dashboard "/dashboard",
+        ecto_repos: [VirtualCrypto.Repo],
+        metrics: VirtualCryptoWeb.Telemetry
     end
   end
 end

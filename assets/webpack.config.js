@@ -24,6 +24,8 @@ module.exports = (env, options) => {
       'document': './js/document.js',
       'docs': './js/docs.js',
       'authorize': './js/authorize.js',
+      'credential-manager-sw': './js/credential-manager-sw.js',
+      'credential-manager-cb': './js/credential-manager-cb.js',
     },
     output: {
       filename: '[name].js',
@@ -64,6 +66,6 @@ module.exports = (env, options) => {
       new MiniCssExtractPlugin({ filename: '../css/app.css' }),
       new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
     ]
-    .concat(devMode ? [new HardSourceWebpackPlugin()] : [])
+      .concat(devMode ? [new HardSourceWebpackPlugin()] : [])
   }
 };

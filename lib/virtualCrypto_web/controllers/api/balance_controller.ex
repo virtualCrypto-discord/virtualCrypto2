@@ -1,10 +1,14 @@
 defmodule VirtualCryptoWeb.V1.BalanceController do
   use VirtualCryptoWeb, :controller
-  import Plug.Conn, only: [get_session: 2]
+  alias VirtualCrypto.Money
 
   def balance(conn, _) do
-    user = get_session(conn, :user)
-    balance_ = VirtualCrypto.Money.balance(user: user.id)
-    render( conn, "balance.json", params: %{data: balance_})
+    case Guardian.Plug.current_token(conn) do
+      nil -> {:error}
+      token ->
+        {:ok,%{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
+        balance_ = Money.balance(Money.VCService, user: user_id)
+        render(conn, "balance.json", params: %{data: balance_})
+    end
   end
 end

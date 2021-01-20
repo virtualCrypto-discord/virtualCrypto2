@@ -20,7 +20,7 @@ defmodule VirtualCrypto.Command do
     %{
       "name" => "give",
       "description" => "未配布分の通貨を送信します。管理者権限が必要です。",
-      "options": [
+      "options" => [
         %{
           "name" => "user",
           "description" => "送信先のユーザーです。",
@@ -41,7 +41,7 @@ defmodule VirtualCrypto.Command do
     %{
       "name" => "pay",
       "description" => "指定したユーザーに通貨を指定した分だけ送信します。",
-      "options": [
+      "options"=> [
         %{
           "name" => "unit",
           "description" => "送信したい通貨の単位です。",
@@ -68,7 +68,7 @@ defmodule VirtualCrypto.Command do
     %{
       "name" => "info",
       "description" => "通貨の情報を表示します。通貨名または単位がない場合はそのサーバーの通貨を表示します。",
-      "options": [
+      "options"=> [
         %{
           "name" => "name",
           "description" => "検索したい通貨の通貨名です。",
@@ -89,7 +89,7 @@ defmodule VirtualCrypto.Command do
     %{
       "name" => "create",
       "description" => "新しい通貨を作成します",
-      "options": [
+      "options"=> [
         %{
           "name" => "name",
           "description" => "新しい通貨の通貨名です。2~32文字までの英数字です。",

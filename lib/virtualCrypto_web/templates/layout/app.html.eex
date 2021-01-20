@@ -12,16 +12,17 @@
       :div,
       raw(""),
       id: "elm-header",
-      data: [is_logged_in: is_logged_in?(@conn),
-             user_name: get_username(@conn),
-             user_id: get_user_id(@conn),
-             user_avatar: get_user_avatar(@conn)
-             ])
+      data: [is_logged_in: is_logged_in?(@conn)])
     %>
     <main role="main">
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <%= @inner_content %>
     </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register("/sw.js", {scope: '/'}).catch(console.error);
+      }
+    </script>
   </body>
 </html>
