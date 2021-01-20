@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.V1.UserController do
+defmodule VirtualCryptoWeb.Api.V1.UserController do
   use VirtualCryptoWeb, :controller
 
   def me(conn, _params) do

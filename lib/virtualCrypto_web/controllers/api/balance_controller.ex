@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.V1.BalanceController do
+defmodule VirtualCryptoWeb.Api.V1.BalanceController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
 
