@@ -10,11 +10,6 @@ defmodule VirtualCryptoWeb.Router do
   end
 
   pipeline :browser_auth do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
     plug VirtualCryptoWeb.AuthPlug
   end
 
@@ -22,19 +17,11 @@ defmodule VirtualCryptoWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :oauth2 do
-    plug :fetch_session
+  pipeline :api_auth do
     plug VirtualCryptoWeb.ApiAuthPlug
   end
 
-  scope "/document", VirtualCryptoWeb do
-    pipe_through :browser
-
-    get "/", DocumentController, :index
-    get "/about", DocumentController, :about
-    get "/commands", DocumentController, :commands
-  end
-
+  # for human
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
 
@@ -47,31 +34,23 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/callback/discord", DiscordCallbackController, :index
 
-    get "/me", MyPageController, :index
+    scope "/document" do
+      get "/", DocumentController, :index
+      get "/about", DocumentController, :about
+      get "/commands", DocumentController, :commands
+    end
 
-    get "/document", DocumentController, :index
-    get "/document/commands", DocumentController, :commands
-  end
-  
-  scope "/", VirtualCryptoWeb do
-    get "/sw.js", ServiceWorkerController, :index
-  end
-  scope "/api", VirtualCryptoWeb do
-    pipe_through :api
-    post "/integrations/discord/interactions", InteractionsController, :index
-
-    scope "/v1", V1 do
-      pipe_through :oauth2
-
-      get "/user/@me", UserController, :me
-      get "/balance/@me", BalanceController, :balance
+    # required auth
+    scope "/" do
+      pipe_through :browser_auth
+      get "/me", MyPageController, :index
     end
   end
 
   scope "/oauth2", VirtualCryptoWeb do
     scope "/authorize" do
+      pipe_through :browser
       pipe_through :browser_auth
-
       get "/", Oauth2Controller, :authorize
       post "/", Oauth2Controller, :authorize_action
     end
@@ -79,6 +58,22 @@ defmodule VirtualCryptoWeb.Router do
     scope "/token" do
       pipe_through :api
       post "/", Oauth2Controller, :token
+    end
+  end
+
+  scope "/", VirtualCryptoWeb do
+    get "/sw.js", ServiceWorkerController, :index
+  end
+
+  scope "/api", VirtualCryptoWeb do
+    pipe_through :api
+    post "/integrations/discord/interactions", InteractionsController, :index
+
+    scope "/v1", V1 do
+      pipe_through :api_auth
+
+      get "/user/@me", UserController, :me
+      get "/balance/@me", BalanceController, :balance
     end
   end
 
