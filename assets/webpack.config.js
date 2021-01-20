@@ -14,7 +14,11 @@ module.exports = (env, options) => {
       minimizer: [
         new TerserPlugin({ cache: true, parallel: true, sourceMap: devMode }),
         new OptimizeCSSAssetsPlugin({})
-      ]
+      ],
+      splitChunks: {
+        name: true,
+        chunks: 'all'
+      },
     },
     entry: {
       'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
@@ -30,7 +34,8 @@ module.exports = (env, options) => {
     output: {
       filename: '[name].js',
       path: path.resolve(__dirname, '../priv/static/js'),
-      publicPath: '/js/'
+      publicPath: '/js/',
+      globalObject: "globalThis"
     },
     devtool: devMode ? 'eval-cheap-module-source-map' : undefined,
     module: {
@@ -66,6 +71,6 @@ module.exports = (env, options) => {
       new MiniCssExtractPlugin({ filename: '../css/app.css' }),
       new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
     ]
-      .concat(devMode ? [new HardSourceWebpackPlugin()] : [])
+      .concat(devMode ? [new HardSourceWebpackPlugin()] : []),
   }
 };
