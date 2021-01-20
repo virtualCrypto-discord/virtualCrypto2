@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (..)
 import Url.Builder exposing (absolute)
+import Api
 
 type Status
     = Success
@@ -51,6 +52,10 @@ initModel accessToken =
           , balancesStatus = Success
           , page = 0
           }
+
+initCmd : String -> Cmd Msg
+initCmd accessToken =
+    getUserData accessToken
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -155,30 +160,9 @@ balanceView balance =
         ]
 
 
-
-type alias GetData =
-    { token : String
-    , url : String
-    , expect : Http.Expect Msg
-    }
-
-
-get : GetData -> Cmd Msg
-get data =
-    Http.request
-        { method = "GET"
-        , url = data.url
-        , headers = [ Http.header "Authorization" ("Bearer " ++ data.token) ]
-        , expect = data.expect
-        , body = Http.emptyBody
-        , timeout = Maybe.Nothing
-        , tracker = Maybe.Nothing
-        }
-
-
 getUserData : String -> Cmd Msg
 getUserData token =
-    get
+    Api.get
         { url = absolute [ "api", "v1", "user", "@me" ] []
         , expect = Http.expectJson GotUserData userDataDecoder
         , token = token
@@ -187,7 +171,7 @@ getUserData token =
 
 getBalances : String -> Cmd Msg
 getBalances token =
-    get
+    Api.get
         { url = absolute [ "api", "v1", "balance", "@me" ] []
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
