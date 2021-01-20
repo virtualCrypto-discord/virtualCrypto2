@@ -194,17 +194,19 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec get_pending_claims(module(), Integer.t()) ::
-          {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+          {[{VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User, VirtualCrypto.User.User}],
+            [{VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User, VirtualCrypto.User.User}]}
   def get_pending_claims(service, discord_user_id) do
     {sent, received} = service.get_claims(discord_user_id)
 
-    sent_ = sent |> Enum.filter(fn claim -> claim.status == "pending" end)
-    received_ = received |> Enum.filter(fn claim -> claim.status == "pending" end)
+    sent_ = sent |> Enum.filter(fn {claim, _,_,_} -> claim.status == "pending" end)
+    received_ = received |> Enum.filter(fn {claim, _,_,_} -> claim.status == "pending" end)
     {sent_, received_}
   end
 
   @spec get_all_claims(module(), Integer.t()) ::
-          {[VirtualCrypto.Money.Claim], [VirtualCrypto.Money.Claim]}
+          {[{VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User, VirtualCrypto.User.User}],
+            [{VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User, VirtualCrypto.User.User}]}
   def get_all_claims(service, discord_user_id) do
     service.get_claims(discord_user_id)
   end
@@ -217,26 +219,24 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def approve_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           claim = service.get_received_claim(id, discord_user_id)
-           with true <- claim != nil,
-                true <- claim.status == "pending",
-                user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
-                info <- VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id),
-                {:ok, _} <-
-                  VirtualCrypto.Money.InternalAction.pay(
-                    claim.payer_user_id,
-                    user.discord_id,
-                    claim.amount,
-                    info.unit
-                  ),
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, claim.payer_user_id) do
-             {:ok}
-           else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
-           end
-         end) do
+      {claim, info, claimant, payer} = service.get_received_claim(id, discord_user_id)
+      with true <- claim != nil,
+           true <- claim.status == "pending",
+           {:ok, _} <-
+             VirtualCrypto.Money.InternalAction.pay(
+               claim.payer_user_id,
+               claimant.discord_id,
+               claim.amount,
+               info.unit
+             ),
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, claim.payer_user_id) do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
       {:ok, v} -> v
       v -> v
     end
@@ -247,18 +247,18 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def cancel_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           claim = service.get_sent_claim(id, discord_user_id)
+      {claim, info, claimant, payer} = service.get_sent_claim(id, discord_user_id)
 
-           with false <- claim == nil,
-                true <- claim.status == "pending",
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, claim.payer_user_id) do
-             {:ok}
-           else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
-           end
-         end) do
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, claim.payer_user_id) do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
       {:ok, v} -> v
       v -> v
     end
@@ -269,18 +269,18 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def deny_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           claim = service.get_received_claim(id, discord_user_id)
+      {claim, info, claimant, payer} = service.get_received_claim(id, discord_user_id)
 
-           with false <- claim == nil,
-                true <- claim.status == "pending",
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, claim.payer_user_id) do
-             {:ok}
-           else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
-           end
-         end) do
+      with false <- claim == nil,
+           true <- claim.status == "pending",
+           {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, claim.payer_user_id) do
+        {:ok}
+      else
+        false -> {:error, :not_found}
+        nil -> {:error, :not_found}
+        err -> err
+      end
+    end) do
       {:ok, v} -> v
       v -> v
     end
