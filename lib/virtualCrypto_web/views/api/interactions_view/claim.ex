@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.InteractionsView.Claim do
+defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render_error(:not_found) do
     "そのidの請求は見つかりませんでした。"

@@ -1,6 +1,6 @@
-defmodule VirtualCryptoWeb.InteractionsView do
+defmodule VirtualCryptoWeb.Api.InteractionsView do
   use VirtualCryptoWeb, :view
-
+  alias VirtualCryptoWeb.Api.InteractionsView, as: InteractionsView
   def render("pong.json", _) do
     %{
       type: 1
@@ -8,25 +8,25 @@ defmodule VirtualCryptoWeb.InteractionsView do
   end
 
   def render("bal.json", %{params: params}) do
-    VirtualCryptoWeb.InteractionsView.Bal.render(params)
+    InteractionsView.Bal.render(params)
   end
 
   def render("pay.json", %{
         params: {res, v}
       }) do
-    VirtualCryptoWeb.InteractionsView.Pay.render(res,v)
+    InteractionsView.Pay.render(res,v)
   end
 
   def render("give.json", %{params: {res,v}}) do
-    VirtualCryptoWeb.InteractionsView.Give.render(res,v)
+    InteractionsView.Give.render(res,v)
   end
 
   def render("create.json", %{params: {response, reason, options}}) do
-    VirtualCryptoWeb.InteractionsView.Create.render(response, reason, options)
+    InteractionsView.Create.render(response, reason, options)
   end
 
   def render("info.json", %{params: {response, data, user_amount, guild}}) do
-    VirtualCryptoWeb.InteractionsView.Info.render(response, data, user_amount, guild)
+    InteractionsView.Info.render(response, data, user_amount, guild)
   end
 
   def render("help.json", %{params: {bot_invite_url, guild_invite_url, site_url}}) do
@@ -55,6 +55,6 @@ defmodule VirtualCryptoWeb.InteractionsView do
   end
 
   def render("claim.json", %{params: params}) do
-    VirtualCryptoWeb.InteractionsView.Claim.render(params)
+    InteractionsView.Claim.render(params)
   end
 end

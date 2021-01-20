@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.InteractionsView.Bal do
+defmodule VirtualCryptoWeb.Api.InteractionsView.Bal do
   def render_line(%{amount: amount, name: name, unit: unit}),
     do: name <> ": " <> Integer.to_string(amount) <> unit
 

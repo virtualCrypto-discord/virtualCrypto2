@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.InteractionsView.Info do
+defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
 
   def render_error() do
     "エラー: 通貨が見つかりませんでした。"
