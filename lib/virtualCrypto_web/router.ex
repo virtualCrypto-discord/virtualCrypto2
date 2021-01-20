@@ -70,10 +70,14 @@ defmodule VirtualCryptoWeb.Router do
     post "/integrations/discord/interactions", InteractionsController, :index
 
     scope "/v1", V1 do
-      pipe_through :api_auth
+      scope "/" do
+        pipe_through :api_auth
 
-      get "/user/@me", UserController, :me
-      get "/balance/@me", BalanceController, :balance
+        get "/user/@me", UserController, :me
+        get "/balance/@me", BalanceController, :balance
+      end
+        get "/info", InfoController, :index
+
     end
   end
 
