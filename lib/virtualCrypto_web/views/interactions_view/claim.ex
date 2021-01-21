@@ -33,7 +33,8 @@ defmodule VirtualCryptoWeb.InteractionsView.Claim do
       type: 3,
       data: %{
         flags: 64,
-        content: ~s/友達への請求:\n#{render_sent_claim(sent_claims)}\n\n自分に来た請求:\n#{render_received_claim(received_claims)}/,
+        content: ~s/友達への請求:\n#{render_sent_claim(sent_claims)}
+                  \n\n自分に来た請求:\n#{render_received_claim(received_claims)}\n最新10件が表示されています。 https:\/\/vcrypto.sumidora.com\/me で全ての請求をご覧いただけます。/,
       }
     }
   end
