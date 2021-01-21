@@ -6,6 +6,7 @@ import Array exposing (fromList, slice, toList)
 import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 
 type alias User =
     { name : String
@@ -19,6 +20,10 @@ type alias Claim =
     , payer : User
     , created_at : String
     }
+
+type ClaimType
+    = Sent
+    | Received
 
 type alias Claims =
     { sent : List Claim
@@ -58,8 +63,8 @@ userDecoder =
 
 type Msg
     = GotClaims (Result Http.Error Claims)
-    | Previous
-    | Next
+    | Previous ClaimType
+    | Next ClaimType
 
 getClaims : String -> Cmd Msg
 getClaims token =
@@ -80,6 +85,17 @@ initModel _ =
     , received_page = 0
     }
 
+getPrevious : Int -> Int
+getPrevious page =
+    case page of
+        0 -> 0
+        p -> p - 1
+
+getNext : Int -> Int -> Int
+getNext page max_page =
+    if page == max_page
+        then page
+        else page + 1
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -90,29 +106,64 @@ update msg model =
                     ( { model | claims = Just data}, Cmd.none )
                 Err _ ->
                     ( model, Cmd.none )
-        _ -> ( model, Cmd.none )
+        Previous t ->
+            case t of
+                Received ->
+                    ( { model | received_page = getPrevious model.received_page }, Cmd.none )
+                Sent ->
+                    ( { model | sent_page = getPrevious model.sent_page }, Cmd.none )
+        Next t ->
+            case t of
+                Received ->
+                    case model.claims of
+                        Just claims -> ( { model | received_page = getNext model.received_page (getMaxPage claims.received)}, Cmd.none )
+                        Nothing -> (model, Cmd.none)
+                Sent ->
+                    case model.claims of
+                        Just claims -> ( { model | sent_page = getNext model.sent_page (getMaxPage claims.sent)}, Cmd.none )
+                        Nothing -> (model, Cmd.none)
 
 
 view : Model -> Html Msg
 view model =
     case model.claims of
-        Just claim ->
-            div [ class "column" ]
-                [   div [ class "columns" ]
-                        [ div [ class "column is-three-quarters" ]
-                            [ title "自分に来た請求"
-                            , receivedHeader
-                            , claim.received |> List.map receivedClaimView |> div []
-                            , title "自分の請求"
-                            , sentHeader
-                            , claim.sent |> List.map sentClaimView |> div []
-                            ]
-                        ]
+        Just claims -> claimView model claims
+        Nothing -> loadingView
+
+claimView : Model -> Claims -> Html Msg
+claimView model claims =
+    div [ class "column" ]
+        [ div [ class "columns" ]
+            [ div [ class "column is-three-quarters" ]
+                [ title "自分に来た請求"
+                , receivedHeader
+                , claims.received |> filterDataWithPage model.received_page |> List.map receivedClaimView |> div []
+                , nav [ class "pagination" ]
+                    [ previousButton Received (model.received_page == 0)
+                    , nextButton Received (model.received_page == getMaxPage claims.received)
+                    ]
+                , title "自分の請求"
+                , sentHeader
+                , claims.sent |> filterDataWithPage model.sent_page |> List.map sentClaimView |> div []
+                , nav [ class "pagination" ]
+                    [ previousButton Sent (model.sent_page == 0)
+                    , nextButton Sent (model.sent_page == getMaxPage claims.sent)
+                    ]
                 ]
-        Nothing -> div [class "is-size-2"] [text "Loading..."]
+            ]
+        ]
+
+loadingView : Html msg
+loadingView = div [class "is-size-2 mx-5"] [text "Loading..."]
 
 title : String -> Html msg
 title text_ = div [class "is-size-3 has-text-weight-bold my-5"] [ text text_ ]
+
+previousButton : ClaimType -> Bool -> Html Msg
+previousButton t d = a [ onClick (Previous t), class "pagination-previous", disabled d ] [ text "前ページ" ]
+
+nextButton : ClaimType -> Bool -> Html Msg
+nextButton t d = a [ onClick (Next t), class "pagination-next", disabled d ] [ text "次ページ" ]
 
 sentHeader =
     div [ class "card my-3" ]
@@ -166,6 +217,10 @@ receivedClaimView claim =
         ]
 
 
-filterDataWithPage : Int -> List Claims -> List Claims
+filterDataWithPage : Int -> List Claim -> List Claim
 filterDataWithPage page data =
-    toList <| slice (page * 5) (page * 5 + 4) (fromList data)
+    toList <| slice (page * 20) (page * 2 + 19) (fromList data)
+
+getMaxPage : List Claim -> Int
+getMaxPage data =
+    List.length data // 20
