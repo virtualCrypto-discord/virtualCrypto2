@@ -8,37 +8,25 @@ defmodule VirtualCryptoWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
+
   pipeline :browser_auth do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
     plug VirtualCryptoWeb.AuthPlug
   end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  pipeline :oauth2 do
-    plug :fetch_session
+  pipeline :api_auth do
     plug VirtualCryptoWeb.ApiAuthPlug
   end
 
-  scope "/document", VirtualCryptoWeb do
-    pipe_through :browser
-
-    get "/", DocumentController, :index
-    get "/about", DocumentController, :about
-    get "/commands", DocumentController, :commands
-  end
-
+  # for human
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
 
     get "/", PageController, :index
 
-    get "/login", LoginController, :index
     get "/logout", LogoutController, :index
 
     get "/invite", OutgoingController, :bot
@@ -46,33 +34,49 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/callback/discord", DiscordCallbackController, :index
 
-    get "/me", MyPageController, :index
+    scope "/document" do
+      get "/", DocumentController, :index
+      get "/about", DocumentController, :about
+      get "/commands", DocumentController, :commands
+    end
+
+    # required auth
+    scope "/" do
+      pipe_through :browser_auth
+      get "/me", MyPageController, :index
+    end
   end
 
-  scope "/api", VirtualCryptoWeb do
+  scope "/oauth2", VirtualCryptoWeb do
+    scope "/authorize" do
+      pipe_through :browser
+      pipe_through :browser_auth
+      get "/", Oauth2Controller, :authorize
+      post "/", Oauth2Controller, :authorize_action
+    end
+
+    scope "/token" do
+      pipe_through :api
+      post "/", Oauth2Controller, :token
+    end
+  end
+
+  scope "/", VirtualCryptoWeb do
+    get "/sw.js", ServiceWorkerController, :index
+  end
+
+  scope "/api", VirtualCryptoWeb.Api do
     pipe_through :api
     post "/integrations/discord/interactions", InteractionsController, :index
 
     scope "/v1", V1 do
-      pipe_through :oauth2
+      pipe_through :api_auth
 
       get "/user/@me", UserController, :me
       get "/balance/@me", BalanceController, :balance
     end
   end
 
-  scope "/oauth2",VirtualCryptoWeb do
-    scope "/authorize" do
-      pipe_through :browser_auth
-
-      get "/",Oauth2Controller,:authorize
-      post "/",Oauth2Controller,:authorize_action
-    end
-    scope "/token" do
-      pipe_through :api
-      post "/",Oauth2Controller,:token
-    end
-  end
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
@@ -85,8 +89,10 @@ defmodule VirtualCryptoWeb.Router do
 
     scope "/" do
       pipe_through :browser
-#      pipe_through [:fetch_session, :protect_from_forgery, :browser]
-      live_dashboard "/dashboard", ecto_repos: [VirtualCrypto.Repo], metrics: VirtualCryptoWeb.Telemetry
+      #      pipe_through [:fetch_session, :protect_from_forgery, :browser]
+      live_dashboard "/dashboard",
+        ecto_repos: [VirtualCrypto.Repo],
+        metrics: VirtualCryptoWeb.Telemetry
     end
   end
 end

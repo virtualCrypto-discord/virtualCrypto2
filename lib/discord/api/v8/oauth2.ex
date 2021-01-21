@@ -1,4 +1,4 @@
-defmodule Discord.Api.V8.Oauth2 do
+defmodule Discord.Api.V8.OAuth2 do
 
   @client_data [
     strategy: OAuth2.Strategy.AuthCode,
@@ -29,7 +29,7 @@ defmodule Discord.Api.V8.Oauth2 do
     end
   end
 
-  def get_user_info(_client, token) do
+  def get_user_info(token) do
     {:ok, response} =
       @client_data
       |> Keyword.merge(token: token)

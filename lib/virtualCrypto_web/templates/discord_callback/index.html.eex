@@ -1,0 +1,8 @@
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/static/js/vendors~credential-manager-cb~credential-manager-sw~mypage.js") %>"></script>
+    <%= content_tag(
+      :script,
+      raw(""),
+      type: "text/javascript",
+      src: Routes.static_path(@conn, "/static/js/credential-manager-cb.js"),
+      data: [redirect_to: @redirect_to,access_token: @access_token])
+    %>

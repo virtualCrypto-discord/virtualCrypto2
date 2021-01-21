@@ -4,24 +4,25 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>VirtualCrypto · Discord Virtual Currency Bot</title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
-    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/header.js") %>"></script>
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/static/css/app.css") %>"/>
+    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/static/js/header.js") %>"></script>
   </head>
   <body>
     <%= content_tag(
       :div,
       raw(""),
       id: "elm-header",
-      data: [is_logged_in: is_logged_in?(@conn),
-             user_name: get_username(@conn),
-             user_id: get_user_id(@conn),
-             user_avatar: get_user_avatar(@conn)
-             ])
+      data: [is_logged_in: is_logged_in?(@conn)])
     %>
     <main role="main">
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <%= @inner_content %>
     </main>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register("/sw.js", {scope: '/'}).catch(console.error);
+      }
+    </script>
   </body>
 </html>

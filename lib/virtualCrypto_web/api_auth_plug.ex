@@ -1,28 +1,19 @@
-defmodule VirtualCryptoWeb.ApiAuthPlug do
-  import Plug.Conn, only: [get_session: 2, halt: 1, put_resp_content_type: 2, send_resp: 3]
-  import Phoenix.Controller, only: [redirect: 2]
-
-  defp unauthorized(conn) do
+defmodule VirtualCryptoWeb.AuthErrorHandler do
+  @behaviour Guardian.Plug.ErrorHandler
+  @impl Guardian.Plug.ErrorHandler
+  def auth_error(conn, {_type, _reason}, _opts) do
     conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(401, 'Unauthorized')
-    |> halt()
+    |> Plug.Conn.send_resp(401,"Unauthorized")
   end
+end
+defmodule VirtualCryptoWeb.ApiAuthPlug do
+  use Guardian.Plug.Pipeline, otp_app: :virtualCrypto,
+  module: VirtualCrypto.Guardian,
+  error_handler: VirtualCryptoWeb.AuthErrorHandler
+  @claims %{iss: "virtualCrypto"}
 
-  def init(opts), do: opts
-
-  def call(conn, _opts) do
-    case get_session(conn, :jwt) do
-      nil ->
-        # TODO: Headerのベアラートークンも確認する！
-        conn |> unauthorized
-      jwt ->
-        {:ok, data} = VirtualCrypto.Guardian.decode_and_verify(jwt)
-        if !(VirtualCrypto.Auth.get_user_from_id(data["sub"])) do
-          conn |> unauthorized
-        else
-          conn
-        end
-    end
-  end
+  plug Guardian.Plug.VerifySession, claims: @claims
+  plug Guardian.Plug.VerifyHeader, claims: @claims, realm: "Bearer"
+  plug Guardian.Plug.EnsureAuthenticated
+  plug Guardian.Plug.LoadResource, allow_blank: true
 end

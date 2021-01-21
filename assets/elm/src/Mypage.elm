@@ -33,7 +33,8 @@ type alias Balances =
 
 
 type alias Model =
-    { userData : Maybe UserData
+    { accessToken : String
+    , userData : Maybe UserData
     , userDataStatus : Status
     , balances : Balances
     , balancesStatus : Status
@@ -41,7 +42,7 @@ type alias Model =
     }
 
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
     Browser.element
         { init = init
@@ -51,15 +52,16 @@ main =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { userData = Maybe.Nothing
+init : String -> ( Model, Cmd Msg )
+init accessToken =
+    ( { accessToken = accessToken
+      , userData = Maybe.Nothing
       , userDataStatus = Success
       , balances = []
       , balancesStatus = Success
       , page = 0
       }
-    , getUserData
+    , getUserData accessToken
     )
 
 
@@ -76,7 +78,7 @@ update msg model =
         GotUserData result ->
             case result of
                 Ok data ->
-                    ( { model | userData = Maybe.Just data }, getBalances )
+                    ( { model | userData = Maybe.Just data }, getBalances model.accessToken)
 
                 Err _ ->
                     ( { model | userDataStatus = Failure }, Cmd.none )
@@ -110,19 +112,43 @@ subscriptions _ =
     Sub.none
 
 
-getUserData : Cmd Msg
-getUserData =
-  Http.get
-    { url = absolute ["api", "v1", "user", "@me" ] []
-    , expect = Http.expectJson GotUserData userDataDecoder
+type alias GetData =
+    { token : String
+    , url : String
+    , expect : Http.Expect Msg
     }
 
-getBalances : Cmd Msg
-getBalances =
-  Http.get
-    { url = absolute ["api", "v1", "balance", "@me" ] []
-    , expect = Http.expectJson GotBalances balancesDecoder
-    }
+
+get : GetData -> Cmd Msg
+get data =
+    Http.request
+        { method = "GET"
+        , url = data.url
+        , headers = [ Http.header "Authorization" ("Bearer " ++ data.token) ]
+        , expect = data.expect
+        , body = Http.emptyBody
+        , timeout = Maybe.Nothing
+        , tracker = Maybe.Nothing
+        }
+
+
+getUserData : String -> Cmd Msg
+getUserData token =
+    get
+        { url = absolute [ "api", "v1", "user", "@me" ] []
+        , expect = Http.expectJson GotUserData userDataDecoder
+        , token = token
+        }
+
+
+getBalances : String -> Cmd Msg
+getBalances token =
+    get
+        { url = absolute [ "api", "v1", "balance", "@me" ] []
+        , expect = Http.expectJson GotBalances balancesDecoder
+        , token = token
+        }
+
 
 userDataDecoder : Decoder UserData
 userDataDecoder =
