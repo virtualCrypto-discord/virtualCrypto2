@@ -14,8 +14,9 @@ defmodule VirtualCrypto.Auth.InternalAction.AccessToken do
       Repo.insert(
         %Auth.AccessToken{
           grant_id: grant_id,
-          token: make_secure_random_code(),
-          expires: NaiveDateTime.add(NaiveDateTime.utc_now(), 3600) |> NaiveDateTime.truncate(:second)
+          token_id: Ecto.UUID.generate(),
+          expires:
+            NaiveDateTime.add(NaiveDateTime.utc_now(), 3600) |> NaiveDateTime.truncate(:second)
         },
         returns: true
       )

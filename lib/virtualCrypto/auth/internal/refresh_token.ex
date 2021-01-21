@@ -15,13 +15,13 @@ defmodule VirtualCrypto.Auth.InternalAction.RefreshToken do
       Repo.insert(
         %Auth.RefreshToken{
           grant_id: grant_id,
-          token: make_secure_random_code(),
+          token_id: Ecto.UUID.generate(),
           expires:
             NaiveDateTime.add(NaiveDateTime.utc_now(), 180 * 24 * 60 * 60)
             |> NaiveDateTime.truncate(:second)
         },
         conflict_target: [:grant_id],
-        on_conflict: {:replace, [ :token, :expires, :updated_at]},
+        on_conflict: {:replace, [:token, :expires, :updated_at]},
         returns: true
       )
 

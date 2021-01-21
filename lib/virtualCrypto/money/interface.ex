@@ -218,6 +218,7 @@ defmodule VirtualCrypto.Money do
   def approve_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
            claim = service.get_received_claim(id, discord_user_id)
+
            with true <- claim != nil,
                 true <- claim.status == "pending",
                 user <- VirtualCrypto.User.get_user_by_id(claim.claimant_user_id),
@@ -229,7 +230,8 @@ defmodule VirtualCrypto.Money do
                     claim.amount,
                     info.unit
                   ),
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.approve_claim(id, claim.payer_user_id) do
+                {:ok, _} <-
+                  VirtualCrypto.Money.InternalAction.approve_claim(id, claim.payer_user_id) do
              {:ok}
            else
              false -> {:error, :not_found}
@@ -251,7 +253,8 @@ defmodule VirtualCrypto.Money do
 
            with false <- claim == nil,
                 true <- claim.status == "pending",
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.cancel_claim(id, claim.payer_user_id) do
+                {:ok, _} <-
+                  VirtualCrypto.Money.InternalAction.cancel_claim(id, claim.payer_user_id) do
              {:ok}
            else
              false -> {:error, :not_found}
@@ -285,12 +288,13 @@ defmodule VirtualCrypto.Money do
       v -> v
     end
   end
+
   @doc """
   payer must be discord user
   """
-  @spec create_claim(module(),Integer.t(), Integer.t(), String.t(), Integer.t()) ::
+  @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
           {:ok, VirtualCrypto.Money.Claim} | {:error, :money_not_found}
-  def create_claim(service,claimant_id, payer_discord_user_id, unit, amount) do
+  def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
     service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
   end
 

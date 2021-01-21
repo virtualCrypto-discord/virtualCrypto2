@@ -55,9 +55,15 @@ defmodule VirtualCryptoWeb.Router do
       post "/", Oauth2Controller, :authorize_action
     end
 
-    scope "/token" do
+    scope "/" do
       pipe_through :api
-      post "/", Oauth2Controller, :token
+      post "/token", Oauth2Controller, :token
+
+      scope "/register" do
+        pipe_through :api_auth
+        get "/", Oauth2Controller, :register_get
+        post "/", Oauth2Controller, :register_post
+      end
     end
   end
 
@@ -76,8 +82,8 @@ defmodule VirtualCryptoWeb.Router do
         get "/user/@me", UserController, :me
         get "/balance/@me", BalanceController, :balance
       end
-        get "/moneys", InfoController, :index
 
+      get "/moneys", InfoController, :index
     end
   end
 
