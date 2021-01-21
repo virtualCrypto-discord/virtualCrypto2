@@ -74,6 +74,7 @@ defmodule VirtualCryptoWeb.Router do
 
       get "/user/@me", UserController, :me
       get "/balance/@me", BalanceController, :balance
+      get "/users/@me/claims", ClaimController, :me
     end
   end
 

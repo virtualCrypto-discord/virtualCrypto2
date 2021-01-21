@@ -140,9 +140,15 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_claim_by_id(id) do
-    Money.Claim
-    |> where([c], c.id == ^id)
-    |> Repo.one()
+    query =
+      from claim in Money.Claim,
+        join: info in Money.Info,
+        join: claimant in VirtualCrypto.User.User,
+        join: payer in VirtualCrypto.User.User,
+        on: claim.payer_user_id == payer.id and claim.money_info_id == info.id and claim.claimant_user_id == claimant.id,
+        where: claim.id == ^id,
+        select: {claim, info, claimant, payer}
+    query |> Repo.one()
   end
 
   def create_claim(claimant_user_id, payer_user_id, unit, amount) do
@@ -223,21 +229,56 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_sent_claim(id, user_id) do
-    Money.Claim
-    |> where([c], c.id == ^id and c.claimant_user_id == ^user_id)
-    |> Repo.one()
+    query =
+      from claim in Money.Claim,
+           join: info in Money.Info,
+           join: claimant in VirtualCrypto.User.User,
+           join: payer in VirtualCrypto.User.User,
+           on: claim.payer_user_id == payer.id and claim.money_info_id == info.id and claim.claimant_user_id == claimant.id,
+           where: claim.id == ^id and claim.claimant_user_id == ^user_id,
+           select: {claim, info, claimant, payer}
+    query |> Repo.one()
   end
 
   def get_received_claim(id, user_id) do
-    Money.Claim
-    |> where([c], c.id == ^id and c.payer_user_id == ^user_id)
-    |> Repo.one()
+    query =
+      from claim in Money.Claim,
+           join: info in Money.Info,
+           join: claimant in VirtualCrypto.User.User,
+           join: payer in VirtualCrypto.User.User,
+           on: claim.payer_user_id == payer.id and claim.money_info_id == info.id and claim.claimant_user_id == claimant.id,
+           where: claim.id == ^id and claim.payer_user_id == ^user_id,
+           select: {claim, info, claimant, payer}
+    query |> Repo.one()
+  end
+
+  def get_sent_claims(user_id) do
+    query =
+      from claim in Money.Claim,
+           join: info in Money.Info,
+           join: claimant in VirtualCrypto.User.User,
+           join: payer in VirtualCrypto.User.User,
+           on: claim.payer_user_id == payer.id and claim.money_info_id == info.id and claim.claimant_user_id == claimant.id,
+           where: claim.claimant_user_id == ^user_id,
+           select: {claim, info, claimant, payer}
+    query |> Repo.all()
+  end
+
+  def get_received_claims(user_id) do
+    query =
+      from claim in Money.Claim,
+           join: info in Money.Info,
+           join: claimant in VirtualCrypto.User.User,
+           join: payer in VirtualCrypto.User.User,
+           on: claim.payer_user_id == payer.id and claim.money_info_id == info.id and claim.claimant_user_id == claimant.id,
+           where: claim.payer_user_id == ^user_id,
+           select: {claim, info, claimant, payer}
+    query |> Repo.all()
   end
 
   def get_claims(user_id) do
-    # TODO: Refactoring me!
-    sent_claims = Money.Claim |> where([c], c.claimant_user_id == ^user_id) |> Repo.all()
-    received_claims = Money.Claim |> where([c], c.payer_user_id == ^user_id) |> Repo.all()
+    sent_claims = get_sent_claims(user_id)
+    received_claims = get_received_claims(user_id)
     {sent_claims, received_claims}
   end
 
