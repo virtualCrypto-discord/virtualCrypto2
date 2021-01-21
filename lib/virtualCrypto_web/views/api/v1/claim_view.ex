@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.V1.ClaimView do
+defmodule VirtualCryptoWeb.Api.V1.ClaimView do
   use VirtualCryptoWeb, :view
 
   def render("claim.json", %{params: data}) do
