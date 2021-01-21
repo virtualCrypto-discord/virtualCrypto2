@@ -1,2 +1,2 @@
-<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/document.js") %>"></script>
+<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/static/js/document.js") %>"></script>
 <div id="elm-document"></div>

@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.InteractionsController do
+defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
 
   defp get_signature [] do

@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.InteractionsView.Create do
+defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
 
   defp render_error :guild, _ do
     "このギルドではすでに通貨が作成されています。"
