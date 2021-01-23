@@ -4,7 +4,7 @@ defmodule VirtualCrypto.Auth.AccessToken do
 
   schema "access_tokens" do
     field :grant_id, :integer
-    field :token, :string
+    field :token_id, Ecto.UUID
     field :expires, :naive_datetime
     timestamps()
   end
