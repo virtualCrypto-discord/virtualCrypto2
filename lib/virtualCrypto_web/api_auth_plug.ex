@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, {type, _reason}, _opts) do
     case type do
-      :unauthorized ->
+      :unauthenticated ->
         conn
         |> Plug.Conn.send_resp(400, """
         {
@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
         }
         """)
 
-      :invalid_token ->
+      x when x in [:unauthorized,:invalid_token] ->
         conn
         |> Plug.Conn.put_resp_header(
           "WWW-Authenticate",
@@ -37,7 +37,6 @@ defmodule VirtualCryptoWeb.ApiAuthPlug do
 
   @claims %{iss: "virtualCrypto"}
 
-  plug Guardian.Plug.VerifySession, claims: @claims
   plug Guardian.Plug.VerifyHeader, claims: @claims, realm: "Bearer"
   plug Guardian.Plug.EnsureAuthenticated
   plug Guardian.Plug.LoadResource, allow_blank: true
