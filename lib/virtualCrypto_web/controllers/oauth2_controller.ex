@@ -200,11 +200,10 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
     end
   end
 
-  def token(conn, %{"grant_type" => "client_credentials"} = params) do
+  def token(conn, %{"grant_type" => "client_credentials", "guild_id" => guild_id}) do
     params =
       with {:validate_credentials, {client_id, client_secret}} <-
-             {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)},
-           {:guild_id, %{"guild_id" => guild_id}} = {:guild_id, params} do
+             {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)} do
         Auth.exchange_token_by_client_credentials(%{
           client_id: client_id,
           client_secret: client_secret,
@@ -212,7 +211,39 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
         })
       else
         {:validate_credentials, _} -> {:error, :invalid_client}
-        {:guild_id, _} -> {:error, :invalid_request}
+      end
+
+    case params do
+      {:ok, _} ->
+        render(conn, "credentials.token.json", params: params)
+
+      {:error, _} ->
+        conn
+        |> put_status(400)
+        |> render("credentials.token.json", params: params)
+    end
+  end
+
+  def token(conn, %{"grant_type" => "client_credentials", "scope" => scope}) do
+    params =
+      with {:validate_credentials, {client_id, client_secret}} <-
+             {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)} do
+        {:ok, access_token, claims} =
+          VirtualCrypto.Guardian.issue_token_for_app_user(
+            Auth.InternalAction.Application.get_application_user_id_by_client_id(
+              client_id,
+              client_secret
+            ),
+            String.split(scope, " ")
+          )
+
+        %{
+          access_token: access_token,
+          expires: claims["exp"],
+          token_type: "Bearer"
+        }
+      else
+        {:validate_credentials, _} -> {:error, :invalid_client}
       end
 
     case params do
