@@ -66,8 +66,23 @@ defmodule VirtualCrypto.Auth.InternalAction.Application do
 
   def get_application_by_client_id(client_id) do
     case Ecto.UUID.cast(client_id) do
-      {:ok,client_id} -> Repo.get_by(Auth.Application, client_id: client_id)
+      {:ok, client_id} -> Repo.get_by(Auth.Application, client_id: client_id)
       :error -> nil
+    end
+  end
+
+  def get_application_and_redirect_uri_by_application_id(application_id) do
+    case Repo.get(Auth.Application, application_id) do
+      nil ->
+        nil
+
+      application ->
+        q =
+          from redirect_uris in Auth.RedirectUri,
+            where: redirect_uris.application_id == ^application_id
+
+        redirect_uris = Repo.all(q)
+        %{application: application, redirect_uris: redirect_uris}
     end
   end
 end
