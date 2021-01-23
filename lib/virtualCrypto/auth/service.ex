@@ -1,6 +1,7 @@
 defmodule VirtualCrypto.OAuth2 do
   alias VirtualCrypto.Auth.InternalAction, as: Action
   alias VirtualCrypto.Repo
+  import Ecto.Query
 
   @spec register_application(%{
           required(:grant_types) => [String.t()],
@@ -185,5 +186,28 @@ defmodule VirtualCrypto.OAuth2 do
     else
       Action.is_valid_access_token?(info.token, guild_id)
     end
+  end
+
+  def get_application(application_id) do
+    case Repo.transaction(fn ->
+           Action.Application.get_application_and_redirect_uri_by_application_id(application_id)
+         end) do
+      {:ok, r} -> r
+    end
+  end
+
+  def get_user_application(user_id) do
+    q =
+      from applications in VirtualCrypto.Auth.Application,
+        left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
+        on: redirect_uris.application_id == applications.id,
+        join: owner_users in VirtualCrypto.User.User,
+        join: application_users in VirtualCrypto.User.User,
+        on:
+          owner_users.id == ^user_id and owner_users.discord_id == applications.owner_discord_id and
+            application_users.application_id == applications.id,
+        select: {applications, application_users, redirect_uris}
+
+    Repo.all(q)
   end
 end
