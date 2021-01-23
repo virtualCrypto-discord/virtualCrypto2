@@ -12,9 +12,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
   defp render_error(:not_enough_amount) do
     "エラー: 通貨が不足しています。"
   end
+
   defp render_error(:permission) do
     "エラー: 実行には管理者権限が必要です。"
   end
+
   def render(:ok, {receiver, amount, unit}) do
     %{
       type: 3,

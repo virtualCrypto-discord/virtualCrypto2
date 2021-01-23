@@ -1,12 +1,14 @@
 defmodule VirtualCryptoWeb.Api.V1.InfoController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
+
   defp get(%{"id" => id}) do
     case Integer.parse(id) do
       {int_id, ""} -> {:ok, {:guild, int_id}}
       _ -> {:error, {:invalid_request, :id_must_be_integer}}
     end
   end
+
   defp get(%{"guild" => guild_id}) do
     case Integer.parse(guild_id) do
       {int_guild_id, ""} -> {:ok, {:guild, int_guild_id}}
@@ -21,23 +23,27 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
   defp get(%{"unit" => unit}) do
     {:ok, {:unit, unit}}
   end
-  defp response_code(conn,:invalid_request) do
-    conn|>put_status(400)
+
+  defp response_code(conn, :invalid_request) do
+    conn |> put_status(400)
   end
-  defp response_code(conn,:not_found) do
-    conn|>put_status(404)
+
+  defp response_code(conn, :not_found) do
+    conn |> put_status(404)
   end
-  defp response_code(conn,_) do
-    conn|>put_status(500)
+
+  defp response_code(conn, _) do
+    conn |> put_status(500)
   end
+
   def index(conn, params) do
-    m = Map.take(params, ["id","guild", "name", "unit"])
+    m = Map.take(params, ["id", "guild", "name", "unit"])
 
     params =
       case map_size(m) do
         1 ->
           with {:ok, req} <- get(m),
-               {:info, %{} = res} <- {:info,Money.info([req])} do
+               {:info, %{} = res} <- {:info, Money.info([req])} do
             {:ok, res}
           else
             {:info, nil} ->
@@ -46,13 +52,22 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
             x ->
               x
           end
-         _ ->{:error, {:invalid_request, :need_one_parameter_from_id_guild_name_or_unit}}
 
+        _ ->
+          {:error, {:invalid_request, :need_one_parameter_from_id_guild_name_or_unit}}
       end
+
     case params do
-      {:ok,res} -> render(conn, "ok.json", params: res)
-      {:error,{error,error_description}} -> conn|>response_code(error)|>render("error.json", error: error,error_description: error_description)
-      {:error,error} -> conn|>response_code(error)|>render("error.json","error.json", error: error)
+      {:ok, res} ->
+        render(conn, "ok.json", params: res)
+
+      {:error, {error, error_description}} ->
+        conn
+        |> response_code(error)
+        |> render("error.json", error: error, error_description: error_description)
+
+      {:error, error} ->
+        conn |> response_code(error) |> render("error.json", "error.json", error: error)
     end
   end
 end

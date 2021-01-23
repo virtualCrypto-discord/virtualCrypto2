@@ -11,6 +11,7 @@ defmodule VirtualCryptoWeb.Api.V1.UserController do
         user = VirtualCrypto.User.get_user_by_id(user_id)
         discord_user_authz_info = VirtualCrypto.DiscordAuth.refresh_user(user.discord_id)
         discord_user = Discord.Api.V8.OAuth2.get_user_info(discord_user_authz_info.token)
+
         render(
           conn,
           "me.json",

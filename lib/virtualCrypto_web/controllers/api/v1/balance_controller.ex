@@ -4,9 +4,11 @@ defmodule VirtualCryptoWeb.Api.V1.BalanceController do
 
   def balance(conn, _) do
     case Guardian.Plug.current_token(conn) do
-      nil -> {:error}
+      nil ->
+        {:error}
+
       token ->
-        {:ok,%{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
+        {:ok, %{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
         balance_ = Money.balance(Money.VCService, user: user_id)
         render(conn, "balance.json", params: %{data: balance_})
     end

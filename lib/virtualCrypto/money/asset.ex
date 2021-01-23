@@ -16,6 +16,6 @@ defmodule VirtualCrypto.Money.Asset do
     asset
     |> cast(attrs, [:amount, :status])
     |> validate_required([:amount, :status])
-    |> unique_constraint([:user_id,:money_id])
+    |> unique_constraint([:user_id, :money_id])
   end
 end
