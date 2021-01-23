@@ -261,13 +261,18 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
   end
 
   def clients_get(conn, %{"user" => "@me"}) do
-    with {{:validate_token, :token_not_supplied}, token} when token != nil <-
-           {{:validate_token, :token_not_supplied}, Guardian.Plug.current_token(conn)},
-         {{:validate_token, :token_verification_failed},
-          {:ok, %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}, _}} <-
-           {{:validate_token, :token_verification_failed},
-            VirtualCrypto.Guardian.resource_from_token(token)} do
+    with {{:validate_token, :token_verification_failed},
+          %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
+           {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)} do
       conn |> render("clients.register.json", applications: Auth.get_user_application(user_id))
+    else
+      {{:validate_token, more}, _} ->
+        conn
+        |> put_status(400)
+        |> render("error.register.json",
+          error: :invalid_token,
+          error_description: more
+        )
     end
   end
 
@@ -284,12 +289,9 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
     f = get_and_compute(req)
 
     params =
-      with {{:validate_token, :token_not_supplied}, token} when token != nil <-
-             {{:validate_token, :token_not_supplied}, Guardian.Plug.current_token(conn)},
-           {{:validate_token, :token_verification_failed},
-            {:ok, %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}, _}} <-
-             {{:validate_token, :token_verification_failed},
-              VirtualCrypto.Guardian.resource_from_token(token)},
+      with {{:validate_token, :token_verification_failed},
+            %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
+             {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user},
             %VirtualCrypto.User.User{discord_id: owner_discord_id}} <-
              {{:validate_token, :invalid_user}, VirtualCrypto.User.get_user_by_id(user_id)},
@@ -381,12 +383,9 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
 
   def clients_me_get(conn, _params) do
     params =
-      with {{:validate_token, :token_not_supplied}, token} when token != nil <-
-             {{:validate_token, :token_not_supplied}, Guardian.Plug.current_token(conn)},
-           {{:validate_token, :token_verification_failed},
-            {:ok, %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}, _}} <-
-             {{:validate_token, :token_verification_failed},
-              VirtualCrypto.Guardian.resource_from_token(token)},
+      with {{:validate_token, :token_verification_failed},
+            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
+             {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user},
             %VirtualCrypto.User.User{application_id: application_id} = user} <-
              {{:validate_token, :invalid_user}, VirtualCrypto.User.get_user_by_id(user_id)} do
@@ -430,12 +429,9 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
 
   def clients_me_patch(conn, params) do
     params =
-      with {{:validate_token, :token_not_supplied}, token} when token != nil <-
-             {{:validate_token, :token_not_supplied}, Guardian.Plug.current_token(conn)},
-           {{:validate_token, :token_verification_failed},
-            {:ok, %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}, _}} <-
-             {{:validate_token, :token_verification_failed},
-              VirtualCrypto.Guardian.resource_from_token(token)},
+      with {{:validate_token, :token_verification_failed},
+            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
+             {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user},
             %VirtualCrypto.User.User{application_id: application_id}} <-
              {{:validate_token, :invalid_user}, VirtualCrypto.User.get_user_by_id(user_id)} do
