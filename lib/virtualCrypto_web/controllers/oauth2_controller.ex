@@ -356,7 +356,7 @@ defmodule VirtualCryptoWeb.Oauth2Controller do
           registration_client_uri:
             Application.get_env(:virtualCrypto, :site_url)
             |> URI.parse()
-            |> Map.put(:path, "/oauth2/register")
+            |> Map.put(:path, "/oauth2/clients/@me")
             |> URI.to_string()
         )
 
