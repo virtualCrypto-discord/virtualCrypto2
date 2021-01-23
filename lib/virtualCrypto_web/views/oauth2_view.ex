@@ -6,12 +6,13 @@ defmodule VirtualCryptoWeb.Oauth2View do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
 
-  def render("error.code.token.json", %{params: {err,desc}}) do
+  def render("error.code.token.json", %{params: {err, desc}}) do
     %{
       "error" => to_string(err),
-      "error_description" =>  to_string(desc)
+      "error_description" => to_string(desc)
     }
   end
+
   def render("error.code.token.json", %{params: :invalid_client_id}) do
     %{
       "error" => "invalid_client"
@@ -30,31 +31,37 @@ defmodule VirtualCryptoWeb.Oauth2View do
       "error" => "unsupported_grant_type"
     }
   end
+
   def render("error.token.json", %{params: :grant_type_parameter_missing}) do
     %{
       "error" => "invalid_request",
       "error_description" => "grant_type_parameter_missing"
     }
   end
-  def render("refresh.token.json", %{params: {:ok,params}}) do
+
+  def render("refresh.token.json", %{params: {:ok, params}}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
-  def render("refresh.token.json", %{params: {:error,{err,desc}}}) do
+
+  def render("refresh.token.json", %{params: {:error, {err, desc}}}) do
     %{
       "error" => to_string(err),
-      "error_description" =>  to_string(desc)
+      "error_description" => to_string(desc)
     }
   end
-  def render("refresh.token.json", %{params: {:error,v}}) do
+
+  def render("refresh.token.json", %{params: {:error, v}}) do
     %{
       "error" => "invalid_request",
       "error_description" => to_string(v)
     }
   end
-  def render("credentials.token.json", %{params: {:ok,params}}) do
+
+  def render("credentials.token.json", %{params: {:ok, params}}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
-  def render("credentials.token.json",%{params: {:error,v}}) do
+
+  def render("credentials.token.json", %{params: {:error, v}}) do
     %{
       "error" => to_string(v)
     }
