@@ -4,7 +4,7 @@ defmodule VirtualCrypto.DiscordAuth do
   alias VirtualCrypto.User
   import Ecto.Query
 
-  defp update_token(user_id, client) do
+  defp update_token(discord_user_id, client) do
     token_data = Jason.decode!(client.token.access_token)
 
     {:ok, user} =
