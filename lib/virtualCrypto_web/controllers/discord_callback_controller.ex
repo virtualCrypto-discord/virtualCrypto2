@@ -53,9 +53,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
   end
 
   def index(conn, %{"state" => state, "code" => code}) do
-    IO.inspect state
-    IO.inspect get_session(conn,:discord_oauth2)
-    case get_session(conn,:discord_oauth2) do
+    case get_session(conn, :discord_oauth2) do
       %{state: ^state} ->
         case Discord.Api.V8.OAuth2.exchange_code(code) do
           :error ->
