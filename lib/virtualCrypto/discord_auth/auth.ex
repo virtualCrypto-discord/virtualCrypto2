@@ -9,7 +9,7 @@ defmodule VirtualCrypto.DiscordAuth do
 
     {:ok, user} =
       update_user(
-        user_id,
+        discord_user_id,
         token_data["token"],
         NaiveDateTime.add(NaiveDateTime.utc_now(), token_data["expires_in"]),
         token_data["refresh_token"]
@@ -18,9 +18,9 @@ defmodule VirtualCrypto.DiscordAuth do
     user
   end
 
-  def update_user(user_id, token, expires, refresh_token) do
+  def update_user(discord_user_id, token, expires, refresh_token) do
     DiscordAuth.DiscordUser
-    |> where([u], u.discord_user_id == ^user_id)
+    |> where([u], u.discord_user_id == ^discord_user_id)
     |> update(
       set: [
         token: ^token,
@@ -31,9 +31,9 @@ defmodule VirtualCrypto.DiscordAuth do
     |> Repo.update_all([])
   end
 
-  def get_user_from_id(user_id) do
+  def get_user_from_id(discord_user_id) do
     DiscordAuth.DiscordUser
-    |> where([u], u.discord_user_id == ^user_id)
+    |> where([u], u.discord_user_id == ^discord_user_id)
     |> Repo.one()
   end
 
@@ -57,8 +57,8 @@ defmodule VirtualCrypto.DiscordAuth do
     end)
   end
 
-  def refresh_user(user_id) do
-    case get_user_from_id(user_id) do
+  def refresh_user(discord_user_id) do
+    case get_user_from_id(discord_user_id) do
       nil ->
         nil
 
@@ -67,7 +67,7 @@ defmodule VirtualCrypto.DiscordAuth do
 
         with true <- NaiveDateTime.diff(expire_time, NaiveDateTime.utc_now()) <= 60 * 15,
              {:ok, client} <- Discord.Api.V8.OAuth2.refresh_token(user.refresh_token) do
-          update_token(user_id, client)
+          update_token(discord_user_id, client)
         else
           false -> user
           _ -> :error
