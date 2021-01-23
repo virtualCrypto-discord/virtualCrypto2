@@ -34,7 +34,10 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
         refresh_token
       )
 
+    {:ok, access_token, _} =
       VirtualCrypto.Guardian.issue_token_for_user(vc.id, ["oauth2.register"])
+
+    redirect_to = get_continue_uri_from_session(conn)
 
     conn
     |> put_session(
@@ -45,11 +48,11 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
       }
     )
     |> put_resp_header("x-access-token", access_token)
-    |> put_resp_header("x-redirect-to",redirect_to)
+    |> put_resp_header("x-redirect-to", redirect_to)
     |> put_flash(:info, "ログイン成功しました")
     |> delete_session(:discord_oauth2)
     |> configure_session(renew: true)
-    |> render("index.html", access_token: access_token,redirect_to: redirect_to)
+    |> render("index.html", access_token: access_token, redirect_to: redirect_to)
   end
 
   def index(conn, %{"state" => state, "code" => code}) do
@@ -62,8 +65,9 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
             |> configure_session(drop: true)
             |> redirect(to: "/")
             |> halt()
+
           client ->
-            save_token(conn,client)
+            save_token(conn, client)
         end
 
       _ ->
