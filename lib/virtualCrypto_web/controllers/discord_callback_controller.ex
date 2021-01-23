@@ -34,8 +34,8 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
         refresh_token
       )
 
-    {:ok, access_token, _} = VirtualCrypto.Guardian.encode_and_sign(%{id: vc.id})
-    redirect_to =  get_continue_uri_from_session(conn)
+      VirtualCrypto.Guardian.issue_token_for_user(vc.id, ["oauth2.register"])
+
     conn
     |> put_session(
       :user,
