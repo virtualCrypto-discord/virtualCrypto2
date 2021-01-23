@@ -1,29 +1,35 @@
-defmodule VirtualCrypto.OAuth2 do
+defmodule VirtualCrypto.Auth do
   alias VirtualCrypto.Auth.InternalAction, as: Action
   alias VirtualCrypto.Repo
   import Ecto.Query
 
   @spec register_application(%{
-          required(:grant_types) => [String.t()],
-          required(:client_name) => String.t(),
+          optional(:application_type) => String.t(),
+          optional(:grant_types) => [String.t()],
+          optional(:client_name) => String.t(),
           optional(:client_uri) => String.t(),
           optional(:logo_uri) => String.t(),
           required(:owner_discord_id) => non_neg_integer(),
           optional(:discord_support_server_invite_slug) => String.t(),
-          optional(:redirect_uris) => [String.t()]
+          required(:redirect_uris) => [String.t()]
         }) ::
           {:ok, Ecto.Schema.t()}
           | {:error, any()}
   def register_application(info) do
-    Action.Application.register_client(
-      Map.fetch!(info, :grant_types),
-      Map.fetch!(info, :client_name),
-      Map.get(info, :client_uri),
-      Map.get(info, :logo_uri),
-      Map.fetch!(info, :owner_discord_id),
-      Map.get(info, :discord_support_server_invite_slug),
-      Map.get(info, :redirect_uris, [])
-    )
+    {:ok, data} =
+      Action.Application.register_client(
+        Map.get(info, :application_type, "web"),
+        Map.get(info, :grant_types, []),
+        Map.get(info, :client_name),
+        Map.get(info, :client_uri),
+        Map.get(info, :logo_uri),
+        info.owner_discord_id,
+        Map.get(info, :discord_support_server_invite_slug),
+        info.redirect_uris
+      )
+
+    {:ok, user} = Repo.insert(%VirtualCrypto.User.User{application_id: data.application.id})
+    {:ok, data |> Map.put(:user, user)}
   end
 
   defp run(f) do
@@ -169,11 +175,13 @@ defmodule VirtualCrypto.OAuth2 do
       Action.token_refresh_token(info.token)
     end)
   end
+
   def exchange_token_by_client_credentials(info) do
     run(fn ->
-      Action.token_client_credentials(info.client_id,info.client_secret,info.guild_id)
+      Action.token_client_credentials(info.client_id, info.client_secret, info.guild_id)
     end)
   end
+
   @spec is_valid_access_token?(%{
           optional(:guild_id) => String.t(),
           required(:token) => String.t()
