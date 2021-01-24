@@ -47,28 +47,28 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
-  scope "/oauth2", VirtualCryptoWeb do
+  scope "/oauth2", VirtualCryptoWeb.OAuth2 do
     scope "/authorize" do
       pipe_through :browser
       pipe_through :browser_auth
-      get "/", Oauth2Controller, :authorize
-      post "/", Oauth2Controller, :authorize_action
+      get "/", AuthorizeController, :get
+      post "/", AuthorizeController, :post
     end
 
     scope "/" do
       pipe_through :api
-      post "/token", Oauth2Controller, :token
+      post "/token", TokenController, :post
 
       scope "/clients" do
         pipe_through :api_auth
-        get "/", Oauth2Controller, :clients_get
+        get "/", ClientsController, :get
+        post "/", ClientsController, :post
 
         scope "/@me" do
-          get "/", Oauth2Controller, :clients_me_get
-          patch "/", Oauth2Controller, :clients_me_patch
+          get "/", ClientController, :get
+          patch "/", ClientController, :patch
         end
 
-        post "/", Oauth2Controller, :clients_post
       end
     end
   end

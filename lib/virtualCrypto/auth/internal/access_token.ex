@@ -1,7 +1,6 @@
 defmodule VirtualCrypto.Auth.InternalAction.AccessToken do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.Repo
-  import VirtualCrypto.Auth.InternalAction.Util
 
   def create_access_token(_grant_id, _lc \\ 5)
 
