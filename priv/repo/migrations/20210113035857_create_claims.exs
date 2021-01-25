@@ -2,7 +2,9 @@ defmodule VirtualCrypto.Repo.Migrations.CreateClaims do
   use Ecto.Migration
 
   def change do
-    execute("create type virtual_crypto_claim_status as enum ('pending', 'approved', 'denied', 'canceled')")
+    execute(
+      "create type virtual_crypto_claim_status as enum ('pending', 'approved', 'denied', 'canceled')"
+    )
 
     create table(:claims) do
       add :amount, :integer

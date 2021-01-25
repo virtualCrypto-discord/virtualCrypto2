@@ -1,12 +1,11 @@
 defmodule Discord.Api.V8.OAuth2 do
-
   @client_data [
     strategy: OAuth2.Strategy.AuthCode,
     client_id: Application.get_env(:virtualCrypto, :client_id),
     client_secret: Application.get_env(:virtualCrypto, :client_secret),
     token_url: "https://discord.com/api/oauth2/token",
     authorize_url: "https://discord.com/api/oauth2/authorize",
-    redirect_uri: Application.get_env(:virtualCrypto, :discord_oauth2_redirect_uri),
+    redirect_uri: Application.get_env(:virtualCrypto, :discord_oauth2_redirect_uri)
   ]
   @spec authorize_url(String.t()) :: String.t()
   def authorize_url(state) do
@@ -21,9 +20,7 @@ defmodule Discord.Api.V8.OAuth2 do
     try do
       client
       |> OAuth2.Client.put_header("Accept", "application/json")
-      |> OAuth2.Client.get_token!(
-        code: code
-      )
+      |> OAuth2.Client.get_token!(code: code)
     rescue
       _ -> :error
     end

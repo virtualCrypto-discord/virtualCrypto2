@@ -23,8 +23,6 @@ defmodule VirtualCrypto.Auth.InternalAction.AuthorizationCode do
     end
   end
 
-
-
   def get_and_delete_unbound_authorization_code(code) do
     q =
       from authorization_codes in Auth.AuthorizationCode,

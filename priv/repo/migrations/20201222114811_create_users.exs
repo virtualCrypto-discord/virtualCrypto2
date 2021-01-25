@@ -8,6 +8,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreateUsers do
 
       timestamps()
     end
+
     create unique_index(:users, [:id])
   end
 end

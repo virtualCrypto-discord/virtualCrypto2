@@ -8,5 +8,4 @@ defmodule Discord.Permissions do
   end
 
   def administrator(), do: 0x8
-
 end

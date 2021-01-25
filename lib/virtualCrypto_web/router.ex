@@ -55,9 +55,21 @@ defmodule VirtualCryptoWeb.Router do
       post "/", Oauth2Controller, :authorize_action
     end
 
-    scope "/token" do
+    scope "/" do
       pipe_through :api
-      post "/", Oauth2Controller, :token
+      post "/token", Oauth2Controller, :token
+
+      scope "/clients" do
+        pipe_through :api_auth
+        get "/", Oauth2Controller, :clients_get
+
+        scope "/@me" do
+          get "/", Oauth2Controller, :clients_me_get
+          patch "/", Oauth2Controller, :clients_me_patch
+        end
+
+        post "/", Oauth2Controller, :clients_post
+      end
     end
   end
 
@@ -70,11 +82,15 @@ defmodule VirtualCryptoWeb.Router do
     post "/integrations/discord/interactions", InteractionsController, :index
 
     scope "/v1", V1 do
-      pipe_through :api_auth
+      scope "/" do
+        pipe_through :api_auth
 
-      get "/user/@me", UserController, :me
-      get "/balance/@me", BalanceController, :balance
-      get "/users/@me/claims", ClaimController, :me
+        get "/user/@me", UserController, :me
+        get "/balance/@me", BalanceController, :balance
+        get "/users/@me/claims", ClaimController, :me
+      end
+
+      get "/moneys", InfoController, :index
     end
   end
 

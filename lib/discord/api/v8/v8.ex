@@ -47,8 +47,7 @@ defmodule Discord.Api.V8 do
   end
 
   def get_user(user_id) do
-    {:ok, response} =
-      get(["users", to_string(user_id)], [])
+    {:ok, response} = get(["users", to_string(user_id)], [])
 
     Jason.decode!(response.body)
   end

@@ -13,7 +13,7 @@ defmodule VirtualCrypto.User.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:status,:discord_id,:application_id])
+    |> cast(attrs, [:status, :discord_id, :application_id])
     |> validate_required([:status])
     |> unique_constraint(:discord_id)
     |> unique_constraint(:application_id)

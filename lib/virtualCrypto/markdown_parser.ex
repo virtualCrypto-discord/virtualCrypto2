@@ -1,11 +1,11 @@
 defmodule VirtualCrypto.MarkdownParser do
   def parse(filename) do
-    data = File.read! ~s/.\/docs\/#{filename}/
-    {:ok, data2, _} = data |> EarmarkParser.as_ast
+    data = File.read!(~s/.\/docs\/#{filename}/)
+    {:ok, data2, _} = data |> EarmarkParser.as_ast()
 
     data2
     |> set_id
-    |> Earmark.Transform.transform
+    |> Earmark.Transform.transform()
     |> write_parsed(filename)
   end
 
@@ -13,10 +13,22 @@ defmodule VirtualCrypto.MarkdownParser do
     parsed
     |> Enum.map(fn line ->
       case line do
-        {"h1", attributes, text, children} -> {"div", (attributes ++ [{"id", text |> hd}, {"class", "is-size-3 has-text-weight-bold my-4"}]), text, children}
-        {"h2", attributes, text, children} -> {"div", (attributes ++ [{"id", text |> hd}, {"class", "is-size-5 has-text-weight-bold my-4"}]), text, children}
-        {"h3", attributes, text, children} -> {"div", (attributes ++ [{"id", text |> hd}, {"class", "has-text-weight-bold my-4"}]), text, children}
-        others -> others
+        {"h1", attributes, text, children} ->
+          {"div",
+           attributes ++ [{"id", text |> hd}, {"class", "is-size-3 has-text-weight-bold my-4"}],
+           text, children}
+
+        {"h2", attributes, text, children} ->
+          {"div",
+           attributes ++ [{"id", text |> hd}, {"class", "is-size-5 has-text-weight-bold my-4"}],
+           text, children}
+
+        {"h3", attributes, text, children} ->
+          {"div", attributes ++ [{"id", text |> hd}, {"class", "has-text-weight-bold my-4"}],
+           text, children}
+
+        others ->
+          others
       end
     end)
   end
@@ -26,9 +38,10 @@ defmodule VirtualCrypto.MarkdownParser do
   end
 
   def parse_all() do
-    {:ok, files} = File.ls "./docs"
+    {:ok, files} = File.ls("./docs")
+
     files
     |> Enum.filter(fn file -> String.ends_with?(file, ".md") end)
-    |> Enum.each(fn file -> parse file end)
+    |> Enum.each(fn file -> parse(file) end)
   end
 end

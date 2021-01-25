@@ -9,9 +9,9 @@ defmodule VirtualCrypto.Repo.Migrations.CreateDiscordUsers do
 
       timestamps()
     end
+
     create unique_index(:discord_users, [:discord_user_id])
     create index(:discord_users, [:token])
     create index(:discord_users, [:refresh_token])
-
   end
 end
