@@ -20,6 +20,7 @@ defmodule VirtualCrypto.Guardian do
       %{
         "sub" => claims["sub"],
         "oauth2.register" => "oauth2.register" in scopes,
+        "vc.pay" => "vc.pay" in scopes,
         "kind" => claims["kind"]
       }
     }
