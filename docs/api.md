@@ -193,6 +193,7 @@ e.g.
 ```
 
 ##### GET /oauth2/clients/@me
+登録内容を確認します。
 ###### Request
 kindが`app.user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
 e.g.
@@ -246,6 +247,7 @@ e.g.
 このリクエストで発生しうるのは認証エラーのみです。
 
 ##### GET /oauth2/clients?user=@me
+ユーザーのアプリケーションを確認します。
 ###### Request
 kindが`user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
 ###### Response
