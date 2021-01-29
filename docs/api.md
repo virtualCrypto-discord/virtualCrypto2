@@ -1,4 +1,4 @@
-# Virtual Crypto API
+# VirtualCrypto API
 
 ## はじめに
 VirtualCrypto APIを用いてVirtual Cryptoと連携するBotやSlash Command、Webアプリケーション、その他様々なものを作成することが可能です。
@@ -33,10 +33,10 @@ Refresh TokenはトークンエンドポイントにてAccess Tokenと引き換�
 
 ### OAuth2/OpenID Connect
 [OAuth2](https://tools.ietf.org/html/rfc6749)([和訳](https://openid-foundation-japan.github.io/rfc6749.ja.html))/[OpenID Connect](https://openid.net/specs/openid-connect-core-1_0.html)([和訳](https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html))は認可/認証に関わる、現在、広範に用いられる標準仕様の一つです。
-VirtualCyprtoではCode FlowとClient Credentials Flowのみをサポートしています。
+VirtualCyprtoではAuthorization Code GrantとClient Credentials Grantのみをサポートしています。
 
 #### URLs
-| Title                         | URL                 | Specification                                                                            |
+| Title                         | URL                 | Related Specification                                                                    |
 | ----------------------------- | ------------------- | ---------------------------------------------------------------------------------------- |
 | Authorization Endpoint        | /oauth2/authorize   | The OAuth 2.0 Authorization Framework/OpenID Connect Core 1.0 incorporating errata set 1 |
 | Token Endpoint                | /oauth2/token       | The OAuth 2.0 Authorization Framework/OpenID Connect Core 1.0 incorporating errata set 1 |
@@ -46,8 +46,9 @@ VirtualCyprtoではCode FlowとClient Credentials Flowのみをサポートし�
 | Name            | Description                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | openid          | OpenID Connect Core 1.0 incorporating errata set 1                                                |
-| oauth2.register | use for [OpenID Connect Dynamic Client Registration](#openid_connect_dynamic_client_registration) |
+| oauth2.register | use for [OpenID Connect Dynamic Client Registration](#openid-connect-dynamic-client-registration) |
 | vc.pay          | allow make payments.                                                                              |
+
 #### Authorization Code Grant
 
 ##### Authorization Code Grant Authorization
@@ -64,23 +65,24 @@ VirtualCyprtoではCode FlowとClient Credentials Flowのみをサポートし�
 認証/認可の完了後、VirtualCryptoは以下のパラメータを付与し`redirect_uri`へユーザーをリダイレクトさせる。
 | Parameter Name | Parameter Type   | Parameter Description                                                        |
 | -------------- | ---------------- | ---------------------------------------------------------------------------- |
-| code           | String           | 認可コード。                                                                 |
+| code           | String           | 認可コード                                                                   |
 | state          | String,undefined | stateがAuthorization Requestの際に渡されていればその値がそのまま返却される。 |
 ##### Authorization Code Grant Authorization Error Response
 失敗時はリダイレクト可能な場合は、以下のパラメータを付与し、`redirect_uri`へユーザーをリダイレクトさせる。
 | Parameter Name    | Parameter Type   | Parameter Description                                                        |
 | ----------------- | ---------------- | ---------------------------------------------------------------------------- |
-| error             | String           | エラーコード。                                                               |
+| error             | String           | エラーコード                                                               |
 | error_description | String,undefined | 人間向けのエラーの詳細な情報                                                 |
 | state             | String,undefined | stateがAuthorization Requestの際に渡されていればその値がそのまま返却される。 |
+
 #### OpenID Connect Dynamic Client Registration
 VirtualCryptoは[OpenID Connect Dynamic Client Registration](https://openid.net/specs/openid-connect-registration-1_0.html)を実装していますが、
 この登録にはkindがuserのAccess Tokenが必要です。
 
-##### POST /oauth2/clients
-この操作により、アプリケーション(クライアント)を登録します。
+##### Client Registration
+Client Registration Endpointに`POST`を行うことにより、アプリケーション(クライアント)を登録します。
 
-###### Request
+###### Client Registration Request
 Content Typeは`application/json`を用いてください。  
 kindが`user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
 
@@ -115,7 +117,7 @@ e.g.
   }
 ```
 
-###### Response
+###### Client Registration Response
 成功した場合はステータスコード201で以下のパラメータを持つJSONが返却されます。
 
 | Parameter Name            | Parameter Type | Parameter Description                                             |
@@ -142,7 +144,7 @@ e.g.
      "https://vcrypto.sumidora.com/oauth2/clients/@me",
   }
 ```
-###### Error Response
+###### Client Registration Error Response
 失敗した場合ステータスコード400で以下のパラメータを持つJSONが返却されます。
 | Parameter Name    | Parameter Type   | Parameter Description                                                                            |
 | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------ |
@@ -159,10 +161,10 @@ e.g.
    "error_description": "redirect_uri_scheme_must_be_http_or_https"
   }
 ```
-##### PATCH /oauth2/clients/@me
-この操作によって登録内容を操作します。
+##### Client Configuration 
+Client Configuration Endpointに`PATCH`でアクセスすることにより、クライアントの情報を編集可能です。
 
-###### Request
+###### Client Configuration Request
 Content Typeは`application/json`を用いてください。  
 kindが`app.user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
 Bodyには以下のパラメータを持つJSONを指定してください。
@@ -191,7 +193,7 @@ e.g.
    "discord_support_server_invite_slug": "JtrZyKwu"
   }
 ```
-###### Response
+###### Client Configuration  Response
 成功時は2xxが返却されます。
 
 e.g.
@@ -199,7 +201,7 @@ e.g.
   HTTP/1.1 204 No Content
 ```
 
-###### Error Response
+###### Client Configuration Error Response
 失敗した場合ステータスコード400で以下のパラメータを持つJSONが返却されます。
 | Parameter Name    | Parameter Type   | Parameter Description                                                                            |
 | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------ |
@@ -217,9 +219,9 @@ e.g.
   }
 ```
 
-##### GET /oauth2/clients/@me
-登録内容を確認します。
-###### Request
+##### Client Information 
+Client Configuration Endpointに`GET`でアクセスすることにより、クライアントの情報を取得可能です。
+###### Client Information Request
 kindが`app.user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
 e.g.
 ```
@@ -228,7 +230,7 @@ e.g.
   Host: vcrypto.sumidora.com
   Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJ ...
 ```
-###### Response
+###### Client Information Response
 ステータスコード200で以下のパラメータを持つJSONが返却されます。
 | Parameter Name                     | Parameter Type | Parameter Description                                                                                          |
 | ---------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -268,14 +270,14 @@ e.g.
     "user_id": 3
   }
 ```
-###### Error Response
+###### Client Information Error Response
 このリクエストで発生しうるのは認証エラーのみです。
 
-##### GET /oauth2/clients?user=@me
-ユーザーのアプリケーションを確認します。
-###### Request
+##### User's Client Information
+ユーザーのアプリケーションを取得する操作です。
+######  User's Client Information Request
 kindが`user`かつ、`oauth2.register`スコープをもつアクセストークンを認証に使用してください。
-###### Response
+###### User's Client Information Response
 `GET /oauth2/clients/@me`のレスポンスの配列が返却されます。
 
 e.g.
@@ -306,5 +308,5 @@ e.g.
   ]
 ```
 
-###### Error Response
+######  User's Client Information Error Response
 このリクエストで発生しうるのは認証エラーのみです。
