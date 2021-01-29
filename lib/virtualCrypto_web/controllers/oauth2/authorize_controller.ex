@@ -2,6 +2,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   use VirtualCryptoWeb, :controller
   use Bitwise
   alias VirtualCrypto.Auth
+
   defp validate_executor(conn, guild) do
     guild_id = guild["id"]
     user_id = conn.private.plug_session["user"].id
@@ -87,10 +88,18 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
                 |> URI.parse()
                 |> Map.put(
                   :query,
-                  URI.encode_query(%{
-                    error: error,
-                    error_description: error_description
-                  })
+                  URI.encode_query(
+                    %{
+                      error: error,
+                      error_description: error_description
+                    }
+                    |> Map.merge(
+                      case Map.get(params, "state") do
+                        nil -> %{}
+                        state -> %{state: state}
+                      end
+                    )
+                  )
                 )
                 |> URI.to_string()
             )
@@ -101,6 +110,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   def get(conn, _) do
     render(conn, "error.authorize.html", error: :invalid_request, desc: :invalid_response_type)
   end
+
   def post(conn, %{"response_type" => "code", "action" => "approve"} = params) do
     props =
       with {:client_id, %{"client_id" => client_id}} <- {:client_id, params},
