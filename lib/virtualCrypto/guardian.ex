@@ -52,10 +52,11 @@ defmodule VirtualCrypto.Guardian do
   @impl Guardian
   def after_encode_and_sign(
         _resource,
-        %{"kind" => "user", "jti" => token_id, "exp" => expires, "sub" => user_id},
+        %{"kind" => kind, "jti" => token_id, "exp" => expires, "sub" => user_id},
         token,
         _options
-      ) do
+      )
+      when kind in ["user", "app"] do
     VirtualCrypto.Repo.insert!(%VirtualCrypto.Auth.UserAccessToken{
       user_id: String.to_integer(user_id),
       token_id: token_id,
@@ -66,28 +67,19 @@ defmodule VirtualCrypto.Guardian do
   end
 
   @impl Guardian
-  def after_encode_and_sign(_resource, %{"kind" => "app", "jti" => _token_id}, token, _options) do
-    {:ok, token}
-  end
-
-  @impl Guardian
   def after_encode_and_sign(_resource, _cliams, _token, _options) do
     {:error, :invalid_kind}
   end
 
   @impl Guardian
-  def verify_claims(%{"kind" => "user", "jti" => token_id} = claims, _options) do
+  def verify_claims(%{"kind" => kind, "jti" => token_id} = claims, _options)
+      when kind in ["user", "app"] do
     case VirtualCrypto.Repo.exists?(VirtualCrypto.Auth.UserAccessToken,
            token_id: token_id
          ) do
       true -> {:ok, claims}
       false -> {:error, :token_not_found}
     end
-  end
-
-  @impl Guardian
-  def verify_claims(%{"kind" => "app", "jti" => _token_id} = claims, _options) do
-    {:ok, claims}
   end
 
   @impl Guardian
