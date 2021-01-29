@@ -71,7 +71,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
       with {:validate_credentials, {client_id, client_secret}} <-
              {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)} do
         {:ok, access_token, claims} =
-          VirtualCrypto.Guardian.issue_token_for_app_user(
+          VirtualCrypto.Guardian.issue_token_for_app(
             Auth.InternalAction.Application.get_application_user_id_by_client_id(
               client_id,
               client_secret

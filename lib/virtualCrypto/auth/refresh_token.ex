@@ -15,6 +15,6 @@ defmodule VirtualCrypto.Auth.RefreshToken do
     |> cast(attrs, [:grant_id, :token_id, :expires])
     |> validate_required([:grant_id, :token_id, :expires])
     |> unique_constraint([:grant_id])
-    |> unique_constraint([:token])
+    |> unique_constraint([:token_id])
   end
 end
