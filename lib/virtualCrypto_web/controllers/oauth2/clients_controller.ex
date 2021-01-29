@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
+
   defp fetch(m, k, e) do
     case Map.fetch(m, k) do
       :error -> {:error, e}
@@ -57,8 +58,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
       with {{:validate_token, :token_verification_failed},
             %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
-           {{:validate_token, :invalid_user},
-            %User.User{discord_id: owner_discord_id}} <-
+           {{:validate_token, :invalid_user}, %User.User{discord_id: owner_discord_id}} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)},
            {{:validate_token, :getting_discord_access_token_failed_while_user_verification},
             %DiscordAuth.DiscordUser{token: discord_access_token}} <-
@@ -115,7 +115,9 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
             "oauth2.register"
           ])
 
-        render(conn, "ok.register.json",
+        conn
+        |> put_status(201)
+        |> render("ok.register.json",
           application: application_data.application,
           registration_access_token: access_token,
           registration_client_uri:
