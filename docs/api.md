@@ -48,6 +48,31 @@ VirtualCyprtoではCode FlowとClient Credentials Flowのみをサポートし�
 | openid          | OpenID Connect Core 1.0 incorporating errata set 1                                                |
 | oauth2.register | use for [OpenID Connect Dynamic Client Registration](#openid_connect_dynamic_client_registration) |
 | vc.pay          | allow make payments.                                                                              |
+#### Authorization Code Grant
+
+##### Authorization Code Grant Authorization
+##### Authorization Code Grant Authorization Request
+以下のパラメータを`application/x-www-form-urlencoded`を用いてエンコードし、Authorization Endpointへユーザーエージェントをリダイレクトさせる。
+| Parameter Name | Parameter Type   | Parameter Description                                                                 |
+| -------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| client_id      | String           | クライアントの識別子                                                                  |
+| response_type  | String           | `code`でなければならない。                                                            |
+| redirect_uri   | String           | 事前に登録済みである必要がある。                                                      |
+| scope          | String           | [Scopes](#scopes)の中からいくつかを選択しなければならない。値はスペースで区切られる。 |
+| state          | String,undefined | CSRF対策のために用いられるべきである。                                                |
+##### Authorization Code Grant Authorization Response
+認証/認可の完了後、VirtualCryptoは以下のパラメータを付与し`redirect_uri`へユーザーをリダイレクトさせる。
+| Parameter Name | Parameter Type   | Parameter Description                                                        |
+| -------------- | ---------------- | ---------------------------------------------------------------------------- |
+| code           | String           | 認可コード。                                                                 |
+| state          | String,undefined | stateがAuthorization Requestの際に渡されていればその値がそのまま返却される。 |
+##### Authorization Code Grant Authorization Error Response
+失敗時はリダイレクト可能な場合は、以下のパラメータを付与し、`redirect_uri`へユーザーをリダイレクトさせる。
+| Parameter Name    | Parameter Type   | Parameter Description                                                        |
+| ----------------- | ---------------- | ---------------------------------------------------------------------------- |
+| error             | String           | エラーコード。                                                               |
+| error_description | String,undefined | 人間向けのエラーの詳細な情報                                                 |
+| state             | String,undefined | stateがAuthorization Requestの際に渡されていればその値がそのまま返却される。 |
 #### OpenID Connect Dynamic Client Registration
 VirtualCryptoは[OpenID Connect Dynamic Client Registration](https://openid.net/specs/openid-connect-registration-1_0.html)を実装していますが、
 この登録にはkindがuserのAccess Tokenが必要です。
