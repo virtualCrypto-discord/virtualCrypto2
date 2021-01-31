@@ -13,7 +13,7 @@ defmodule VirtualCrypto.Auth.AccessToken do
   def changeset(asset, attrs) do
     asset
     |> cast(attrs, [:grant_id, :token, :expires])
-    |> validate_required([:grant_id, :token, :expires])
-    |> unique_constraint([:token])
+    |> validate_required([:grant_id, :token_id, :expires])
+    |> unique_constraint([:token_id])
   end
 end

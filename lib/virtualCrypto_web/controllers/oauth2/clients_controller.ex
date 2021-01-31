@@ -111,7 +111,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
     case params do
       {:ok, application_data} ->
         {:ok, access_token, _} =
-          VirtualCrypto.Guardian.issue_token_for_app_user(application_data.user.id, [
+          VirtualCrypto.Guardian.issue_token_for_app(application_data.user.id, [
             "oauth2.register"
           ])
 
