@@ -18,17 +18,21 @@ defmodule VirtualCrypto.DiscordAuth do
     user
   end
 
-  def update_user(discord_user_id, token, expires, refresh_token) do
-    DiscordAuth.DiscordUser
-    |> where([u], u.discord_user_id == ^discord_user_id)
-    |> update(
-      set: [
-        token: ^token,
-        refresh_token: ^refresh_token,
-        expires: ^(expires |> NaiveDateTime.truncate(:second))
-      ]
-    )
-    |> Repo.update_all([])
+  defp update_user(discord_user_id, token, expires, refresh_token) do
+    {1, [user]} =
+      DiscordAuth.DiscordUser
+      |> where([u], u.discord_user_id == ^discord_user_id)
+      |> update(
+        set: [
+          token: ^token,
+          refresh_token: ^refresh_token,
+          expires: ^(expires |> NaiveDateTime.truncate(:second))
+        ]
+      )
+      |> select([u], u)
+      |> Repo.update_all([])
+
+    {:ok, user}
   end
 
   def get_user_from_id(discord_user_id) do
