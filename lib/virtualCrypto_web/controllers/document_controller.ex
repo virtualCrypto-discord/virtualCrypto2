@@ -15,4 +15,9 @@ defmodule VirtualCryptoWeb.DocumentController do
     conn
     |> redirect(external: @base <> "About.md")
   end
+
+  def api(conn, _) do
+    conn
+    |> redirect(external: @base <> "Api.md")
+  end
 end

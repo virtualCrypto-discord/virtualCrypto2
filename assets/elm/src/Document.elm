@@ -17,7 +17,7 @@ main =
       div [class "tile is-8", style "margin" "0 auto"] [
         documentButton "VirtualCrypto" "VirtualCryptoの仕組みについて" "/document/about"
       , documentButton "コマンド" "VirtualCryptoのDiscord Botで使用できるコマンドについて" "/document/commands"
-      , documentButton "API(準備中)" "VirtualCryptoのAPIの使用方法について" ""
+      , documentButton "API" "VirtualCryptoのAPIの使用方法について" "/document/api"
       ]
     ]
   ]

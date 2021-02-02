@@ -38,6 +38,7 @@ defmodule VirtualCryptoWeb.Router do
       get "/", DocumentController, :index
       get "/about", DocumentController, :about
       get "/commands", DocumentController, :commands
+      get "/api", DocumentController, :api
     end
 
     # required auth
