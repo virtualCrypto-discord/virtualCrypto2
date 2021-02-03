@@ -1,4 +1,3 @@
-self.originURL = "<%= %>"
 importScripts(
   "<%= Routes.static_path(@conn, "/static/js/vendors~credential-manager-cb~credential-manager-sw~mypage.js") %>",
   "<%= Routes.static_path(@conn, "/static/js/credential-manager-sw.js") %>"

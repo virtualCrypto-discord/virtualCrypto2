@@ -9,8 +9,8 @@ defmodule VirtualCrypto.Repo.Migrations.CreateUserAccessTokens do
       timestamps()
     end
 
-    create unique_index(:user_access_tokens,:token_id)
-    create index(:user_access_tokens,:expires)
-    create index(:user_access_tokens,:user_id)
+    create unique_index(:user_access_tokens, :token_id)
+    create index(:user_access_tokens, :expires)
+    create index(:user_access_tokens, :user_id)
   end
 end

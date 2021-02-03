@@ -239,7 +239,7 @@ defmodule VirtualCrypto.Auth.InternalAction do
           :ok,
           %{
             access_token: access_token.token,
-            expires: access_token.expires,
+            expires_in: DateTime.diff(access_token.expires, DateTime.utc_now()),
             token_type: "Bearer",
             refresh_token: refresh_token
           }
@@ -249,7 +249,7 @@ defmodule VirtualCrypto.Auth.InternalAction do
           :ok,
           %{
             access_token: access_token.token,
-            expires: access_token.expires,
+            expires_in: DateTime.diff(access_token.expires, DateTime.utc_now()),
             token_type: "Bearer"
           }
         }

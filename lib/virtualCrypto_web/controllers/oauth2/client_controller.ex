@@ -2,13 +2,13 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
+
   def get(conn, _params) do
     params =
       with {{:validate_token, :token_verification_failed},
             %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
-           {{:validate_token, :invalid_user},
-            %User.User{application_id: application_id} = user} <-
+           {{:validate_token, :invalid_user}, %User.User{application_id: application_id} = user} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)} do
         case Auth.get_application(application_id) do
           nil -> {:error, {:invalid_token, :invalid_user}}
@@ -53,8 +53,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
       with {{:validate_token, :token_verification_failed},
             %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
-           {{:validate_token, :invalid_user},
-            %User.User{application_id: application_id}} <-
+           {{:validate_token, :invalid_user}, %User.User{application_id: application_id}} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)} do
         Auth.Application.PatchQuery.patch(application_id, params)
       end

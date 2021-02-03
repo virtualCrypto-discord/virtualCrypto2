@@ -26,7 +26,6 @@ module.exports = (env, options) => {
       'header': './js/header.js',
       'mypage': './js/mypage.js',
       'document': './js/document.js',
-      'docs': './js/docs.js',
       'authorize': './js/authorize.js',
       'credential-manager-sw': './js/credential-manager-sw.js',
       'credential-manager-cb': './js/credential-manager-cb.js',

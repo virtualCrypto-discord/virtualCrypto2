@@ -4,5 +4,5 @@
       raw(""),
       type: "text/javascript",
       src: Routes.static_path(@conn, "/static/js/credential-manager-cb.js"),
-      data: [redirect_to: @redirect_to,access_token: @access_token])
+      data: [redirect_to: @redirect_to,access_token: @access_token,expires_in: @expires_in])
     %>
