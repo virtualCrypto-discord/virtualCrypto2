@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.DiscordCallbackController do
+defmodule VirtualCryptoWeb.WebAuthController do
   use VirtualCryptoWeb, :controller
 
   import Plug.Conn,
@@ -55,7 +55,7 @@ defmodule VirtualCryptoWeb.DiscordCallbackController do
     |> render("index.html", access_token: access_token, redirect_to: redirect_to)
   end
 
-  def index(conn, %{"state" => state, "code" => code}) do
+  def discord_callback(conn, %{"state" => state, "code" => code}) do
     case get_session(conn, :discord_oauth2) do
       %{state: ^state} ->
         case Discord.Api.V8.OAuth2.exchange_code(code) do

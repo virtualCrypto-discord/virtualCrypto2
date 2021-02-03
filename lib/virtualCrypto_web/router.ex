@@ -32,7 +32,7 @@ defmodule VirtualCryptoWeb.Router do
     get "/invite", OutgoingController, :bot
     get "/support", OutgoingController, :guild
 
-    get "/callback/discord", DiscordCallbackController, :index
+    get "/callback/discord", WebAuthController, :discord_callback
 
     scope "/document" do
       get "/", DocumentController, :index
