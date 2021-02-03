@@ -43,7 +43,6 @@ defmodule VirtualCryptoWeb.WebAuthController do
     |> put_session(
       :user,
       %{
-        # This is discord user id
         id: vc.id
       }
     )
@@ -77,5 +76,8 @@ defmodule VirtualCryptoWeb.WebAuthController do
         |> redirect(to: "/document")
         |> halt()
     end
+  end
+  def renew_token(conn) do
+
   end
 end
