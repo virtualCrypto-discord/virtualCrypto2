@@ -13,7 +13,7 @@ function onFetchCallbackPage(ev) {
     if (!access_token || !expires_in) {
       return res;
     }
-    await localforage.setItem("credentials", { access_token, expires: Date.now() + Number(expires_in) * 1000 });
+    await localforage.setItem("credential", { access_token, expires: Date.now() + Number(expires_in) * 1000 });
     const redirect_to = new URL(headers.get("x-redirect-to") || "/");
     const url = new URL(redirect_to, new URL(ev.request.url).origin);
     return Response.redirect(url, 302);
@@ -45,9 +45,9 @@ self.addEventListener("fetch", (ev) => {
   onFetch(ev);
 });
 self.addEventListener("install", (ev) => {
-  ev.waitUntil(self.skipWaiting());
+  self.skipWaiting();
   console.log("installed");
 });
-self.addEventListener("activate", function () {
+self.addEventListener("activate", (ev) => {
   console.log("activated");
 });
