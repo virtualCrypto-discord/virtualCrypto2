@@ -55,7 +55,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
     )
     |> put_resp_header("x-access-token", access_token)
     |> put_resp_header("x-redirect-to", redirect_to)
-    |> put_resp_header("x-expires-in",to_string(expires_in))
+    |> put_resp_header("x-expires-in", to_string(expires_in))
     |> put_flash(:info, "ログイン成功しました")
     |> delete_session(:discord_oauth2)
     |> configure_session(renew: true)
@@ -89,8 +89,10 @@ defmodule VirtualCryptoWeb.WebAuthController do
         |> halt()
     end
   end
+
   plug :fetch_session when action in [:token]
-  def token(conn,_) do
+
+  def token(conn, _) do
     case get_session(conn, :user) do
       %{id: id} ->
         {:ok, access_token, expires_in} = issue_token(id)

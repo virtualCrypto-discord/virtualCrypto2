@@ -6,6 +6,5 @@ defmodule VirtualCrypto.Repo.Migrations.UpdateMoneyPaymentHistorys do
       remove :time
       add :time, :naive_datetime
     end
-
   end
 end

@@ -33,7 +33,7 @@ defmodule VirtualCrypto.Money.InternalAction do
              money_id: money.id,
              receiver_id: receiver_id,
              sender_id: sender_id,
-             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
            }) do
       {:ok, nil}
     else
@@ -75,11 +75,13 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def update_asset_amount(asset_id, amount) do
-    {1,nil} = Money.Asset
-    |> where([a], a.id == ^asset_id)
-    |> update(inc: [amount: ^amount])
-    |> Repo.update_all([])
-    {:ok,nil}
+    {1, nil} =
+      Money.Asset
+      |> where([a], a.id == ^asset_id)
+      |> update(inc: [amount: ^amount])
+      |> Repo.update_all([])
+
+    {:ok, nil}
   end
 
   def get_money_by_guild_id_with_lock(guild_id) do
