@@ -218,11 +218,16 @@ defmodule VirtualCrypto.Auth do
 
     Repo.all(q)
   end
-  def get_application_user_id_by_client_id(client_id,client_secret) do
-    q = from applications in VirtualCrypto.Auth.Application,
-      join: users in VirtualCrypto.User.User,
-      on: applications.client_id == ^client_id and applications.client_secret == ^client_secret and users.application_id == applications.id,
-      select: { users.id }
+
+  def get_application_user_id_by_client_id(client_id, client_secret) do
+    q =
+      from applications in VirtualCrypto.Auth.Application,
+        join: users in VirtualCrypto.User.User,
+        on:
+          applications.client_id == ^client_id and applications.client_secret == ^client_secret and
+            users.application_id == applications.id,
+        select: {users.id}
+
     Repo.one(q)
   end
 end

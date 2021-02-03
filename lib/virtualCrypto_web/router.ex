@@ -68,7 +68,6 @@ defmodule VirtualCryptoWeb.Router do
           get "/", ClientController, :get
           patch "/", ClientController, :patch
         end
-
       end
     end
   end

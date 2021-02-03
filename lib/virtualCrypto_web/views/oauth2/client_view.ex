@@ -12,6 +12,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientView do
       redirect_uris: redirect_uris
     })
   end
+
   def render("error.register.json", %{error: error, error_description: error_description}) do
     %{
       "error" => to_string(error),

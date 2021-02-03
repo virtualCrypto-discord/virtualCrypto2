@@ -20,6 +20,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsView do
       "error_description" => to_string(error_description)
     }
   end
+
   def render("clients.register.json", %{applications: applications}) do
     Enum.group_by(applications, fn {application, _, _} -> application.id end)
     |> Enum.map(fn {_application_id, [{application, user, _redirect_uri} | _tail] = list} ->

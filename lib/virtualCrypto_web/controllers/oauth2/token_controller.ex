@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.OAuth2.TokenController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Auth
+
   def post(conn, %{"grant_type" => "authorization_code"} = params) do
     params =
       with {:client_id, %{"client_id" => client_id}} <- {:client_id, params},

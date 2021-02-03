@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
         }
         """)
 
-      x when x in [:unauthorized,:invalid_token] ->
+      x when x in [:unauthorized, :invalid_token] ->
         conn
         |> Plug.Conn.put_resp_header(
           "WWW-Authenticate",
