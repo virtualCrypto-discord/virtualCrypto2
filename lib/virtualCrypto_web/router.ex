@@ -69,13 +69,13 @@ defmodule VirtualCryptoWeb.Router do
           get "/", ClientController, :get
           patch "/", ClientController, :patch
         end
-
       end
     end
   end
 
   scope "/", VirtualCryptoWeb do
     get "/sw.js", ServiceWorkerController, :index
+    post "/token", WebAuthController, :token
   end
 
   scope "/api", VirtualCryptoWeb.Api do
@@ -89,7 +89,7 @@ defmodule VirtualCryptoWeb.Router do
         get "/user/@me", UserController, :me
         get "/balance/@me", BalanceController, :balance
         get "/users/@me/claims", ClaimController, :me
-        post "/users/@me/transactions",UserTransactionController, :post
+        post "/users/@me/transactions", UserTransactionController, :post
       end
 
       get "/moneys", InfoController, :index

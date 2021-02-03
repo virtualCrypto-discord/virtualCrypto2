@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.OAuth2.TokenController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Auth
+
   def post(conn, %{"grant_type" => "authorization_code"} = params) do
     params =
       with {:client_id, %{"client_id" => client_id}} <- {:client_id, params},
@@ -70,7 +71,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
     params =
       with {:validate_credentials, {client_id, client_secret}} <-
              {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)} do
-        {:ok, access_token, claims} =
+        {:ok, access_token, %{"exp" => expires}} =
           VirtualCrypto.Guardian.issue_token_for_app(
             Auth.InternalAction.Application.get_application_user_id_by_client_id(
               client_id,
@@ -81,7 +82,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
 
         %{
           access_token: access_token,
-          expires: claims["exp"],
+          expires_in: DateTime.diff(DateTime.from_unix!(expires), DateTime.utc_now()),
           token_type: "Bearer"
         }
       else

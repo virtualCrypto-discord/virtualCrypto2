@@ -13,8 +13,8 @@ defmodule VirtualCrypto.Auth.UserAccessToken do
   @doc false
   def changeset(user_access_token, attrs) do
     user_access_token
-    |> cast(attrs, [:token_id, :expires,:user_id])
-    |> validate_required([:token_id, :expires,:user_id])
+    |> cast(attrs, [:token_id, :expires, :user_id])
+    |> validate_required([:token_id, :expires, :user_id])
     |> unique_constraint([:token_id])
   end
 end

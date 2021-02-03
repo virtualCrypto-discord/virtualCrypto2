@@ -8,7 +8,8 @@ defmodule VirtualCryptoWeb.WebAuthController do
       configure_session: 2,
       get_session: 2,
       delete_session: 2,
-      put_resp_header: 3
+      put_resp_header: 3,
+      fetch_session: 2
     ]
 
   defp get_continue_uri_from_session(conn) do
@@ -16,6 +17,13 @@ defmodule VirtualCryptoWeb.WebAuthController do
       nil -> "/"
       url -> url
     end
+  end
+
+  defp issue_token(id) do
+    {:ok, access_token, %{"exp" => expires}} =
+      VirtualCrypto.Guardian.issue_token_for_user(id, ["oauth2.register", "vc.pay"])
+
+    {:ok, access_token, DateTime.diff(DateTime.from_unix!(expires), DateTime.utc_now())}
   end
 
   defp save_token(conn, client) do
@@ -34,8 +42,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
         refresh_token
       )
 
-    {:ok, access_token, _} =
-      VirtualCrypto.Guardian.issue_token_for_user(vc.id, ["oauth2.register","vc.pay"])
+    {:ok, access_token, expires_in} = issue_token(vc.id)
 
     redirect_to = get_continue_uri_from_session(conn)
 
@@ -48,10 +55,15 @@ defmodule VirtualCryptoWeb.WebAuthController do
     )
     |> put_resp_header("x-access-token", access_token)
     |> put_resp_header("x-redirect-to", redirect_to)
+    |> put_resp_header("x-expires-in",to_string(expires_in))
     |> put_flash(:info, "ログイン成功しました")
     |> delete_session(:discord_oauth2)
     |> configure_session(renew: true)
-    |> render("index.html", access_token: access_token, redirect_to: redirect_to)
+    |> render("index.html",
+      access_token: access_token,
+      redirect_to: redirect_to,
+      expires_in: expires_in
+    )
   end
 
   def discord_callback(conn, %{"state" => state, "code" => code}) do
@@ -77,7 +89,15 @@ defmodule VirtualCryptoWeb.WebAuthController do
         |> halt()
     end
   end
-  def renew_token(conn) do
+  plug :fetch_session when action in [:token]
+  def token(conn,_) do
+    case get_session(conn, :user) do
+      %{id: id} ->
+        {:ok, access_token, expires_in} = issue_token(id)
+        render(conn, "token.json", access_token: access_token, expires_in: expires_in)
 
+      _ ->
+        nil
+    end
   end
 end
