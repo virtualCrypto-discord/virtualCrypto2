@@ -9,12 +9,13 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Add redirect url(e.g. `https://localhost:4000/callback/discord`),at [discord dev portal](https://discord.com/developers),according to the config file.
   - Put `bot_token`,`public_key`,`client_id`,`client_secret`,`invite_url` to dev.exs.
   - Install PostgreSQL and check database configuration.
-  - Execute `mix setup`
-  - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs.
-  - Execute `mix gen.phx.cert`.
-  - Execute `iex -S mix phx.server`.
-  - Add Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`).
+  - Execute `mix setup`,including `["deps.get", "ecto.setup", "cmd npm install --prefix assets"]`,to do initial setup.
+  - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs for signing jwt token.
+  - Execute `mix gen.phx.cert` to create self-signed cerificature for developing.
+  - Execute `iex -S mix phx.server` to execute server.
+  - Add Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) to receive interactions via http.
   - Add your bot to server.
+  - Execute `mix register.commands <your guild id>` to register slash commands.
 ### Example of config/dev.exs
 ```elixir
 use Mix.Config
