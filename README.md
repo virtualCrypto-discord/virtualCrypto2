@@ -4,8 +4,9 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
 ## Developing
   - rename config/dev.exs.example to config/dev.exs
   - and edit config/dev.exs
-  - execute mix gen.phx.cert
-  - iex -S mix phx.server
+  - execute `mix gen.phx.cert`
+  - execute ``
+  - execute `iex -S mix phx.server`
 ### Example of config/dev.exs
 ```elixir
 use Mix.Config
