@@ -1,4 +1,4 @@
-<script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/static/js/authorize.js") %>"></script>
+<script defer type="text/javascript" src="<%= "/static" <> Routes.static_path(@conn, "/js/authorize.js") %>"></script>
 <%= content_tag(
     :div,
     raw(""),
