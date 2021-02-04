@@ -1,4 +1,4 @@
-defmodule VirtualCrypto.Command do
+defmodule Command do
   @moduledoc """
   """
 
@@ -198,7 +198,7 @@ defmodule VirtualCrypto.Command do
     }
   end
 
-  def post_all do
+  def post_all(url) do
     HTTPoison.start()
 
     headers = [
@@ -206,13 +206,18 @@ defmodule VirtualCrypto.Command do
       {"Content-Type", "application/json"}
     ]
 
-    url = Application.get_env(:virtualCrypto, :command_post_url)
+
     commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
 
     commands
     |> Enum.each(fn command ->
       {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
-      IO.inspect(r.status_code)
+      IO.inspect({Jason.decode!(r.body)["name"],r.status_code})
     end)
   end
 end
+url = case System.argv() do
+  [] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/commands"
+  [guild] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
+end
+Command.post_all(url)
