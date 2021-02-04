@@ -13,7 +13,7 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs for signing jwt token.
   - Execute `mix gen.phx.cert` to create self-signed cerificature for developing.
   - Execute `iex -S mix phx.server` to execute server.
-  - Add Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) to receive interactions via http.
+  - Add Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) for receive interactions via http.
   - Add your bot to server.
   - Execute `mix register.commands <your guild id>` to register slash commands.
 ### Example of config/dev.exs
