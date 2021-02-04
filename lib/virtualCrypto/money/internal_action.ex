@@ -24,9 +24,18 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Upsert receiver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
-      # Update sender amount.
-      {:ok, update_asset_amount(sender_asset.id, -amount)}
+         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount),
+         # Update sender amount.
+         {:ok, _} <- update_asset_amount(sender_asset.id, -amount),
+         {:ok, _} <-
+           Repo.insert(%VirtualCrypto.Money.PaymentHistory{
+             amount: amount,
+             money_id: money.id,
+             receiver_id: receiver_id,
+             sender_id: sender_id,
+             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+           }) do
+      {:ok, nil}
     else
       {:money, false} -> {:error, :not_found_money}
       {:sender_asset, false} -> {:error, :not_found_sender_asset}
@@ -66,10 +75,13 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def update_asset_amount(asset_id, amount) do
-    Money.Asset
-    |> where([a], a.id == ^asset_id)
-    |> update(inc: [amount: ^amount])
-    |> Repo.update_all([])
+    {1, nil} =
+      Money.Asset
+      |> where([a], a.id == ^asset_id)
+      |> update(inc: [amount: ^amount])
+      |> Repo.update_all([])
+
+    {:ok, nil}
   end
 
   def get_money_by_guild_id_with_lock(guild_id) do
