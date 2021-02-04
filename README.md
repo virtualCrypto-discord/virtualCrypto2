@@ -11,7 +11,7 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs.
   - Execute `mix gen.phx.cert`
   - Execute `iex -S mix phx.server`
-  - Add Interactions Endpoint URL.
+  - Add Interactions Endpoint URL.(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`)
   - Add your bot to server.
 ### Example of config/dev.exs
 ```elixir
