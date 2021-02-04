@@ -2,11 +2,17 @@
 rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) with elixir.
 
 ## Developing
-  - rename config/dev.exs.example to config/dev.exs
-  - and edit config/dev.exs
-  - execute `mix gen.phx.cert`
-  - execute ``
-  - execute `iex -S mix phx.server`
+  - Rename config/dev.exs.example to config/dev.exs .
+  - Access to [discord dev portal](https://discord.com/developers).
+  - Create new application.
+  - Create bot.
+  - Add redirect url according to the config file at [discord dev portal](https://discord.com/developers)(e.g. `https://localhost:4000/callback/discord`)
+  - Put `bot_token`,`public_key`,`client_id`,`client_secret`,`invite_url` to dev.exs.
+  - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs.
+  - Execute `mix gen.phx.cert`
+  - Execute `iex -S mix phx.server`
+  - Add Interactions Endpoint URL.
+  - Add your bot to server.
 ### Example of config/dev.exs
 ```elixir
 use Mix.Config
@@ -65,7 +71,7 @@ config :virtualCrypto, :client_id, "791984306632654869"
 
 config :virtualCrypto, :client_secret, "ob__pgZ7czwQDU4a1nBixJXh2WVfBoht"
 
-config :virtualCrypto, :invite_url, "https://discord.com/api/oauth2/authorize?client_id=791984306632654869&permissions=379968&scope=applications.commands%20bot"
+config :virtualCrypto, :invite_url, "https://discord.com/api/oauth2/authorize?client_id=791984306632654869&permissions=0&scope=applications.commands%20bot"
 
 config :virtualCrypto, :support_guild_invite_url, "https://discord.com/invite/Hgp5DpG"
 
