@@ -11,9 +11,9 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Install PostgreSQL and check database configuration.
   - Execute `mix setup`,including `["deps.get", "ecto.setup", "cmd npm install --prefix assets"]`,to do initial setup.
   - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs for signing jwt token.
-  - Execute `mix gen.phx.cert` to create self-signed cerificature for developing.
+  - Execute `mix phx.gen.cert` to create self-signed cerificature for developing.
   - Execute `iex -S mix phx.server` to execute server.
-  - Add Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) for receive interactions via http.
+  - Fill Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) for receive interactions via http.
   - Add your bot to server.
   - Execute `mix register.commands <your guild id>` to register slash commands.
 ### Example of config/dev.exs
