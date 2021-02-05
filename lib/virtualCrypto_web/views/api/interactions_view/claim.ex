@@ -13,11 +13,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render_sent_claim(sent_claims) do
     sent_claims
-    |> Enum.map(fn claim ->
-      money = VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id)
-      payer_user = VirtualCrypto.User.get_user_by_id(claim.payer_user_id)
+    |> Enum.map(fn {claim, money, _claimant, payer} ->
 
-      ~s/id: #{claim.id}, 請求先: <@#{payer_user.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
+      ~s/id: #{claim.id}, 請求先: <@#{payer.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
         claim.inserted_at
       }/
     end)
@@ -26,11 +24,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render_received_claim(received_claims) do
     received_claims
-    |> Enum.map(fn claim ->
-      money = VirtualCrypto.Money.InternalAction.get_money_by_id(claim.money_info_id)
-      claim_user = VirtualCrypto.User.get_user_by_id(claim.claimant_user_id)
+    |> Enum.map(fn {claim, money, claimant, _payer} ->
 
-      ~s/id: #{claim.id}, 請求元: <@#{claim_user.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
+      ~s/id: #{claim.id}, 請求元: <@#{claimant.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
         claim.inserted_at
       }/
     end)
