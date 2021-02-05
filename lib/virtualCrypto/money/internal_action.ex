@@ -104,10 +104,13 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def update_pool_amount(money_id, amount) do
-    Money.Info
-    |> where([a], a.id == ^money_id)
-    |> update(inc: [pool_amount: ^amount])
-    |> Repo.update_all([])
+    {1, nil} =
+      Money.Info
+      |> where([a], a.id == ^money_id)
+      |> update(inc: [pool_amount: ^amount])
+      |> Repo.update_all([])
+
+    {:ok, nil}
   end
 
   def info(:guild, guild_id) do
@@ -233,9 +236,17 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Update reciver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount) do
-      # Update pool amount.
-      {:ok, update_pool_amount(money.id, -amount)}
+         {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount),
+         # Update pool amount.
+         {:ok, _} <- update_pool_amount(money.id, -amount),
+         {:ok, _} <-
+           Repo.insert(%VirtualCrypto.Money.GivenHistory{
+             amount: amount,
+             money_id: money.id,
+             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+             receiver_id: receiver_id
+           }) do
+      {:ok, nil}
     else
       {:money, false} -> {:error, :not_found_money}
       {:pool_amount, false} -> {:error, :not_enough_amount}
