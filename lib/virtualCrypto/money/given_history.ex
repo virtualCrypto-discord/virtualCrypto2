@@ -4,7 +4,7 @@ defmodule VirtualCrypto.Money.GivenHistory do
 
   schema "money_given_historys" do
     field :amount, :integer
-    field :time, :time
+    field :time, :naive_datetime
     field :receiver_id, :id
     field :money_id, :id
 
@@ -14,7 +14,7 @@ defmodule VirtualCrypto.Money.GivenHistory do
   @doc false
   def changeset(given_history, attrs) do
     given_history
-    |> cast(attrs, [:amount, :time])
-    |> validate_required([:amount, :time])
+    |> cast(attrs, [:amount, :naive_datetime])
+    |> validate_required([:amount, :naive_datetime])
   end
 end
