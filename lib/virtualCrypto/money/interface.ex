@@ -260,7 +260,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def cancel_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, claimant, _payer} <-
+           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, _payer} <-
                   service.get_sent_claim(id, discord_user_id),
                 {:ok, claim} <-
                   VirtualCrypto.Money.InternalAction.cancel_claim(id) do
@@ -280,7 +280,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def deny_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, payer} <-
+           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, _payer} <-
                   service.get_received_claim(id, discord_user_id),
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
              claim
