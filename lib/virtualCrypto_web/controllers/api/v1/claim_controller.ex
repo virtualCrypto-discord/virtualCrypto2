@@ -9,13 +9,13 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
 
   def format(data) do
     data
-    |> Enum.map(fn {claim, info, claimant, _payer} ->
+    |> Enum.map(fn {claim, info, claimant, payer} ->
       %{
-        "id" => claim.id |> to_string,
+        "id" => claim.id |> to_string(),
         "unit" => info.unit,
-        "amount" => claim.amount,
+        "amount" => claim.amount |> to_string(),
         "claimant" => %{"name" => get_name(claimant.discord_id)},
-        "payer" => %{"name" => get_name(claimant.discord_id)},
+        "payer" => %{"name" => get_name(payer.discord_id)},
         "created_at" => claim.inserted_at
       }
     end)
@@ -29,7 +29,10 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
       token ->
         {:ok, %{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
         {sent, received} = Money.get_pending_claims(Money.VCService, user_id)
-        render(conn, "claim.json", params: %{sent: sent |> format, received: received |> format})
+
+        render(conn, "claim.json",
+          params: %{sent: sent |> format(), received: received |> format()}
+        )
     end
   end
 end

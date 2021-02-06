@@ -20,7 +20,8 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Is sender asset exsits?
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
-         {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
+         {:sender_asset_amount, true} <-
+           {:sender_asset_amount, String.to_integer(sender_asset.amount) >= amount},
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Upsert receiver amount.
@@ -236,7 +237,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Is money exits?
          {:money, true} <- {:money, money != nil},
          # Check pool amount enough.
-         {:pool_amount, true} <- {:pool_amount, money.pool_amount >= amount},
+         {:pool_amount, true} <- {:pool_amount, String.to_integer(money.pool_amount) >= amount},
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Update reciver amount.

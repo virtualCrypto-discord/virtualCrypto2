@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Money.Asset do
   import Ecto.Changeset
 
   schema "assets" do
-    field :amount, :integer
+    field :amount, :decimal
     field :status, :integer
     field :user_id, :id
     field :money_id, :id

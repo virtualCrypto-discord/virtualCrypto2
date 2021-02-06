@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.CommandHandler do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
+  alias VirtualCryptoWeb.JsonUtil
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -27,15 +28,17 @@ defmodule VirtualCryptoWeb.CommandHandler do
       }) do
     int_receiver = String.to_integer(receiver)
     int_sender = String.to_integer(sender)
+    # support to over 2^53-1(INTEGER_MAX_SAFE_VALUE)
+    int_amount = JsonUtil.to_integer(amount)
 
     case Money.pay(
            DiscordService,
            sender: int_sender,
            receiver: int_receiver,
-           amount: amount,
+           amount: int_amount,
            unit: unit
          ) do
-      {:ok} -> {:ok, %{unit: unit, receiver: receiver, sender: sender, amount: amount}}
+      {:ok} -> {:ok, %{unit: unit, receiver: receiver, sender: sender, amount: int_amount}}
       {:error, v} -> {:error, v}
     end
   end
@@ -45,13 +48,15 @@ defmodule VirtualCryptoWeb.CommandHandler do
         "member" => %{"permissions" => perms}
       }) do
     int_permissions = String.to_integer(perms)
+    # support to over 2^53-1(INTEGER_MAX_SAFE_VALUE)
+    int_amount = JsonUtil.to_integer(amount)
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       int_receiver = String.to_integer(receiver)
       int_guild = String.to_integer(guild)
 
-      case VirtualCrypto.Money.give(receiver: int_receiver, amount: amount, guild: int_guild) do
-        {:ok, %VirtualCrypto.Money.Info{unit: unit}} -> {:ok, {receiver, amount, unit}}
+      case VirtualCrypto.Money.give(receiver: int_receiver, amount: int_amount, guild: int_guild) do
+        {:ok, %VirtualCrypto.Money.Info{unit: unit}} -> {:ok, {receiver, int_amount, unit}}
         {:error, v} -> {:error, v}
       end
     else
@@ -71,7 +76,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
                name: options["name"],
                unit: options["unit"],
                creator: int_user_id,
-               creator_amount: options["amount"]
+               # support to over 2^53-1(INTEGER_MAX_SAFE_VALUE)
+               creator_amount: JsonUtil.to_integer(options["amount"])
              ) do
           {:ok} -> {:ok, :ok, options}
           {:error, :guild} -> {:error, :guild, options}
@@ -128,13 +134,14 @@ defmodule VirtualCryptoWeb.CommandHandler do
       ) do
     int_payer_id = options["sub_options"]["user"] |> String.to_integer()
     int_user_id = user["id"] |> String.to_integer()
+    int_amount = options["sub_options"]["amount"] |> JsonUtil.to_integer()
 
     case Money.create_claim(
            DiscordService,
            int_user_id,
            int_payer_id,
            options["sub_options"]["unit"],
-           options["sub_options"]["amount"]
+           int_amount
          ) do
       {:ok, claim} -> {:ok, "make", claim}
       {:error, :money_not_found} -> {:error, "make", :money_not_found}

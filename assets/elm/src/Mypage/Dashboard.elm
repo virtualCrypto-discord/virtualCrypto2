@@ -21,11 +21,10 @@ type alias UserData =
 
 
 type alias Balance =
-    { amount : Int, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
+    { amount : String, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
 
 
-type alias Balances =
-    List { amount : Int, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
+type alias Balances =  List Balance
 
 
 type alias Model =
@@ -149,7 +148,7 @@ balanceView balance =
         [ div [ class "card-content" ]
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text balance.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt balance.amount ++ balance.unit) ]
+                , div [ class "media-content mr-2" ] [ text (balance.amount ++ balance.unit) ]
                 ]
             ]
         , footer [ class "card-footer" ]
@@ -190,7 +189,7 @@ userDataDecoder =
 balancesDecoder : Decoder Balances
 balancesDecoder =
     map6 Balance
-        (field "amount" int)
+        (field "amount" string)
         (field "asset_status" int)
         (field "name" string)
         (field "unit" string)

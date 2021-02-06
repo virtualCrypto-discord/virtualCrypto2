@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Money.GivenHistory do
   import Ecto.Changeset
 
   schema "money_given_historys" do
-    field :amount, :integer
+    field :amount, :decimal
     field :time, :naive_datetime
     field :receiver_id, :id
     field :money_id, :id

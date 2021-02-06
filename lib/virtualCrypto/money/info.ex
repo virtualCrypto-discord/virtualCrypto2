@@ -5,7 +5,7 @@ defmodule VirtualCrypto.Money.Info do
   schema "info" do
     field :guild_id, :integer
     field :name, :string
-    field :pool_amount, :integer
+    field :pool_amount, :decimal
     field :status, :integer
     field :unit, :string
     timestamps()

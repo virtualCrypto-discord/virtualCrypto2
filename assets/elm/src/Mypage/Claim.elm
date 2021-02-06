@@ -9,13 +9,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 type alias User =
-    { name : String
-    }
+    { name : String }
 
 type alias Claim =
     { id : String
     , unit : String
-    , amount : Int
+    , amount : String
     , claimant : User
     , payer : User
     , created_at : String
@@ -49,7 +48,7 @@ claimDecoder =
     map6 Claim
         (field "id" string)
         (field "unit" string)
-        (field "amount" int)
+        (field "amount" string)
         (field "claimant" userDecoder)
         (field "payer" userDecoder)
         (field "created_at" string)
@@ -185,7 +184,7 @@ sentClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text claim.payer.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.unit) ]
+                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]
@@ -210,7 +209,7 @@ receivedClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text claim.claimant.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.unit) ]
+                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]

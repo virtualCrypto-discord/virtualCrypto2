@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Money.Claim do
   import Ecto.Changeset
 
   schema "claims" do
-    field :amount, :integer
+    field :amount, :decimal
     field :status, :string
     field :claimant_user_id, :integer
     field :payer_user_id, :integer
