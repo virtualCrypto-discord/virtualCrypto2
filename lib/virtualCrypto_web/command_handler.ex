@@ -8,7 +8,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
 
   def name_unit_check(name, unit) do
     with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
-         Regex.match?(~r/[a-z]{1,10}/, unit) do
+         true <- Regex.match?(~r/[a-z]{1,10}/, unit) do
       true
     else
       _ -> false
