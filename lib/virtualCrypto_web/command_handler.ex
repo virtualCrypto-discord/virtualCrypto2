@@ -77,6 +77,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
           {:error, :guild} -> {:error, :guild, options}
           {:error, :unit} -> {:error, :unit, options}
           {:error, :name} -> {:error, :name, options}
+          {:error, :invalid_amount} -> {:error, :invalid_amount, options}
           _ -> {:error, :none, options}
         end
       else

@@ -229,6 +229,10 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
+  def create(_guild, _name, _unit, _creator_discord_id, _creator_amount, _pool_amount) do
+    {:error, :invalid_amount}
+  end
+
   def give(receiver_discord_id, amount, guild_id)
       when is_positive_integer(amount) do
     # Get money info by guild.
