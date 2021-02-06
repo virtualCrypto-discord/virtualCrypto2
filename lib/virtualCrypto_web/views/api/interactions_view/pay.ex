@@ -13,6 +13,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
     "エラー: 通貨が不足しています。"
   end
 
+  defp render_error(:invalid_amount) do
+    "エラー: 不正な金額です。"
+  end
+
   def render(:ok, %{unit: unit, receiver: receiver, sender: sender, amount: amount}) do
     %{
       type: 3,
