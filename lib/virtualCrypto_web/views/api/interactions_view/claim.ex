@@ -14,7 +14,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   def render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->
-
       ~s/id: #{claim.id}, 請求先: <@#{payer.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
         claim.inserted_at
       }/
@@ -25,7 +24,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   def render_received_claim(received_claims) do
     received_claims
     |> Enum.map(fn {claim, money, claimant, _payer} ->
-
       ~s/id: #{claim.id}, 請求元: <@#{claimant.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
         claim.inserted_at
       }/
@@ -56,7 +54,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     }
   end
 
-  def render({:ok, "approve", {claim, _, _, _}}) do
+  def render({:ok, "approve", claim}) do
     %{
       type: 3,
       data: %{
@@ -66,7 +64,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     }
   end
 
-  def render({:ok, "deny", {claim, _, _, _}}) do
+  def render({:ok, "deny", claim}) do
     %{
       type: 3,
       data: %{
@@ -76,7 +74,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     }
   end
 
-  def render({:ok, "cancel", {claim, _, _, _}}) do
+  def render({:ok, "cancel", claim}) do
     %{
       type: 3,
       data: %{

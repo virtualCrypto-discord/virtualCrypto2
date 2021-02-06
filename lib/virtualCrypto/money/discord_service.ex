@@ -44,18 +44,6 @@ defmodule VirtualCrypto.Money.DiscordService do
     Action.get_claims(resolve(discord_user_id))
   end
 
-  def approve_claim(id, discord_user_id) do
-    Action.approve_claim(id, resolve(discord_user_id))
-  end
-
-  def deny_claim(id, discord_user_id) do
-    Action.deny_claim(id, resolve(discord_user_id))
-  end
-
-  def cancel_claim(id, discord_user_id) do
-    Action.cancel_claim(id, resolve(discord_user_id))
-  end
-
   def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do
     Action.create_claim(
       resolve(claimant_discord_user_id),
