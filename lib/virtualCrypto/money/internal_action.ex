@@ -320,28 +320,29 @@ defmodule VirtualCrypto.Money.InternalAction do
     {sent_claims, received_claims}
   end
 
-  defp update_claim_status(id, user_id, new_status) do
-    {result, _} =
+  defp update_claim_status(id, new_status) do
+    result =
       Money.Claim
-      |> where([c], c.id == ^id and c.payer_user_id == ^user_id and c.status == "pending")
+      |> where([c], c.id == ^id and c.status == "pending")
       |> update(set: [status: ^new_status])
+      |> select([c], {c})
       |> Repo.update_all([])
 
     case result do
-      0 -> {:error, :not_found}
-      _ -> {:ok, result}
+      {0, _} -> {:error, :not_found}
+      {1, [{c}]} -> {:ok, c}
     end
   end
 
-  def approve_claim(id, user_id) do
-    update_claim_status(id, user_id, "approved")
+  def approve_claim(id) do
+    update_claim_status(id, "approved")
   end
 
-  def deny_claim(id, user_id) do
-    update_claim_status(id, user_id, "denied")
+  def deny_claim(id) do
+    update_claim_status(id, "denied")
   end
 
-  def cancel_claim(id, user_id) do
-    update_claim_status(id, user_id, "canceled")
+  def cancel_claim(id) do
+    update_claim_status(id, "canceled")
   end
 end

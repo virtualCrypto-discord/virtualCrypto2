@@ -224,80 +224,73 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok}
+          {:ok, VirtualCrypto.Money.Claim}
           | {:error, :not_found}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def approve_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           {claim, info, claimant, _payer} = service.get_received_claim(id, discord_user_id)
-
-           with true <- claim != nil,
-                true <- claim.status == "pending",
+           with {%VirtualCrypto.Money.Claim{status: "pending", amount: amount}, info, claimant,
+                 payer} <-
+                  service.get_received_claim(id, discord_user_id),
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
-                    claim.payer_user_id,
+                    payer.id,
                     claimant.discord_id,
-                    claim.amount,
+                    amount,
                     info.unit
                   ),
-                {:ok, _} <-
-                  VirtualCrypto.Money.InternalAction.approve_claim(id, claim.payer_user_id) do
-             {:ok}
+                {:ok, claim} <-
+                  VirtualCrypto.Money.InternalAction.approve_claim(id) do
+             claim
            else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
+             nil -> Repo.rollback(:not_found)
+             {:error, :not_found} -> Repo.rollback(:not_found)
+             {:error,v} -> Repo.rollback(v)
            end
          end) do
-      {:ok, v} -> v
-      v -> v
+      {:ok, v} -> {:ok, v}
+      {:error, v} -> {:error, v}
     end
   end
 
   @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok}
+          {:ok, VirtualCrypto.Money.Claim}
           | {:error, :not_found}
   def cancel_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           {claim, _info, _claimant, _payer} = service.get_sent_claim(id, discord_user_id)
-
-           with false <- claim == nil,
-                true <- claim.status == "pending",
-                {:ok, _} <-
-                  VirtualCrypto.Money.InternalAction.cancel_claim(id, claim.payer_user_id) do
-             {:ok}
+           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, claimant, _payer} <-
+                  service.get_sent_claim(id, discord_user_id),
+                {:ok, claim} <-
+                  VirtualCrypto.Money.InternalAction.cancel_claim(id) do
+             claim
            else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
+             nil -> Repo.rollback(:not_found)
+             {:error, :not_found} -> Repo.rollback(:not_found)
            end
          end) do
-      {:ok, v} -> v
-      v -> v
+      {:ok, v} -> {:ok, v}
+      {:error, v} -> {:error, v}
     end
   end
 
   @spec deny_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok}
+          {:ok, VirtualCrypto.Money.Claim}
           | {:error, :not_found}
   def deny_claim(service, id, discord_user_id) do
     case Repo.transaction(fn ->
-           {claim, _info, _claimant, _payer} = service.get_received_claim(id, discord_user_id)
-
-           with false <- claim == nil,
-                true <- claim.status == "pending",
-                {:ok, _} <- VirtualCrypto.Money.InternalAction.deny_claim(id, claim.payer_user_id) do
-             {:ok}
+           with {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, payer} <-
+                  service.get_received_claim(id, discord_user_id),
+                {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
+             claim
            else
-             false -> {:error, :not_found}
-             nil -> {:error, :not_found}
-             err -> err
+             nil -> Repo.rollback(:not_found)
+             {:error, :not_found} -> Repo.rollback(:not_found)
            end
          end) do
-      {:ok, v} -> v
-      v -> v
+      {:ok, v} -> {:ok, v}
+      {:error, v} -> {:error, v}
     end
   end
 
