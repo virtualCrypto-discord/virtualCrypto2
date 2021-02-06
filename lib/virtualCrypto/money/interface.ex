@@ -17,6 +17,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
+          | {:error, :invalid_amount}
   def pay(service, kw) do
     case Multi.new()
          |> Multi.run(:pay, fn _, _ ->
@@ -32,6 +33,7 @@ defmodule VirtualCrypto.Money do
       {:error, :pay, :not_found_money, _} -> {:error, :not_found_money}
       {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
+      {:error, :pay, :invalid_amount, _ } -> {:error, :invalid_amount}
     end
   end
 
@@ -247,7 +249,7 @@ defmodule VirtualCrypto.Money do
            else
              nil -> Repo.rollback(:not_found)
              {:error, :not_found} -> Repo.rollback(:not_found)
-             {:error,v} -> Repo.rollback(v)
+             {:error, v} -> Repo.rollback(v)
            end
          end) do
       {:ok, v} -> {:ok, v}

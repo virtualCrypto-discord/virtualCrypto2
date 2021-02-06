@@ -44,6 +44,10 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
+  def pay(_sender_id, _receiver_discord_id, _amount, _money_unit) do
+    {:error, :invalid_amount}
+  end
+
   def get_money_by_unit(money_unit) do
     Money.Info
     |> where([m], m.unit == ^money_unit)
