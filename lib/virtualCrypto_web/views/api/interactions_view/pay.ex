@@ -6,7 +6,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
   end
 
   defp render_error(:not_found_sender_asset) do
-    "エラー: 通貨を持っていません。"
+    render_error(:not_enough_amount)
   end
 
   defp render_error(:not_enough_amount) do
