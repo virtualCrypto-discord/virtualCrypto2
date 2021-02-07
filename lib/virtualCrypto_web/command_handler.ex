@@ -139,6 +139,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
          ) do
       {:ok, claim} -> {:ok, "make", claim}
       {:error, :money_not_found} -> {:error, "make", :money_not_found}
+      {:error, :invalid_amount} -> {:error, "make", :invalid_amount}
     end
   end
 

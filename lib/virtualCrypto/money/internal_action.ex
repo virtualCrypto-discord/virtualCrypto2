@@ -176,7 +176,8 @@ defmodule VirtualCrypto.Money.InternalAction do
     query |> Repo.one()
   end
 
-  def create_claim(claimant_user_id, payer_user_id, unit, amount) do
+  def create_claim(claimant_user_id, payer_user_id, unit, amount)
+      when is_positive_integer(amount) do
     case Money.Info |> where([i], i.unit == ^unit) |> Repo.one() do
       nil ->
         {:error, :money_not_found}
@@ -191,6 +192,10 @@ defmodule VirtualCrypto.Money.InternalAction do
         }
         |> Repo.insert()
     end
+  end
+
+  def create_claim(_claimant_user_id, _payer_user_id, _unit, _amount) do
+    {:error, :invalid_amount}
   end
 
   def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
