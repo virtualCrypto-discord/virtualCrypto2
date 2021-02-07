@@ -149,8 +149,11 @@ defmodule VirtualCrypto.Money.InternalAction do
 
   @reset_pool_amount """
   UPDATE info
-  SET pool_amount = (temp.distribution_volume+199)/200
-  FROM (SELECT money_id,SUM(amount) AS distribution_volume FROM assets GROUP BY money_id) AS temp
+  SET pool_amount = (CASE
+    WHEN temp.pool_amount<5 THEN 5
+    ELSE temp.pool_amount
+  END)
+  FROM (SELECT money_id,(SUM(amount)+199)/200 AS pool_amount FROM assets GROUP BY money_id) AS temp
   WHERE temp.money_id = info.id
   ;
   """

@@ -124,7 +124,7 @@ defmodule VirtualCrypto.Money do
       Keyword.fetch!(kw, :unit),
       Keyword.fetch!(kw, :creator),
       creator_amount,
-      div(creator_amount + 199, 200),
+      max(div(creator_amount + 199, 200),5),
       Keyword.get(kw, :retry_count, 5)
     )
   end
