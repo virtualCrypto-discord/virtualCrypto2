@@ -17,6 +17,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
     "エラー: 実行には管理者権限が必要です。"
   end
 
+  defp render_error(:invalid_amount) do
+    "エラー: 不正な金額です"
+  end
+
   def render(:ok, {receiver, amount, unit}) do
     %{
       type: 3,

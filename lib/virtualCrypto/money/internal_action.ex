@@ -265,6 +265,10 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
+  def give(_receiver_discord_id, _amount, _guild_id) do
+    {:error, :invalid_amount}
+  end
+
   def get_sent_claim(id, user_id) do
     query =
       from claim in Money.Claim,
