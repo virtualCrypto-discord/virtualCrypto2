@@ -21,7 +21,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
          {:sender_asset_amount, true} <-
-           {:sender_asset_amount, String.to_integer(sender_asset.amount) >= amount},
+           {:sender_asset_amount, Decimal.to_integer(sender_asset.amount) >= amount},
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Upsert receiver amount.
@@ -174,7 +174,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     query |> Repo.one()
   end
 
-  def create_claim(claimant_user_id, payer_user_id, unit, amount) do
+  def create_claim(claimant_user_id, payer_user_id, unit, amount) when is_positive_integer(amount) do
     case Money.Info |> where([i], i.unit == ^unit) |> Repo.one() do
       nil ->
         {:error, :money_not_found}
@@ -190,7 +190,9 @@ defmodule VirtualCrypto.Money.InternalAction do
         |> Repo.insert()
     end
   end
-
+  def create_claim(_claimant_user_id, _payer_user_id, _unit, _amount) do
+    {:error,:invalid_amount}
+  end
   def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
       when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) do
     # Check duplicate guild.
@@ -237,7 +239,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Is money exits?
          {:money, true} <- {:money, money != nil},
          # Check pool amount enough.
-         {:pool_amount, true} <- {:pool_amount, String.to_integer(money.pool_amount) >= amount},
+         {:pool_amount, true} <- {:pool_amount, Decimal.to_integer(money.pool_amount) >= amount},
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Update reciver amount.
