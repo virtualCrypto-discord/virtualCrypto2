@@ -11,6 +11,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     ~s/総発行量: #{to_string(data.amount)}#{data.unit}\n/
   end
 
+  def render_pool_amount(data) do
+    ~s/発行枠: #{to_string(data.pool_amount)}#{data.unit}(一日一回総発行量の0.5%にリセット)\n/
+  end
+
   def render_guild(guild) do
     case guild do
       nil -> "不明\n"
@@ -41,9 +45,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
       data: %{
         flags: 64,
         content:
-          ~s/```\n#{render_title(data)}#{render_all_amount(data)}#{render_guild(guild)}#{
-            render_user_amount(data, user_amount)
-          }```/
+          ~s/```\n#{render_title(data)}#{render_all_amount(data)}#{render_pool_amount(data)}#{
+            render_guild(guild)
+          }#{render_user_amount(data, user_amount)}```/
       }
     }
   end
