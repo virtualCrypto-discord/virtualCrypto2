@@ -19,6 +19,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
     "実行には管理者権限が必要です。"
   end
 
+  defp render_error(:invalid_amount, _) do
+    "不正な金額です。"
+  end
+
   defp render_error(_, _) do
     "不明なエラーが発生しました。時間を開けてもう一度実行してください。"
   end

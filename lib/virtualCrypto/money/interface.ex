@@ -33,7 +33,7 @@ defmodule VirtualCrypto.Money do
       {:error, :pay, :not_found_money, _} -> {:error, :not_found_money}
       {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
-      {:error, :pay, :invalid_amount, _ } -> {:error, :invalid_amount}
+      {:error, :pay, :invalid_amount, _} -> {:error, :invalid_amount}
     end
   end
 
@@ -91,6 +91,9 @@ defmodule VirtualCrypto.Money do
       {:error, :create, :guild, _} ->
         {:error, :guild}
 
+      {:error, :create, :invalid_amount, _} ->
+        {:error, :invalid_amount}
+
       {:error, :create, :unit, _} ->
         {:error, :unit}
 
@@ -114,7 +117,12 @@ defmodule VirtualCrypto.Money do
           creator: non_neg_integer(),
           creator_amount: pos_integer()
         ) ::
-          {:ok} | {:error, :guild} | {:error, :unit} | {:error, :name} | {:error, :retry_limit}
+          {:ok}
+          | {:error, :guild}
+          | {:error, :unit}
+          | {:error, :name}
+          | {:error, :retry_limit}
+          | {:error, :invalid_amount}
   def create(kw) do
     creator_amount = Keyword.fetch!(kw, :creator_amount)
 
