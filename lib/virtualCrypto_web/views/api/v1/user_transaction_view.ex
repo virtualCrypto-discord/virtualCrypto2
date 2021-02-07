@@ -9,10 +9,7 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionView do
   end
 
   defp render_error(:not_found_sender_asset) do
-    %{
-      error: "invalid_request",
-      error_info: "not_found_sender_asset"
-    }
+    render_error(:not_enough_amount)
   end
 
   defp render_error(:not_enough_amount) do
