@@ -133,7 +133,7 @@ defmodule VirtualCrypto.Money do
       Keyword.fetch!(kw, :unit),
       Keyword.fetch!(kw, :creator),
       creator_amount,
-      max(div(creator_amount + 199, 200),5),
+      max(div(creator_amount + 199, 200), 5),
       Keyword.get(kw, :retry_count, 5)
     )
   end
@@ -309,7 +309,9 @@ defmodule VirtualCrypto.Money do
   payer must be discord user
   """
   @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
-          {:ok, VirtualCrypto.Money.Claim} | {:error, :money_not_found}
+          {:ok, VirtualCrypto.Money.Claim}
+          | {:error, :money_not_found}
+          | {:error, :invalid_amount}
   def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
     service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
   end

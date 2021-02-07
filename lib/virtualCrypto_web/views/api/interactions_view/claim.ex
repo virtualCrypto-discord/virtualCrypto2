@@ -11,6 +11,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "指定された通貨は存在しません。"
   end
 
+  def render_error(:invalid_amount) do
+    "不正な金額です。"
+  end
+
   def render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->
