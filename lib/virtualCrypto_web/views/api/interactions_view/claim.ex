@@ -15,6 +15,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "不正な金額です。"
   end
 
+  def render_error(:not_found_sender_asset) do
+    render_error(:not_enough_amount)
+  end
+
   def render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->
