@@ -79,7 +79,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def update_asset_amount(asset_id, amount) do
-    {1, nil} =
+    {_, nil} =
       Money.Asset
       |> where([a], a.id == ^asset_id)
       |> update(inc: [amount: ^amount])
