@@ -51,7 +51,8 @@ defmodule VirtualCrypto.MixProject do
       {:guardian, "~> 2.0"},
       {:earmark, "~> 1.4.13"},
       {:quantum, "~> 3.0"},
-      {:ex_url, "~> 1.3"}
+      {:ex_url, "~> 1.3"},
+      {:cachex, "~> 3.3"}
     ]
   end
 
