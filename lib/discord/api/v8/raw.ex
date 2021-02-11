@@ -1,4 +1,4 @@
-defmodule Discord.Api.V8 do
+defmodule Discord.Api.V8.Raw do
   @base_url "https://discord.com/api/v8/"
   def base_headers,
     do: [
