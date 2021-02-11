@@ -22,14 +22,23 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   end
 
   def me(conn, _) do
-    case Guardian.Plug.current_token(conn) do
-      nil ->
-        {:error}
-
-      token ->
-        {:ok, %{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
+    case Guardian.Plug.current_resource(conn) do
+      {:ok, %{"sub" => user_id}} ->
         {sent, received} = Money.get_pending_claims(Money.VCService, user_id)
         render(conn, "claim.json", params: %{sent: sent |> format, received: received |> format})
+
+      _ ->
+        {:error, {:invalid_token, :invalid_token}}
+    end
+  end
+
+  def post(conn, %{"payer_discord_id" => payer_discord_id, "unit" => unit, "amount" => amount}) do
+    case Guardian.Plug.current_resource(conn) do
+      {:ok, %{"sub" => user_id, "vc.claim" => true}} ->
+        VirtualCrypto.Money.create_claim(VCService, user_id, payer_discord_id, unit, amount)
+
+      _ ->
+        {:error, {:invalid_token, :invalid_token}}
     end
   end
 end

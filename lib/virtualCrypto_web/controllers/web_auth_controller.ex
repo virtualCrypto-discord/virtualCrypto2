@@ -21,7 +21,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
 
   defp issue_token(id) do
     {:ok, access_token, %{"exp" => expires}} =
-      VirtualCrypto.Guardian.issue_token_for_user(id, ["oauth2.register", "vc.pay"])
+      VirtualCrypto.Guardian.issue_token_for_user(id, ["oauth2.register", "vc.pay", "vc.claim"])
 
     {:ok, access_token, DateTime.diff(DateTime.from_unix!(expires), DateTime.utc_now())}
   end
