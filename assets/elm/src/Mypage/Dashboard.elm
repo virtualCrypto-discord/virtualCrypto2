@@ -163,7 +163,7 @@ balanceView balance =
 getUserData : String -> Cmd Msg
 getUserData token =
     Api.get
-        { url = absolute [ "api", "v1", "user", "@me" ] []
+        { url = absolute [ "api", "v1", "users", "@me" ] []
         , expect = Http.expectJson GotUserData userDataDecoder
         , token = token
         }
@@ -172,7 +172,7 @@ getUserData token =
 getBalances : String -> Cmd Msg
 getBalances token =
     Api.get
-        { url = absolute [ "api", "v1", "balance", "@me" ] []
+        { url = absolute [ "api", "v1", "users", "@me", "balances" ] []
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
         }
