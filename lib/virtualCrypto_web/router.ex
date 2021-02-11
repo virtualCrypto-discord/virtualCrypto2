@@ -86,8 +86,8 @@ defmodule VirtualCryptoWeb.Router do
       scope "/" do
         pipe_through :api_auth
 
-        get "/user/@me", UserController, :me
-        get "/balance/@me", BalanceController, :balance
+        get "/users/@me", UserController, :me
+        get "/users/@me/balances", BalanceController, :balance
         get "/users/@me/claims", ClaimController, :me
         post "/users/@me/transactions", UserTransactionController, :post
       end
