@@ -20,6 +20,7 @@ type alias Model =
     , dashboard : Dashboard.Model
     , accessToken : String
     , route : Route
+    , applications : Applications.Model
     }
 
 
@@ -51,6 +52,7 @@ type Msg
     = GotUserData (Result Http.Error User)
     | DashboardMsg Dashboard.Msg
     | ClaimMsg Claim.Msg
+    | ApplicationsMsg Applications.Msg
     | GoTo Route
 
 
@@ -143,6 +145,10 @@ sidebar model =
                         _ ->
                             False
                     )
+                ]
+            , menuLabel "開発者向け"
+            , ul [ class "menu-list" ]
+                [ menuButton "アプリケーション" ApplicationsPage (model.route == ApplicationsPage)
                 ]
             , menuLabel "操作"
             , ul [ class "menu-list" ]
