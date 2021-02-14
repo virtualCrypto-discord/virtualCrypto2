@@ -4,6 +4,7 @@ defmodule VirtualCrypto.Application do
   @moduledoc false
 
   use Application
+  import Cachex.Spec
 
   def start(_type, _args) do
     children = [
@@ -18,7 +19,8 @@ defmodule VirtualCrypto.Application do
       # Start a worker by calling: VirtualCrypto.Worker.start_link(arg)
       # {VirtualCrypto.Worker, arg}
 
-      VirtualCrypto.Scheduler
+      VirtualCrypto.Scheduler,
+      {Cachex, name: :discord_users, expiration: expiration(default: 15 * 60 * 1000), stats: true}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
