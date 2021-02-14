@@ -38,9 +38,11 @@ defmodule VirtualCrypto.Money.VCService do
   end
 
   def create_claim(claimant_id, payer_discord_user_id, unit, amount) do
+    {:ok, payer} = VirtualCrypto.User.insert_user_if_not_exists(payer_discord_user_id)
+
     Action.create_claim(
       claimant_id,
-      VirtualCrypto.User.insert_user_if_not_exists(payer_discord_user_id).id,
+      payer.id,
       unit,
       amount
     )

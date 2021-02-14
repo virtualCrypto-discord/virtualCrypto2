@@ -18,7 +18,7 @@ defmodule VirtualCrypto.Guardian do
     {
       :ok,
       %{
-        "sub" => claims["sub"],
+        "sub" => String.to_integer(claims["sub"]),
         "oauth2.register" => "oauth2.register" in scopes,
         "vc.pay" => "vc.pay" in scopes,
         "vc.claim" => "vc.claim" in scopes,

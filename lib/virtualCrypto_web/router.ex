@@ -90,6 +90,7 @@ defmodule VirtualCryptoWeb.Router do
         get "/users/@me/balances", BalanceController, :balance
         get "/users/@me/claims", ClaimController, :me
         post "/users/@me/claims", ClaimController, :post
+        patch "/users/@me/claims/:id", ClaimController, :patch
         post "/users/@me/transactions", UserTransactionController, :post
       end
 

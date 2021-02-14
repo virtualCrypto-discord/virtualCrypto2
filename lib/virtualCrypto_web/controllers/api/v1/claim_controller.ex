@@ -34,11 +34,22 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
 
   def post(conn, %{"payer_discord_id" => payer_discord_id, "unit" => unit, "amount" => amount}) do
     case Guardian.Plug.current_resource(conn) do
-      {:ok, %{"sub" => user_id, "vc.claim" => true}} ->
-        VirtualCrypto.Money.create_claim(VCService, user_id, payer_discord_id, unit, amount)
 
-      _ ->
-        {:error, {:invalid_token, :invalid_token}}
+  def get_by_id(conn, %{"id" => id}) do
+    case Guardian.Plug.current_resource(conn) do
+      %{"sub" => user_id, "vc.claim" => true} ->
+        case Money.get_claim_by_id(id) do
+          {_, _, %VirtualCrypto.User.User{id: ^user_id}, _} = d ->
+            render(conn, "data.json", params: d |> format_claim)
+
+          {_, _, _, %VirtualCrypto.User.User{id: ^user_id}} = d ->
+            render(conn, "data.json", params: d |> format_claim)
+
+          _ ->
+            conn
+            |> put_status(404)
+            |> render("error.json", error: :not_found, error_description: :not_found)
+        end
     end
   end
 end

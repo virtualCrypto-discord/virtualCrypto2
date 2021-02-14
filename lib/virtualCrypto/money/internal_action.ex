@@ -183,14 +183,17 @@ defmodule VirtualCrypto.Money.InternalAction do
         {:error, :money_not_found}
 
       info ->
-        %Money.Claim{
-          amount: amount,
-          status: "pending",
-          claimant_user_id: claimant_user_id,
-          payer_user_id: payer_user_id,
-          money_info_id: info.id
-        }
-        |> Repo.insert()
+        {:ok, claim} =
+          %Money.Claim{
+            amount: amount,
+            status: "pending",
+            claimant_user_id: claimant_user_id,
+            payer_user_id: payer_user_id,
+            money_info_id: info.id
+          }
+          |> Repo.insert()
+
+        {:ok, get_claim_by_id(claim.id)}
     end
   end
 
@@ -341,10 +344,12 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   defp update_claim_status(id, new_status) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
     result =
       Money.Claim
       |> where([c], c.id == ^id and c.status == "pending")
-      |> update(set: [status: ^new_status])
+      |> update(set: [status: ^new_status, updated_at: ^now])
       |> select([c], {c})
       |> Repo.update_all([])
 

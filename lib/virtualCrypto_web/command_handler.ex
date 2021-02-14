@@ -137,7 +137,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
            options["sub_options"]["unit"],
            options["sub_options"]["amount"]
          ) do
-      {:ok, claim} -> {:ok, "make", claim}
+      {:ok, {claim, _, _, _}} -> {:ok, "make", claim}
       {:error, :money_not_found} -> {:error, "make", :money_not_found}
       {:error, :invalid_amount} -> {:error, "make", :invalid_amount}
     end
@@ -152,7 +152,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.approve_claim(DiscordService, id, int_user_id) do
-      {:ok, claim} -> {:ok, "approve", claim}
+      {:ok, {claim, _, _, _}} -> {:ok, "approve", claim}
       {:error, err} -> {:error, "approve", err}
     end
   end
@@ -166,7 +166,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.deny_claim(DiscordService, id, int_user_id) do
-      {:ok, claim} -> {:ok, "deny", claim}
+      {:ok, {claim, _, _, _}} -> {:ok, "deny", claim}
       {:error, err} -> {:error, "deny", err}
     end
   end
@@ -180,7 +180,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.cancel_claim(DiscordService, id, int_user_id) do
-      {:ok, claim} -> {:ok, "cancel", claim}
+      {:ok, {claim, _, _, _}} -> {:ok, "cancel", claim}
       {:error, err} -> {:error, "cancel", err}
     end
   end

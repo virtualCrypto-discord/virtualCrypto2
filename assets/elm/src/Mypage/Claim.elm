@@ -1,20 +1,18 @@
 module Mypage.Claim exposing (..)
 import Url.Builder exposing (absolute)
 import Api
-import Json.Decode exposing (field, Decoder, map2, map6, string, int)
+import Json.Decode exposing (field, Decoder, map,map2, map6, string, int)
 import Array exposing (fromList, slice, toList)
 import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
-type alias User =
-    { name : String
-    }
-
+type alias User = { name : String}
+type alias Currency = { unit : String }
 type alias Claim =
     { id : String
-    , unit : String
+    , currency : Currency
     , amount : Int
     , claimant : User
     , payer : User
@@ -43,12 +41,14 @@ claimsDecoder =
         (field "sent" claimDecoder)
         (field "received" claimDecoder)
 
+currencyDecoder: Decoder (Currency)
+currencyDecoder = Json.Decode.map Currency (field "unit" string)
 
 claimDecoder : Decoder (List Claim)
 claimDecoder =
     map6 Claim
         (field "id" string)
-        (field "unit" string)
+        (field "currency" currencyDecoder)
         (field "amount" int)
         (field "claimant" userDecoder)
         (field "payer" userDecoder)
@@ -185,7 +185,7 @@ sentClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text claim.payer.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.unit) ]
+                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]
@@ -210,7 +210,7 @@ receivedClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text claim.claimant.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.unit) ]
+                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]
