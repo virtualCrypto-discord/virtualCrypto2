@@ -2,9 +2,21 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
 
-  defp get_name(discord_user_id) do
-    data = Discord.Api.V8.get_user(discord_user_id)
-    ~s/@#{data["username"]}##{data["discriminator"]}/
+  defp get_discord_user(discord_user_id) do
+    user = Discord.Api.V8.get_user(discord_user_id)
+
+    Map.take(user, [
+      "id",
+      "username",
+      "discriminator",
+      "avatar",
+      "bot",
+      "system",
+      "mfa_enabled",
+      "flags",
+      "premium_type",
+      "public_flags"
+    ])
   end
 
   defp format_claim({claim, info, claimant, payer}) do
@@ -19,13 +31,13 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
       "amount" => claim.amount,
       "claimant" => %{
         "id" => claimant.id,
-        "discord_id" => to_string(claimant.discord_id),
-        "name" => get_name(claimant.discord_id)
+        "discord" =>
+          if(claimant.discord_id != nil, do: get_discord_user(claimant.discord_id), else: nil)
       },
       "payer" => %{
         "id" => payer.id,
-        "discord_id" => to_string(payer.discord_id),
-        "name" => get_name(payer.discord_id)
+        "discord" =>
+          if(payer.discord_id != nil, do: get_discord_user(payer.discord_id), else: nil)
       },
       "created_at" => claim.inserted_at,
       "updated_at" => claim.updated_at,

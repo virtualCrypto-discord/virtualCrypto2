@@ -1,14 +1,15 @@
 module Mypage.Claim exposing (..)
 import Url.Builder exposing (absolute)
 import Api
-import Json.Decode exposing (field, Decoder, map,map2, map6, string, int)
+import Json.Decode exposing (field, Decoder, map2, map6, string, int)
 import Array exposing (fromList, slice, toList)
 import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+type alias User = { discord : DiscordUser }
 
-type alias User = { name : String}
+type alias DiscordUser = { username : String, discriminator : String}
 type alias Currency = { unit : String }
 type alias Claim =
     { id : String
@@ -55,11 +56,15 @@ claimDecoder =
         (field "created_at" string)
     |> Json.Decode.list
 
+userDecoder: Decoder User
+userDecoder = Json.Decode.map User
+    (field "discord" discordUserDecoder)
 
-userDecoder : Decoder User
-userDecoder =
-    Json.Decode.map User
-        (field "name" string)
+discordUserDecoder : Decoder DiscordUser
+discordUserDecoder =
+    Json.Decode.map2 DiscordUser
+        (field "username" string)
+        (field "discriminator" string)
 
 type Msg
     = GotClaims (Result Http.Error Claims)
@@ -165,6 +170,7 @@ previousButton t d = a [ onClick (Previous t), class "pagination-previous", disa
 nextButton : ClaimType -> Bool -> Html Msg
 nextButton t d = a [ onClick (Next t), class "pagination-next", disabled d ] [ text "次ページ" ]
 
+sentHeader : Html msg
 sentHeader =
     div [ class "card my-3" ]
         [ div [ class "card-content" ]
@@ -184,13 +190,14 @@ sentClaimView claim =
         [ div [ class "card-content" ]
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
-                , div [ class "media-content mr-2" ] [ text claim.payer.name ]
+                , div [ class "media-content mr-2" ] [ text (username claim.payer) ]
                 , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]
         ]
 
+receivedHeader : Html msg
 receivedHeader =
     div [ class "card my-3" ]
         [ div [ class "card-content" ]
@@ -202,6 +209,8 @@ receivedHeader =
                 ]
             ]
         ]
+username : User -> String
+username u= "@"++u.discord.username++"#"++u.discord.discriminator
 
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
@@ -209,7 +218,7 @@ receivedClaimView claim =
         [ div [ class "card-content" ]
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
-                , div [ class "media-content mr-2" ] [ text claim.claimant.name ]
+                , div [ class "media-content mr-2" ] [ text (username claim.claimant) ]
                 , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
