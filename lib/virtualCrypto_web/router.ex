@@ -92,7 +92,11 @@ defmodule VirtualCryptoWeb.Router do
         post "/users/@me/transactions", UserTransactionController, :post
       end
 
+      # deprecated
       get "/moneys", InfoController, :index
+
+      get "/currencies/:id", InfoController, :index
+      get "/currencies", InfoController, :index
     end
   end
 
