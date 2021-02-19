@@ -5,7 +5,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Http exposing (Error)
+import Http
 import Mypage.Claim as Claim
 import Mypage.Dashboard as Dashboard
 import Mypage.Route exposing (Route(..))
@@ -54,8 +54,8 @@ type Msg
     | GoTo Route
 
 
-changePage : Route -> msg -> Model -> ( Model, Cmd Msg )
-changePage route msg model =
+changePage : Route -> Model -> ( Model, Cmd Msg )
+changePage route model =
     case route of
         DashboardPage ->
             ( { model | route = DashboardPage }, Cmd.none )
@@ -64,6 +64,7 @@ changePage route msg model =
             ( { model | route = ClaimPage }, Cmd.none )
 
 
+dispatch : msg -> Cmd msg
 dispatch msg =
     Task.succeed msg |> Task.perform identity
 
@@ -86,7 +87,7 @@ update msg model =
             ( { model | claim = m_ }, Cmd.map ClaimMsg cmd )
 
         GoTo route ->
-            changePage route msg model
+            changePage route model
 
         GotUserData res ->
             case res of

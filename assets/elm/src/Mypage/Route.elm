@@ -1,4 +1,4 @@
-module Mypage.Route exposing (..)
+module Mypage.Route exposing (Route(..))
 
 
 
