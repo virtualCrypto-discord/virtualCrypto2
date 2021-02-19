@@ -2,6 +2,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
+
   defp get_discord_user(discord_user_id) do
     user = Discord.Api.V8.get_user(discord_user_id)
 
