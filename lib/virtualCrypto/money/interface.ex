@@ -204,34 +204,22 @@ defmodule VirtualCrypto.Money do
     nil
   end
 
-  @spec get_pending_claims(module(), Integer.t()) ::
-          {[
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ],
-           [
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ]}
-  def get_pending_claims(service, discord_user_id) do
-    {sent, received} = service.get_claims(discord_user_id)
-
-    sent_ = sent |> Enum.filter(fn {claim, _, _, _} -> claim.status == "pending" end)
-    received_ = received |> Enum.filter(fn {claim, _, _, _} -> claim.status == "pending" end)
-    {sent_, received_}
+  @spec get_claims(module(), Integer.t(), String.t()) ::
+          [
+            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+             VirtualCrypto.User.User}
+          ]
+  def get_claims(service, user_id, status) do
+    service.get_claims(user_id, status)
   end
 
-  @spec get_all_claims(module(), Integer.t()) ::
-          {[
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ],
-           [
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ]}
-  def get_all_claims(service, discord_user_id) do
-    service.get_claims(discord_user_id)
+  @spec get_claims(module(), Integer.t()) ::
+          [
+            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+             VirtualCrypto.User.User}
+          ]
+  def get_claims(service, user_id) do
+    service.get_claims(user_id)
   end
 
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::

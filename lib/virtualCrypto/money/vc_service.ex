@@ -29,12 +29,24 @@ defmodule VirtualCrypto.Money.VCService do
     Action.get_sent_claim(id, user_id)
   end
 
+  def get_sent_claim(id, user_id, status) do
+    Action.get_sent_claim(id, user_id, status)
+  end
+
   def get_received_claim(id, user_id) do
     Action.get_received_claim(id, user_id)
   end
 
+  def get_received_claim(id, user_id, status) do
+    Action.get_received_claim(id, user_id, status)
+  end
+
   def get_claims(user_id) do
     Action.get_claims(user_id)
+  end
+
+  def get_claims(user_id, status) do
+    Action.get_claims(user_id, status)
   end
 
   def create_claim(claimant_id, payer_discord_user_id, unit, amount) do

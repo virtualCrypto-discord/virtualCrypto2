@@ -1,22 +1,11 @@
 defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
-
+  alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
   defp get_discord_user(discord_user_id) do
     user = Discord.Api.V8.get_user(discord_user_id)
 
-    Map.take(user, [
-      "id",
-      "username",
-      "discriminator",
-      "avatar",
-      "bot",
-      "system",
-      "mfa_enabled",
-      "flags",
-      "premium_type",
-      "public_flags"
-    ])
+    Filtering.user(user)
   end
 
   defp format_claim({claim, info, claimant, payer}) do
@@ -30,12 +19,12 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
       },
       "amount" => claim.amount,
       "claimant" => %{
-        "id" => claimant.id,
+        "id" => to_string(claimant.id),
         "discord" =>
           if(claimant.discord_id != nil, do: get_discord_user(claimant.discord_id), else: nil)
       },
       "payer" => %{
-        "id" => payer.id,
+        "id" => to_string(payer.id),
         "discord" =>
           if(payer.discord_id != nil, do: get_discord_user(payer.discord_id), else: nil)
       },
@@ -59,11 +48,9 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   def me(conn, _) do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        {sent, received} = Money.get_pending_claims(Money.VCService, user_id)
+        claims = Money.get_claims(Money.VCService, user_id, "pending")
 
-        render(conn, "data.json",
-          params: %{sent: sent |> format_claims, received: received |> format_claims}
-        )
+        render(conn, "data.json", params: claims |> format_claims)
 
       _ ->
         conn |> permission_denied()

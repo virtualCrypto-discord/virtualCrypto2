@@ -1,16 +1,23 @@
 module Mypage.Claim exposing (..)
-import Url.Builder exposing (absolute)
+
 import Api
-import Json.Decode exposing (field, Decoder, map2, map6, string, int)
 import Array exposing (fromList, slice, toList)
-import Http
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-type alias User = { discord : DiscordUser }
+import Http
+import Json.Decode exposing (Decoder, field, int, map6, string)
+import Mypage.Dashboard exposing (DynamicData(..))
+import Mypage.User exposing (User, userDecoder)
+import Platform exposing (Task)
+import Task exposing (Task)
+import Url.Builder exposing (absolute)
 
-type alias DiscordUser = { username : String, discriminator : String}
-type alias Currency = { unit : String }
+
+type alias Currency =
+    { unit : String }
+
+
 type alias Claim =
     { id : String
     , currency : Currency
@@ -20,33 +27,43 @@ type alias Claim =
     , created_at : String
     }
 
+
 type ClaimType
     = Sent
     | Received
 
+
 type alias Claims =
-    { sent : List Claim
-    , received : List Claim
+    List Claim
+
+
+type AsyncData
+    = LoadingUserData
+    | LoadingClaims User
+    | Completed GroupedClaims
+
+
+type alias GroupedClaims =
+    { sent : Claims
+    , received : Claims
     }
 
+
 type alias Model =
-    { claims : Maybe Claims
+    { accessToken : String
+    , asyncData : AsyncData
     , sent_page : Int
     , received_page : Int
     }
 
 
-claimsDecoder : Decoder Claims
+currencyDecoder : Decoder Currency
+currencyDecoder =
+    Json.Decode.map Currency (field "unit" string)
+
+
+claimsDecoder : Decoder (List Claim)
 claimsDecoder =
-    map2 Claims
-        (field "sent" claimDecoder)
-        (field "received" claimDecoder)
-
-currencyDecoder: Decoder (Currency)
-currencyDecoder = Json.Decode.map Currency (field "unit" string)
-
-claimDecoder : Decoder (List Claim)
-claimDecoder =
     map6 Claim
         (field "id" string)
         (field "currency" currencyDecoder)
@@ -54,88 +71,133 @@ claimDecoder =
         (field "claimant" userDecoder)
         (field "payer" userDecoder)
         (field "created_at" string)
-    |> Json.Decode.list
+        |> Json.Decode.list
 
-userDecoder: Decoder User
-userDecoder = Json.Decode.map User
-    (field "discord" discordUserDecoder)
-
-discordUserDecoder : Decoder DiscordUser
-discordUserDecoder =
-    Json.Decode.map2 DiscordUser
-        (field "username" string)
-        (field "discriminator" string)
 
 type Msg
-    = GotClaims (Result Http.Error Claims)
+    = InjectUserData User
+    | GotClaims (Result Http.Error GroupedClaims)
     | Previous ClaimType
     | Next ClaimType
 
-getClaims : String -> Cmd Msg
-getClaims token =
-    Api.get
-        { url = absolute [ "api", "v1", "users", "@me", "claims" ] []
-        , expect = Http.expectJson GotClaims claimsDecoder
-        , token = token
-        }
 
-initCmd : String -> Cmd Msg
-initCmd accessToken =
-    getClaims accessToken
+getClaims : String -> String -> Task Http.Error GroupedClaims
+getClaims id token =
+    Task.map (gropingClaims id)
+        (Api.getTask
+            { url = absolute [ "api", "v1", "users", "@me", "claims" ] []
+            , decoder = claimsDecoder
+            , token = token
+            }
+        )
 
-initModel : String -> Model
-initModel _ =
-    { claims = Maybe.Nothing
-    , sent_page = 0
-    , received_page = 0
-    }
+
+init : String -> Maybe User -> ( Model, Cmd Msg )
+init accessToken userData =
+    ( { accessToken = accessToken
+      , asyncData = Maybe.withDefault LoadingUserData (Maybe.map LoadingClaims userData)
+      , sent_page = 0
+      , received_page = 0
+      }
+    , Cmd.none
+    )
+
 
 getPrevious : Int -> Int
 getPrevious page =
     case page of
-        0 -> 0
-        p -> p - 1
+        0 ->
+            0
+
+        p ->
+            p - 1
+
 
 getNext : Int -> Int -> Int
 getNext page max_page =
-    if page == max_page
-        then page
-        else page + 1
+    if page == max_page then
+        page
+
+    else
+        page + 1
+
+
+gropingClaims : String -> Claims -> GroupedClaims
+gropingClaims id claims =
+    List.foldl
+        (\claim acc ->
+            { sent =
+                if claim.claimant.id == id then
+                    claim :: acc.sent
+
+                else
+                    acc.sent
+            , received =
+                if claim.payer.id == id then
+                    claim :: acc.received
+
+                else
+                    acc.received
+            }
+        )
+        { sent = []
+        , received = []
+        }
+        claims
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        InjectUserData userData ->
+            ( { model | asyncData = LoadingClaims userData }, Task.attempt GotClaims (getClaims userData.id model.accessToken) )
+
         GotClaims result ->
             case result of
                 Ok data ->
-                    ( { model | claims = Just data}, Cmd.none )
+                    ( { model | asyncData = Completed data }, Cmd.none )
+
                 Err _ ->
                     ( model, Cmd.none )
+
         Previous t ->
             case t of
                 Received ->
                     ( { model | received_page = getPrevious model.received_page }, Cmd.none )
+
                 Sent ->
                     ( { model | sent_page = getPrevious model.sent_page }, Cmd.none )
+
         Next t ->
             case t of
                 Received ->
-                    case model.claims of
-                        Just claims -> ( { model | received_page = getNext model.received_page (getMaxPage claims.received)}, Cmd.none )
-                        Nothing -> (model, Cmd.none)
+                    case model.asyncData of
+                        Completed claims ->
+                            ( { model | received_page = getNext model.received_page (getMaxPage claims.received) }, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
+
                 Sent ->
-                    case model.claims of
-                        Just claims -> ( { model | sent_page = getNext model.sent_page (getMaxPage claims.sent)}, Cmd.none )
-                        Nothing -> (model, Cmd.none)
+                    case model.asyncData of
+                        Completed claims ->
+                            ( { model | sent_page = getNext model.sent_page (getMaxPage claims.sent) }, Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    case model.claims of
-        Just claims -> claimView model claims
-        Nothing -> loadingView
+    case model.asyncData of
+        Completed claims ->
+            claimView model claims
 
-claimView : Model -> Claims -> Html Msg
+        _ ->
+            loadingView
+
+
+claimView : Model -> GroupedClaims -> Html Msg
 claimView model claims =
     div [ class "column" ]
         [ div [ class "columns" ]
@@ -158,17 +220,26 @@ claimView model claims =
             ]
         ]
 
+
 loadingView : Html msg
-loadingView = div [class "is-size-2 mx-5"] [text "Loading..."]
+loadingView =
+    div [ class "is-size-2 mx-5" ] [ text "Loading..." ]
+
 
 title : String -> Html msg
-title text_ = div [class "is-size-3 has-text-weight-bold my-5"] [ text text_ ]
+title text_ =
+    div [ class "is-size-3 has-text-weight-bold my-5" ] [ text text_ ]
+
 
 previousButton : ClaimType -> Bool -> Html Msg
-previousButton t d = a [ onClick (Previous t), class "pagination-previous", disabled d ] [ text "前ページ" ]
+previousButton t d =
+    a [ onClick (Previous t), class "pagination-previous", disabled d ] [ text "前ページ" ]
+
 
 nextButton : ClaimType -> Bool -> Html Msg
-nextButton t d = a [ onClick (Next t), class "pagination-next", disabled d ] [ text "次ページ" ]
+nextButton t d =
+    a [ onClick (Next t), class "pagination-next", disabled d ] [ text "次ページ" ]
+
 
 sentHeader : Html msg
 sentHeader =
@@ -178,7 +249,7 @@ sentHeader =
                 [ div [ class "media-left has-text-weight-bold" ] [ text "ID" ]
                 , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求先" ]
                 , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求量" ]
-                , div [ class "media-right mr-2" ] [ text "請求日" ]
+                , div [ class "media-right mr-2  has-text-weight-bold" ] [ text "請求日" ]
                 ]
             ]
         ]
@@ -197,6 +268,7 @@ sentClaimView claim =
             ]
         ]
 
+
 receivedHeader : Html msg
 receivedHeader =
     div [ class "card my-3" ]
@@ -205,12 +277,16 @@ receivedHeader =
                 [ div [ class "media-left has-text-weight-bold" ] [ text "ID" ]
                 , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求元" ]
                 , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求量" ]
-                , div [ class "media-right mr-2" ] [ text "請求日" ]
+                , div [ class "media-right mr-2  has-text-weight-bold" ] [ text "請求日" ]
                 ]
             ]
         ]
+
+
 username : User -> String
-username u= "@"++u.discord.username++"#"++u.discord.discriminator
+username u =
+    "@" ++ u.discord.username ++ "#" ++ u.discord.discriminator
+
 
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
@@ -229,6 +305,7 @@ receivedClaimView claim =
 filterDataWithPage : Int -> List Claim -> List Claim
 filterDataWithPage page data =
     toList <| slice (page * 20) (page * 2 + 19) (fromList data)
+
 
 getMaxPage : List Claim -> Int
 getMaxPage data =

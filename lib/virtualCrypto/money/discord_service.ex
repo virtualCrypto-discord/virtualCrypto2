@@ -44,6 +44,10 @@ defmodule VirtualCrypto.Money.DiscordService do
     Action.get_claims(resolve(discord_user_id))
   end
 
+  def get_claims(discord_user_id, status) do
+    Action.get_claims(resolve(discord_user_id), status)
+  end
+
   def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do
     Action.create_claim(
       resolve(claimant_discord_user_id),

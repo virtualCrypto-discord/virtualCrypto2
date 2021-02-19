@@ -118,8 +118,24 @@ defmodule VirtualCryptoWeb.CommandHandler do
         %{"member" => %{"user" => user}}
       ) do
     int_user_id = String.to_integer(user["id"])
-    {sent_claims, received_claims} = Money.get_pending_claims(DiscordService, int_user_id)
-    {:ok, "list", Enum.slice(sent_claims, 0, 10), Enum.slice(received_claims, 0, 10)}
+
+    {sent_claims, received_claims} =
+      Money.get_claims(DiscordService, int_user_id, "pending")
+      |> Enum.reduce({[], []}, fn {_claim, _info, claimant, payer} = d, {sent, received} ->
+        {
+          if(claimant.discord_id == int_user_id,
+            do: [d | sent],
+            else: sent
+          ),
+          if(payer.discord_id == int_user_id,
+            do: [d | received],
+            else: received
+          )
+        }
+      end)
+
+    {:ok, "list", Enum.slice(sent_claims |> Enum.reverse(), 0, 10),
+     Enum.slice(received_claims |> Enum.reverse(), 0, 10)}
   end
 
   def handle(

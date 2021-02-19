@@ -1,23 +1,19 @@
 module Mypage.Dashboard exposing (..)
+
+import Api
 import Array exposing (fromList, slice, toList)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (..)
+import Mypage.User exposing (User)
 import Url.Builder exposing (absolute)
-import Api
 
-type Status
-    = Success
-    | Failure
 
 getMaxPage : Balances -> Int
 getMaxPage data =
     List.length data // 5
-
-type alias UserData =
-    { id : String, name : String, avatar : String, discriminator : String }
 
 
 type alias Balance =
@@ -28,53 +24,57 @@ type alias Balances =
     List { amount : Int, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
 
 
+type DynamicData x
+    = Pending
+    | Failed
+    | Value x
+
+
 type alias Model =
-    { accessToken : String
-    , userData : Maybe UserData
-    , userDataStatus : Status
-    , balances : Balances
-    , balancesStatus : Status
+    { userData : DynamicData User
+    , accessToken : String
+    , balances : DynamicData Balances
     , page : Int
     }
 
+
 type Msg
-    = GotUserData (Result Http.Error UserData)
+    = InjectUserdata User
     | GotBalances (Result Http.Error Balances)
     | Previous
     | Next
 
-initModel : String -> Model
-initModel accessToken =
-    { accessToken = accessToken
-          , userData = Maybe.Nothing
-          , userDataStatus = Success
-          , balances = []
-          , balancesStatus = Success
-          , page = 0
-          }
 
-initCmd : String -> Cmd Msg
-initCmd accessToken =
-    getUserData accessToken
+init : String -> Maybe User -> ( Model, Cmd msg )
+init accessToken userData =
+    ( { accessToken = accessToken
+      , userData =
+            case userData of
+                Maybe.Just d ->
+                    Value d
+
+                Maybe.Nothing ->
+                    Pending
+      , balances = Pending
+      , page = 0
+      }
+    , Cmd.none
+    )
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotUserData result ->
-            case result of
-                Ok data ->
-                    ( { model | userData = Maybe.Just data }, getBalances model.accessToken)
-
-                Err _ ->
-                    ( { model | userDataStatus = Failure }, Cmd.none )
+        InjectUserdata userData ->
+            ( { model | userData = Value userData }, getBalances model.accessToken )
 
         GotBalances result ->
             case result of
                 Ok data ->
-                    ( { model | balances = data }, Cmd.none )
+                    ( { model | balances = Value data }, Cmd.none )
 
                 Err _ ->
-                    ( { model | balancesStatus = Failure }, Cmd.none )
+                    ( { model | balances = Failed }, Cmd.none )
 
         Previous ->
             case model.page of
@@ -85,54 +85,93 @@ update msg model =
                     ( { model | page = model.page - 1 }, Cmd.none )
 
         Next ->
-            if model.page == getMaxPage model.balances then
-                ( model, Cmd.none )
+            case model.balances of
+                Value balances ->
+                    if model.page == getMaxPage balances then
+                        ( model, Cmd.none )
 
-            else
-                ( { model | page = model.page + 1 }, Cmd.none )
+                    else
+                        ( { model | page = model.page + 1 }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
     div [ class "column" ]
-       [ userInfo model
-       , div [ class "columns" ]
-           [ div [ class "column is-two-fifths" ]
-               [ div [ class "has-text-weight-bold is-size-3 ml-2 my-3" ] [ text "所持通貨" ]
-               , model.balances |> filterDataWithPage model.page |> List.map balanceView |> div []
-               , nav [ class "pagination" ]
-                   [ if model.page /= 0 then
-                       a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ]
+        [ userInfo model
+        , div [ class "columns" ]
+            [ div [ class "column is-two-fifths" ]
+                (case model.balances of
+                    Value balances ->
+                        [ div [ class "has-text-weight-bold is-size-3 ml-2 my-3" ] [ text "所持通貨" ]
+                        , balances |> filterDataWithPage model.page |> List.map balanceView |> div []
+                        , nav [ class "pagination" ]
+                            [ if model.page /= 0 then
+                                a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ]
 
-                     else
-                       text ""
-                   , if model.page /= getMaxPage model.balances then
-                       a [ onClick Next, class "pagination-next" ] [ text "次ページ" ]
+                              else
+                                text ""
+                            , if model.page /= getMaxPage balances then
+                                a [ onClick Next, class "pagination-next" ] [ text "次ページ" ]
 
-                     else
-                       text ""
-                   ]
-               ]
-           ]
-       ]
+                              else
+                                text ""
+                            ]
+                        ]
+
+                    Pending ->
+                        [ div [ class "is-size-2 mx-5" ] [ text "Loading..." ] ]
+
+                    Failed ->
+                        [ div [ class "is-size-2 mx-5" ] [ text "Failed..." ] ]
+                )
+            ]
+        ]
 
 
-avatarURL : UserData -> String
+avatarURL : User -> String
 avatarURL userData =
-    "https://cdn.discordapp.com/avatars/" ++ userData.id ++ "/" ++ userData.avatar ++ ".png?size=128"
-
+    case userData.discord.avatar of 
+     Just a -> "https://cdn.discordapp.com/avatars/" ++ userData.discord.id ++ "/" ++ a ++ ".png?size=128"
+     Nothing -> "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
 
 userInfo : Model -> Html msg
 userInfo model =
     div [ class "columns" ]
         [ div [ class "column is-2" ]
-            [ img [ class "circle", src (Maybe.withDefault "https://cdn.discordapp.com/embed/avatars/0.png?size=128" (Maybe.map avatarURL model.userData)), height 100, width 100 ] []
+            [ img
+                [ class "circle"
+                , src
+                    (Maybe.withDefault "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
+                        (Maybe.map avatarURL
+                            (case model.userData of
+                                Value d ->
+                                    Just d
+
+                                _ ->
+                                    Nothing
+                            )
+                        )
+                    )
+                , height 100
+                , width 100
+                ]
+                []
             ]
         , div [ class "column" ]
             [ div [ class "has-text-weight-bold is-size-3 mt-5" ]
                 (Maybe.withDefault []
                     (Maybe.map
-                        (\userData -> [ text ("こんにちは、" ++ userData.name ++ "#" ++ userData.discriminator ++ " さん") ])
-                        model.userData
+                        (\discordUserData -> [ text ("こんにちは、" ++ discordUserData.username ++ "#" ++ discordUserData.discriminator ++ " さん") ])
+                        (case model.userData of
+                            Value d ->
+                                Just d.discord
+
+                            _ ->
+                                Nothing
+                        )
                     )
                 )
             ]
@@ -142,6 +181,7 @@ userInfo model =
 filterDataWithPage : Int -> Balances -> Balances
 filterDataWithPage page data =
     toList <| slice (page * 5) (page * 5 + 4) (fromList data)
+
 
 balanceView : Balance -> Html msg
 balanceView balance =
@@ -160,15 +200,6 @@ balanceView balance =
         ]
 
 
-getUserData : String -> Cmd Msg
-getUserData token =
-    Api.get
-        { url = absolute [ "api", "v1", "users", "@me" ] []
-        , expect = Http.expectJson GotUserData userDataDecoder
-        , token = token
-        }
-
-
 getBalances : String -> Cmd Msg
 getBalances token =
     Api.get
@@ -176,15 +207,6 @@ getBalances token =
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
         }
-
-
-userDataDecoder : Decoder UserData
-userDataDecoder =
-    map4 UserData
-        (field "id" string)
-        (field "name" string)
-        (field "avatar" string)
-        (field "discriminator" string)
 
 
 balancesDecoder : Decoder Balances
@@ -197,4 +219,3 @@ balancesDecoder =
         (field "guild" int)
         (field "money_status" int)
         |> Json.Decode.list
-

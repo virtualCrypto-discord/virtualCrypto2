@@ -1,19 +1,23 @@
 module Mypage exposing (..)
 
+import Api
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Mypage.Dashboard as Dashboard
+import Http exposing (Error)
 import Mypage.Claim as Claim
+import Mypage.Dashboard as Dashboard
+import Mypage.Route exposing (Route(..))
+import Mypage.User exposing (User, userDecoder)
+import Task
+import Url.Builder exposing (absolute)
 
-type Route
-    = DashboardPage
-    | ClaimPage
 
 type alias Model =
-    { dashboard : Dashboard.Model
+    { userData : Maybe User
     , claim : Claim.Model
+    , dashboard : Dashboard.Model
     , accessToken : String
     , route : Route
     }
@@ -31,34 +35,38 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init accessToken =
-    (
-    { dashboard = Dashboard.initModel accessToken
-    , claim = Claim.initModel accessToken
-    , accessToken = accessToken
-    , route = DashboardPage
-    }
-    , Dashboard.initCmd accessToken |> Cmd.map DashboardMsg
-    )
+    case ( Dashboard.init accessToken Maybe.Nothing, Claim.init accessToken Maybe.Nothing ) of
+        ( ( dashboard, dashboardMsg ), ( claim, claimMsg ) ) ->
+            ( { userData = Maybe.Nothing
+              , accessToken = accessToken
+              , route = DashboardPage
+              , dashboard = dashboard
+              , claim = claim
+              }
+            , Cmd.batch [ Cmd.map DashboardMsg dashboardMsg, Cmd.map ClaimMsg claimMsg, getUserData accessToken ]
+            )
 
 
 type Msg
-    = DashboardMsg Dashboard.Msg
+    = GotUserData (Result Http.Error User)
+    | DashboardMsg Dashboard.Msg
     | ClaimMsg Claim.Msg
     | GoTo Route
+
 
 changePage : Route -> msg -> Model -> ( Model, Cmd Msg )
 changePage route msg model =
     case route of
         DashboardPage ->
-            let
-                cmd = Dashboard.initCmd model.accessToken
-            in
-            ( { model | route = DashboardPage }, Cmd.map DashboardMsg cmd)
+            ( { model | route = DashboardPage }, Cmd.none )
+
         ClaimPage ->
-            let
-                cmd = Claim.initCmd model.accessToken
-            in
-            ( { model | route = ClaimPage}, Cmd.map ClaimMsg cmd )
+            ( { model | route = ClaimPage }, Cmd.none )
+
+
+dispatch msg =
+    Task.succeed msg |> Task.perform identity
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -69,31 +77,46 @@ update msg model =
                     Dashboard.update msg_ model.dashboard
             in
             ( { model | dashboard = m_ }, Cmd.map DashboardMsg cmd )
+
         ClaimMsg msg_ ->
             let
                 ( m_, cmd ) =
                     Claim.update msg_ model.claim
             in
             ( { model | claim = m_ }, Cmd.map ClaimMsg cmd )
-        GoTo route -> changePage route msg model
 
+        GoTo route ->
+            changePage route msg model
+
+        GotUserData res ->
+            case res of
+                Ok userData ->
+                    ( { model | userData = Just userData }, Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData)), Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData)) ] )
+
+                Err _ ->
+                    ( { model | userData = Nothing }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
 
+
+
 -- View --
 
 
 view : Model -> Html Msg
 view model =
-   div [ class "columns ml-5" ]
-           [ sidebar model
-           , case model.route of
-               DashboardPage -> Dashboard.view model.dashboard |> Html.map DashboardMsg
-               ClaimPage -> Claim.view model.claim |> Html.map ClaimMsg
-           ]
+    div [ class "columns ml-5" ]
+        [ sidebar model
+        , case model.route of
+            DashboardPage ->
+                Dashboard.view model.dashboard |> Html.map DashboardMsg
+
+            ClaimPage ->
+                Claim.view model.claim |> Html.map ClaimMsg
+        ]
 
 
 sidebar : Model -> Html Msg
@@ -101,8 +124,24 @@ sidebar model =
     div [ class "column is-one-fifth mt-5", style "border-right" "rgba(192, 192, 192, 0.7) solid 0.5px" ]
         [ aside [ class "menu" ]
             [ ul [ class "menu-list" ]
-                [ menuButton "Dashboard" DashboardPage (model.route == DashboardPage)
-                , menuButton "請求" ClaimPage (model.route == ClaimPage)
+                [ menuButton "Dashboard"
+                    DashboardPage
+                    (case model.route of
+                        DashboardPage ->
+                            True
+
+                        _ ->
+                            False
+                    )
+                , menuButton "請求"
+                    ClaimPage
+                    (case model.route of
+                        ClaimPage ->
+                            True
+
+                        _ ->
+                            False
+                    )
                 ]
             , menuLabel "操作"
             , ul [ class "menu-list" ]
@@ -111,12 +150,25 @@ sidebar model =
             ]
         ]
 
+
 menuButton : String -> Route -> Bool -> Html Msg
 menuButton text_ route is_active =
-    if is_active
-        then li [] [ a [ class "is-active has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
-        else li [] [ a [ class "has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
+    if is_active then
+        li [] [ a [ class "is-active has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
+
+    else
+        li [] [ a [ class "has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
+
 
 menuLabel : String -> Html msg
 menuLabel text_ =
     p [ class "menu-label" ] [ text text_ ]
+
+
+getUserData : String -> Cmd Msg
+getUserData token =
+    Api.get
+        { url = absolute [ "api", "v1", "users", "@me" ] []
+        , expect = Http.expectJson GotUserData userDecoder
+        , token = token
+        }

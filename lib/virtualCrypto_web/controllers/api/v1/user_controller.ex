@@ -1,5 +1,6 @@
 defmodule VirtualCryptoWeb.Api.V1.UserController do
   use VirtualCryptoWeb, :controller
+  alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
 
   def me(conn, _params) do
     case Guardian.Plug.current_token(conn) do
@@ -16,10 +17,8 @@ defmodule VirtualCryptoWeb.Api.V1.UserController do
           conn,
           "me.json",
           params: %{
-            id: to_string(discord_user["id"]),
-            name: discord_user["username"],
-            avatar: discord_user["avatar"],
-            discriminator: discord_user["discriminator"]
+            id: to_string(user.id),
+            discord: Filtering.user(discord_user)
           }
         )
     end
