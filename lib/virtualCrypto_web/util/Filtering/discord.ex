@@ -8,7 +8,6 @@ defmodule VirtualCryptoWeb.Filtering.Disocrd do
       "bot",
       "system",
       "mfa_enabled",
-      "flags",
       "premium_type",
       "public_flags"
     ])
