@@ -204,48 +204,38 @@ defmodule VirtualCrypto.Money do
     nil
   end
 
-  @spec get_pending_claims(module(), Integer.t()) ::
-          {[
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ],
-           [
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ]}
-  def get_pending_claims(service, discord_user_id) do
-    {sent, received} = service.get_claims(discord_user_id)
-
-    sent_ = sent |> Enum.filter(fn {claim, _, _, _} -> claim.status == "pending" end)
-    received_ = received |> Enum.filter(fn {claim, _, _, _} -> claim.status == "pending" end)
-    {sent_, received_}
+  @spec get_claims(module(), Integer.t(), String.t()) ::
+          [
+            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+             VirtualCrypto.User.User}
+          ]
+  def get_claims(service, user_id, status) do
+    service.get_claims(user_id, status)
   end
 
-  @spec get_all_claims(module(), Integer.t()) ::
-          {[
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ],
-           [
-             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-              VirtualCrypto.User.User}
-           ]}
-  def get_all_claims(service, discord_user_id) do
-    service.get_claims(discord_user_id)
+  @spec get_claims(module(), Integer.t()) ::
+          [
+            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+             VirtualCrypto.User.User}
+          ]
+  def get_claims(service, user_id) do
+    service.get_claims(user_id)
   end
 
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok, VirtualCrypto.Money.Claim}
+          {:ok,
+           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+            VirtualCrypto.User.User}}
           | {:error, :not_found}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
-  def approve_claim(service, id, discord_user_id) do
+  def approve_claim(service, id, user_id) do
     case Repo.transaction(fn ->
            with {:get_received_claim,
                  {%VirtualCrypto.Money.Claim{status: "pending", amount: amount}, info, claimant,
                   payer}} <-
-                  {:get_received_claim, service.get_received_claim(id, discord_user_id)},
+                  {:get_received_claim, service.get_received_claim(id, user_id)},
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
                     payer.id,
@@ -255,7 +245,7 @@ defmodule VirtualCrypto.Money do
                   ),
                 {:ok, claim} <-
                   VirtualCrypto.Money.InternalAction.approve_claim(id) do
-             claim
+             {claim, info, claimant, payer}
            else
              {:get_received_claim, _} -> Repo.rollback(:not_found)
              {:error, :not_found} -> Repo.rollback(:not_found)
@@ -268,16 +258,18 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok, VirtualCrypto.Money.Claim}
+          {:ok,
+           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+            VirtualCrypto.User.User}}
           | {:error, :not_found}
-  def cancel_claim(service, id, discord_user_id) do
+  def cancel_claim(service, id, user_id) do
     case Repo.transaction(fn ->
            with {:get_sent_claim,
-                 {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, _payer}} <-
-                  {:get_sent_claim, service.get_sent_claim(id, discord_user_id)},
+                 {%VirtualCrypto.Money.Claim{status: "pending"}, info, claimant, payer}} <-
+                  {:get_sent_claim, service.get_sent_claim(id, user_id)},
                 {:ok, claim} <-
                   VirtualCrypto.Money.InternalAction.cancel_claim(id) do
-             claim
+             {claim, info, claimant, payer}
            else
              {:get_sent_claim, _} -> Repo.rollback(:not_found)
              {:error, :not_found} -> Repo.rollback(:not_found)
@@ -289,15 +281,17 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec deny_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok, VirtualCrypto.Money.Claim}
+          {:ok,
+           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+            VirtualCrypto.User.User}}
           | {:error, :not_found}
-  def deny_claim(service, id, discord_user_id) do
+  def deny_claim(service, id, user_id) do
     case Repo.transaction(fn ->
            with {:get_received_claim,
-                 {%VirtualCrypto.Money.Claim{status: "pending"}, _info, _claimant, _payer}} <-
-                  {:get_received_claim, service.get_received_claim(id, discord_user_id)},
+                 {%VirtualCrypto.Money.Claim{status: "pending"}, info, claimant, payer}} <-
+                  {:get_received_claim, service.get_received_claim(id, user_id)},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
-             claim
+             {claim, info, claimant, payer}
            else
              {:get_received_claim, _} -> Repo.rollback(:not_found)
              {:error, :not_found} -> Repo.rollback(:not_found)
@@ -312,7 +306,9 @@ defmodule VirtualCrypto.Money do
   payer must be discord user
   """
   @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
-          {:ok, VirtualCrypto.Money.Claim}
+          {:ok,
+           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+            VirtualCrypto.User.User}}
           | {:error, :money_not_found}
           | {:error, :invalid_amount}
   def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do

@@ -18,8 +18,8 @@ type alias Flags =
     { redirect_uri : String, state : Maybe String, scope : String, client_id : String, csrf_token : String, response_type : String,guild_id : String }
 
 
-type Msg
-    = Nothing
+type alias Msg
+    = Never
 
 
 main : Program Flags Model Msg
