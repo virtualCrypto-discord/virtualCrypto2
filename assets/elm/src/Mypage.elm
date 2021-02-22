@@ -9,7 +9,7 @@ import Http
 import Mypage.Claim as Claim
 import Mypage.Dashboard as Dashboard
 import Mypage.Route exposing (Route(..))
-import Mypage.User exposing (User, userDecoder)
+import Types.User exposing (User, userDecoder)
 import Task
 import Url.Builder exposing (absolute)
 

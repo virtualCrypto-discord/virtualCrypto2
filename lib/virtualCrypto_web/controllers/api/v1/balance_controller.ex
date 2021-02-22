@@ -3,12 +3,11 @@ defmodule VirtualCryptoWeb.Api.V1.BalanceController do
   alias VirtualCrypto.Money
 
   def balance(conn, _) do
-    case Guardian.Plug.current_token(conn) do
+    case Guardian.Plug.current_resource(conn) do
       nil ->
         {:error}
 
-      token ->
-        {:ok, %{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
+      %{"sub" => user_id} ->
         balance_ = Money.balance(Money.VCService, user: user_id)
         render(conn, "balance.json", params: %{data: balance_})
     end

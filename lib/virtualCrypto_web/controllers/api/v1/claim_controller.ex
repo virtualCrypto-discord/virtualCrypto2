@@ -18,7 +18,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
         "guild" => to_string(info.guild_id),
         "pool_amount" => to_string(info.pool_amount)
       },
-      "amount" => claim.amount,
+      "amount" => to_string(claim.amount),
       "claimant" => %{
         "id" => to_string(claimant.id),
         "discord" =>

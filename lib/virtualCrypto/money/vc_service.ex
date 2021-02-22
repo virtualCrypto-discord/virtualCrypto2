@@ -19,7 +19,7 @@ defmodule VirtualCrypto.Money.VCService do
         join: info in Money.Info,
         on: asset.money_id == info.id,
         on: asset.user_id == ^user_id,
-        select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
+        select: {asset, info},
         order_by: info.unit
 
     Repo.all(q)

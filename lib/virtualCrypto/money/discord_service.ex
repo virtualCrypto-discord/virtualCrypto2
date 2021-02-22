@@ -26,7 +26,7 @@ defmodule VirtualCrypto.Money.DiscordService do
         on: asset.money_id == info.id,
         join: users in User,
         on: users.discord_id == ^discord_user_id and users.id == asset.user_id,
-        select: {asset.amount, asset.status, info.name, info.unit, info.guild_id, info.status},
+        select: {asset, info},
         order_by: info.unit
 
     Repo.all(q)
