@@ -7,21 +7,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (..)
-import Mypage.User exposing (User)
+import Types.Balance exposing (Balance, Balances, balancesDecoder)
+import Types.User exposing (User)
 import Url.Builder exposing (absolute)
 
 
 getMaxPage : Balances -> Int
 getMaxPage data =
     List.length data // 5
-
-
-type alias Balance =
-    { amount : Int, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
-
-
-type alias Balances =
-    List { amount : Int, asset_status : Int, name : String, unit : String, guild : Int, money_status : Int }
 
 
 type DynamicData x
@@ -133,9 +126,13 @@ view model =
 
 avatarURL : User -> String
 avatarURL userData =
-    case userData.discord.avatar of 
-     Just a -> "https://cdn.discordapp.com/avatars/" ++ userData.discord.id ++ "/" ++ a ++ ".png?size=128"
-     Nothing -> "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
+    case userData.discord.avatar of
+        Just a ->
+            "https://cdn.discordapp.com/avatars/" ++ userData.discord.id ++ "/" ++ a ++ ".png?size=128"
+
+        Nothing ->
+            "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
+
 
 userInfo : Model -> Html msg
 userInfo model =
@@ -188,8 +185,8 @@ balanceView balance =
     div [ class "card my-3" ]
         [ div [ class "card-content" ]
             [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text balance.name ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt balance.amount ++ balance.unit) ]
+                [ div [ class "media-left has-text-weight-bold" ] [ text balance.currency.name ]
+                , div [ class "media-content mr-2" ] [ text (balance.amount ++ balance.currency.unit) ]
                 ]
             ]
         , footer [ class "card-footer" ]
@@ -207,15 +204,3 @@ getBalances token =
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
         }
-
-
-balancesDecoder : Decoder Balances
-balancesDecoder =
-    map6 Balance
-        (field "amount" int)
-        (field "asset_status" int)
-        (field "name" string)
-        (field "unit" string)
-        (field "guild" int)
-        (field "money_status" int)
-        |> Json.Decode.list

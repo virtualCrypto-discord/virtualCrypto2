@@ -140,24 +140,16 @@ defmodule VirtualCrypto.Money do
 
   @spec balance(module(), user: non_neg_integer()) :: [
           %{
-            amount: non_neg_integer(),
-            asset_status: non_neg_integer(),
-            name: String.t(),
-            unit: String.t(),
-            guild: non_neg_integer(),
-            money_status: non_neg_integer()
+            asset: VirtualCrypto.Money.Asset,
+            currency: VirtualCrypto.Money.Info
           }
         ]
   def balance(service, kw) do
     service.balance(Keyword.fetch!(kw, :user))
-    |> Enum.map(fn {asset_amount, asset_status, info_name, info_unit, info_guild_id, info_status} ->
+    |> Enum.map(fn {asset, currency} ->
       %{
-        amount: asset_amount,
-        asset_status: asset_status,
-        name: info_name,
-        unit: info_unit,
-        guild: info_guild_id,
-        money_status: info_status
+        asset: asset,
+        currency: currency
       }
     end)
   end

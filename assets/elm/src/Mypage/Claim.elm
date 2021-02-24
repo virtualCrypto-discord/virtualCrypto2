@@ -6,36 +6,16 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (Decoder, field, int, map6, string)
 import Mypage.Dashboard exposing (DynamicData(..))
-import Mypage.User exposing (User, userDecoder)
+import Types.User exposing (User)
+import Types.Claim exposing (Claims,claimsDecoder,Claim)
 import Platform exposing (Task)
 import Task exposing (Task)
 import Url.Builder exposing (absolute)
 
-
-type alias Currency =
-    { unit : String }
-
-
-type alias Claim =
-    { id : String
-    , currency : Currency
-    , amount : Int
-    , claimant : User
-    , payer : User
-    , created_at : String
-    }
-
-
 type ClaimType
     = Sent
     | Received
-
-
-type alias Claims =
-    List Claim
-
 
 type AsyncData
     = LoadingUserData
@@ -57,21 +37,7 @@ type alias Model =
     }
 
 
-currencyDecoder : Decoder Currency
-currencyDecoder =
-    Json.Decode.map Currency (field "unit" string)
 
-
-claimsDecoder : Decoder (List Claim)
-claimsDecoder =
-    map6 Claim
-        (field "id" string)
-        (field "currency" currencyDecoder)
-        (field "amount" int)
-        (field "claimant" userDecoder)
-        (field "payer" userDecoder)
-        (field "created_at" string)
-        |> Json.Decode.list
 
 
 type Msg
@@ -262,7 +228,7 @@ sentClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text (username claim.payer) ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
+                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]
@@ -295,7 +261,7 @@ receivedClaimView claim =
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
                 , div [ class "media-content mr-2" ] [ text (username claim.claimant) ]
-                , div [ class "media-content mr-2" ] [ text (String.fromInt claim.amount ++ claim.currency.unit) ]
+                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.currency.unit) ]
                 , div [ class "media-right mr-2" ] [ text claim.created_at ]
                 ]
             ]

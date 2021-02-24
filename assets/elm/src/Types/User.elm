@@ -1,6 +1,6 @@
-module Mypage.User exposing (DiscordUser, User, discordUserDecoder, userDecoder)
+module Types.User exposing (DiscordUser, User, discordUserDecoder, userDecoder)
 
-import Json.Decode exposing (Decoder, field, map2, map3, map4, string,nullable)
+import Json.Decode exposing (Decoder, field, map2, map4, string,nullable)
 
 
 type alias DiscordUser =

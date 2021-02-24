@@ -18,12 +18,14 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionView do
       error_info: "not_enough_amount"
     }
   end
+
   defp render_error(:invalid_amount) do
     %{
       error: "invalid_request",
       error_description: "invalid_amount"
     }
   end
+
   def render("error.json", %{
         error: {error, error_description}
       }) do
