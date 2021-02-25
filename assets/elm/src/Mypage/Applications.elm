@@ -1,9 +1,8 @@
 module Mypage.Applications exposing (..)
 import Html exposing (..)
-import Url.Builder exposing (absolute)
+import Url.Builder exposing (absolute, string)
 import Http
 import Api
-import Json.Decode exposing (field, Decoder, map2, map4, string, int, list)
 import Types.User exposing (User)
 import Types.Applications exposing (Applications, applicationsDecoder)
 
@@ -17,7 +16,7 @@ type alias Model =
 getApplications : String -> Cmd Msg
 getApplications token =
     Api.get
-            { url = absolute [ "api", "v1", "users", "@me", "claims" ] []
+            { url = absolute [ "oauth2", "clients" ] [string "user" "@me"]
             , expect = Http.expectJson GotApplications applicationsDecoder
             , token = token
             }
@@ -38,9 +37,19 @@ init accessToken userData  =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    (model, Cmd.none)
+    case msg of
+        InjectUserData user ->
+            ( { model | userData = Just user }, getApplications model.accessToken)
+        GotApplications result ->
+            case result of
+                Ok data ->
+                    ( { model | applications = Just data }, Cmd.none)
+                Err _ ->
+                    ( model, Cmd.none)
 
 
 view : Model -> Html Msg
 view model =
-    text ""
+    case model.applications of
+        Just applications -> text "a"
+        Maybe.Nothing -> text ""

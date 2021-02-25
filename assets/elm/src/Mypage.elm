@@ -106,7 +106,12 @@ update msg model =
         GotUserData res ->
             case res of
                 Ok userData ->
-                    ( { model | userData = Just userData }, Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData)), Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData)) ] )
+                    ( { model | userData = Just userData }
+                    , Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData))
+                                , Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData))
+                                , Cmd.map ApplicationsMsg (dispatch (Applications.InjectUserData userData))
+                                ]
+                    )
 
                 Err _ ->
                     ( { model | userData = Nothing }, Cmd.none )
