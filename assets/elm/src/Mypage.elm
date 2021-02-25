@@ -8,6 +8,7 @@ import Html.Events exposing (onClick)
 import Http
 import Mypage.Claim as Claim
 import Mypage.Dashboard as Dashboard
+import Mypage.Applications as Applications
 import Mypage.Route exposing (Route(..))
 import Types.User exposing (User, userDecoder)
 import Task
@@ -36,15 +37,16 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init accessToken =
-    case ( Dashboard.init accessToken Maybe.Nothing, Claim.init accessToken Maybe.Nothing ) of
-        ( ( dashboard, dashboardMsg ), ( claim, claimMsg ) ) ->
+    case ( Dashboard.init accessToken Maybe.Nothing, Claim.init accessToken Maybe.Nothing, Applications.init accessToken Maybe.Nothing ) of
+        ( ( dashboard, dashboardMsg ), ( claim, claimMsg ), ( applications, applicationsMsg ) ) ->
             ( { userData = Maybe.Nothing
               , accessToken = accessToken
               , route = DashboardPage
               , dashboard = dashboard
               , claim = claim
+              , applications = applications
               }
-            , Cmd.batch [ Cmd.map DashboardMsg dashboardMsg, Cmd.map ClaimMsg claimMsg, getUserData accessToken ]
+            , Cmd.batch [ Cmd.map DashboardMsg dashboardMsg, Cmd.map ClaimMsg claimMsg, Cmd.map ApplicationsMsg applicationsMsg, getUserData accessToken ]
             )
 
 
@@ -64,6 +66,9 @@ changePage route model =
 
         ClaimPage ->
             ( { model | route = ClaimPage }, Cmd.none )
+
+        ApplicationsPage ->
+            ( { model | route = ApplicationsPage }, Cmd.none)
 
 
 dispatch : msg -> Cmd msg
@@ -87,6 +92,13 @@ update msg model =
                     Claim.update msg_ model.claim
             in
             ( { model | claim = m_ }, Cmd.map ClaimMsg cmd )
+
+        ApplicationsMsg msg_ ->
+            let
+                ( m_, cmd ) =
+                    Applications.update msg_ model.applications
+            in
+            ( { model | applications = m_ }, Cmd.map ApplicationsMsg cmd)
 
         GoTo route ->
             changePage route model
@@ -119,6 +131,8 @@ view model =
 
             ClaimPage ->
                 Claim.view model.claim |> Html.map ClaimMsg
+            ApplicationsPage ->
+                Applications.view model.applications |> Html.map ApplicationsMsg
         ]
 
 

@@ -4,10 +4,13 @@ import Url.Builder exposing (absolute)
 import Http
 import Api
 import Json.Decode exposing (field, Decoder, map2, map4, string, int, list)
+import Mypage.User exposing (User)
 
 
 type alias Model =
     { applications : Maybe Applications
+    , accessToken : String
+    , userData : Maybe User
     }
 
 type alias Application =
@@ -44,14 +47,12 @@ type Msg
     = GotApplications (Result Http.Error Applications)
 
 
-initCmd : String -> Cmd Msg
-initCmd accessToken =
-    getApplications accessToken
-
-
-initModel : String -> Model
-initModel _ =
-    {applications = Maybe.Nothing}
+init : String -> Maybe User -> ( Model, Cmd Msg )
+init accessToken userData  =
+    ( { accessToken = accessToken
+      , userData = userData
+      , applications = Maybe.Nothing
+      }, Cmd.none)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
