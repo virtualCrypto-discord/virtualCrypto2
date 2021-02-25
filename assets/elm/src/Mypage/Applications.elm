@@ -4,7 +4,8 @@ import Url.Builder exposing (absolute)
 import Http
 import Api
 import Json.Decode exposing (field, Decoder, map2, map4, string, int, list)
-import Mypage.User exposing (User)
+import Types.User exposing (User)
+import Types.Applications exposing (Applications, applicationsDecoder)
 
 
 type alias Model =
@@ -12,27 +13,6 @@ type alias Model =
     , accessToken : String
     , userData : Maybe User
     }
-
-type alias Application =
-    { client_id : String
-    , client_name : String
-    , user_id : String
-    , client_secret : String
-    }
-
-type alias Applications = List Application
-
-applicationDecoder : Decoder Application
-applicationDecoder =
-    map4 Application
-        (field "client_id" string)
-        (field "client_name" string)
-        (field "user_id" string)
-        (field "client_secret" string)
-
-applicationsDecoder : Decoder Applications
-applicationsDecoder =
-    applicationDecoder |> list
 
 getApplications : String -> Cmd Msg
 getApplications token =
@@ -44,7 +24,8 @@ getApplications token =
 
 
 type Msg
-    = GotApplications (Result Http.Error Applications)
+    = InjectUserData User
+    | GotApplications (Result Http.Error Applications)
 
 
 init : String -> Maybe User -> ( Model, Cmd Msg )

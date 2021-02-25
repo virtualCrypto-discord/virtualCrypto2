@@ -37,9 +37,6 @@ type alias Model =
     }
 
 
-
-
-
 type Msg
     = InjectUserData User
     | GotClaims (Result Http.Error GroupedClaims)
