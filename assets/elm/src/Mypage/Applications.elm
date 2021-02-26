@@ -111,7 +111,7 @@ applicationButton application =
     div [class "card column is-2 mx-2 my-2"]
         [ div [class "card-image"]
             [ figure [class "is-4by3"]
-                [ img [src <| withDefault "https://bulma.io/images/placeholders/1280x960.png" application.logo_uri] []
+                [ img [src <| withDefault "https://bulma.io/images/placeholders/1280x960.png" application.logo_uri, width 300, height 250] []
                 ]
             ]
         , div [class "card-content"]
