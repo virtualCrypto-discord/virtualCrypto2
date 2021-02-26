@@ -1,5 +1,6 @@
 module Types.Applications exposing (..)
-import Json.Decode exposing (field, Decoder, string, int, succeed, list, andThen, fail, nullable)
+import Json.Decode exposing (field, Decoder, string, int, succeed, list, andThen, fail, nullable, map5)
+import Json.Encode as Encode
 import Json.Decode.Extra exposing (andMap)
 import Dict
 
@@ -80,3 +81,27 @@ applicationDecoder =
 applicationsDecoder : Decoder Applications
 applicationsDecoder =
     applicationDecoder |> Json.Decode.list
+
+type alias ClientRegistrationResponse =
+    { client_id : String
+    , client_secret : String
+    , registration_access_token : String
+    , registration_client_uri : String
+    , client_secret_expires_at : Int
+    }
+
+clientRegistrationResponseDecoder : Decoder ClientRegistrationResponse
+clientRegistrationResponseDecoder =
+    map5 ClientRegistrationResponse
+        (field "client_id" string)
+        (field "client_secret" string)
+        (field "registration_access_token" string)
+        (field "registration_client_uri" string)
+        (field "client_secret_expires_at" int)
+
+clientRegistrationResponseEncoder : String -> Encode.Value
+clientRegistrationResponseEncoder name =
+    Encode.object
+    [ ("client_name", Encode.string name)
+    , ("redirect_uris", Encode.list Encode.string [])
+    ]
