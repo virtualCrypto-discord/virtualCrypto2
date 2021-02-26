@@ -4,7 +4,9 @@ import Url.Builder exposing (absolute, string)
 import Http
 import Api
 import Types.User exposing (User)
-import Types.Applications exposing (Applications, applicationsDecoder)
+import Types.Applications exposing (Application, Applications, applicationsDecoder)
+import Html.Attributes exposing (..)
+import Maybe exposing (withDefault)
 
 
 type alias Model =
@@ -51,5 +53,34 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model.applications of
-        Just applications -> text "a"
-        Maybe.Nothing -> text ""
+        Just applications -> applicationsView model applications
+        Maybe.Nothing -> loadingView
+
+loadingView : Html msg
+loadingView =
+    div [ class "is-size-2 mx-5" ] [ text "Loading..." ]
+
+
+applicationsView : Model -> Applications -> Html Msg
+applicationsView model applications =
+    div [class "column mt-5"]
+        [ p [class "title"] [text "アプリケーション一覧"]
+        , a [href "/", class "button is-medium mb-3 has-background-info has-text-white"] [text "新規アプリケーション"]
+        , div [class "columns is-multiline"]
+            (applications |> List.map applicationButton)
+        ]
+
+applicationButton : Application -> Html Msg
+applicationButton application =
+    div [class "card column is-2 mx-2 my-2"]
+        [ div [class "card-image"]
+            [ figure [class "is-4by3"]
+                [ img [src <| withDefault "https://bulma.io/images/placeholders/1280x960.png" application.logo_uri] []
+                ]
+            ]
+        , div [class "card-content"]
+            [ div [class "media-content"]
+                [ a [] [p [class "title"] [text <| withDefault "" application.client_name]]
+                ]
+            ]
+        ]
