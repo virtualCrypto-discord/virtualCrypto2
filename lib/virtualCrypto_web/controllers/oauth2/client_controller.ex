@@ -6,7 +6,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
   def get(conn, _params) do
     params =
       with {{:validate_token, :token_verification_failed},
-            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
+            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app"}} <-
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user}, %User.User{application_id: application_id} = user} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)} do
@@ -51,7 +51,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
   def patch(conn, params) do
     params =
       with {{:validate_token, :token_verification_failed},
-            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app.user"}} <-
+            %{"sub" => user_id, "oauth2.register" => true, "kind" => "app"}} <-
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user}, %User.User{application_id: application_id}} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)} do
