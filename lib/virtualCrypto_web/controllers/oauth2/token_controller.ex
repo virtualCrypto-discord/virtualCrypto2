@@ -39,7 +39,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
       {:error, _} ->
         conn
         |> put_status(400)
-        |> render(conn, "refresh.token.json", params: params)
+        |> render("refresh.token.json", params: params)
     end
   end
 
@@ -70,21 +70,25 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
   def post(conn, %{"grant_type" => "client_credentials", "scope" => scope}) do
     params =
       with {:validate_credentials, {client_id, client_secret}} <-
-             {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)} do
+             {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)},
+           {:validate_credentials, id} when id != nil <-
+             {:validate_credentials,
+              Auth.get_application_user_id_by_client_id(
+                client_id,
+                client_secret
+              )} do
         {:ok, access_token, %{"exp" => expires}} =
           VirtualCrypto.Guardian.issue_token_for_app(
-            Auth.InternalAction.Application.get_application_user_id_by_client_id(
-              client_id,
-              client_secret
-            ),
+            id,
             String.split(scope, " ")
           )
 
-        %{
-          access_token: access_token,
-          expires_in: DateTime.diff(DateTime.from_unix!(expires), DateTime.utc_now()),
-          token_type: "Bearer"
-        }
+        {:ok,
+         %{
+           access_token: access_token,
+           expires_in: DateTime.diff(DateTime.from_unix!(expires), DateTime.utc_now()),
+           token_type: "Bearer"
+         }}
       else
         {:validate_credentials, _} -> {:error, :invalid_client}
       end
