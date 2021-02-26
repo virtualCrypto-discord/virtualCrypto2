@@ -116,7 +116,7 @@ applicationButton application =
             ]
         , div [class "card-content"]
             [ div [class "media-content"]
-                [ a [href "/applications/"] [p [class "title"] [text <| withDefault "" application.client_name]]
+                [ a [href ("/applications/" ++ application.client_id)] [p [class "title"] [text <| withDefault "" application.client_name]]
                 ]
             ]
         ]
