@@ -228,6 +228,9 @@ defmodule VirtualCrypto.Auth do
             users.application_id == applications.id,
         select: {users.id}
 
-    Repo.one(q)
+    case Repo.one(q) do
+      {id} -> id
+      nil -> nil
+    end
   end
 end
