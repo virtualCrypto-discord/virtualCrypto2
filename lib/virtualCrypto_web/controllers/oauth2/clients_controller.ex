@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
+  alias VirtualCrypto.Auth.Application.Metadata.Validater, as: Validater
 
   defp fetch(m, k, e) do
     case Map.fetch(m, k) do

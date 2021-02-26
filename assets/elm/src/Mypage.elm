@@ -8,6 +8,7 @@ import Html.Events exposing (onClick)
 import Http
 import Mypage.Claim as Claim
 import Mypage.Dashboard as Dashboard
+import Mypage.Applications as Applications
 import Mypage.Route exposing (Route(..))
 import Types.User exposing (User, userDecoder)
 import Task
@@ -20,6 +21,7 @@ type alias Model =
     , dashboard : Dashboard.Model
     , accessToken : String
     , route : Route
+    , applications : Applications.Model
     }
 
 
@@ -35,15 +37,16 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init accessToken =
-    case ( Dashboard.init accessToken Maybe.Nothing, Claim.init accessToken Maybe.Nothing ) of
-        ( ( dashboard, dashboardMsg ), ( claim, claimMsg ) ) ->
+    case ( Dashboard.init accessToken Maybe.Nothing, Claim.init accessToken Maybe.Nothing, Applications.init accessToken Maybe.Nothing ) of
+        ( ( dashboard, dashboardMsg ), ( claim, claimMsg ), ( applications, applicationsMsg ) ) ->
             ( { userData = Maybe.Nothing
               , accessToken = accessToken
               , route = DashboardPage
               , dashboard = dashboard
               , claim = claim
+              , applications = applications
               }
-            , Cmd.batch [ Cmd.map DashboardMsg dashboardMsg, Cmd.map ClaimMsg claimMsg, getUserData accessToken ]
+            , Cmd.batch [ Cmd.map DashboardMsg dashboardMsg, Cmd.map ClaimMsg claimMsg, Cmd.map ApplicationsMsg applicationsMsg, getUserData accessToken ]
             )
 
 
@@ -51,6 +54,7 @@ type Msg
     = GotUserData (Result Http.Error User)
     | DashboardMsg Dashboard.Msg
     | ClaimMsg Claim.Msg
+    | ApplicationsMsg Applications.Msg
     | GoTo Route
 
 
@@ -62,6 +66,9 @@ changePage route model =
 
         ClaimPage ->
             ( { model | route = ClaimPage }, Cmd.none )
+
+        ApplicationsPage ->
+            ( { model | route = ApplicationsPage }, Cmd.none)
 
 
 dispatch : msg -> Cmd msg
@@ -86,13 +93,25 @@ update msg model =
             in
             ( { model | claim = m_ }, Cmd.map ClaimMsg cmd )
 
+        ApplicationsMsg msg_ ->
+            let
+                ( m_, cmd ) =
+                    Applications.update msg_ model.applications
+            in
+            ( { model | applications = m_ }, Cmd.map ApplicationsMsg cmd)
+
         GoTo route ->
             changePage route model
 
         GotUserData res ->
             case res of
                 Ok userData ->
-                    ( { model | userData = Just userData }, Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData)), Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData)) ] )
+                    ( { model | userData = Just userData }
+                    , Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData))
+                                , Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData))
+                                , Cmd.map ApplicationsMsg (dispatch (Applications.InjectUserData userData))
+                                ]
+                    )
 
                 Err _ ->
                     ( { model | userData = Nothing }, Cmd.none )
@@ -117,6 +136,8 @@ view model =
 
             ClaimPage ->
                 Claim.view model.claim |> Html.map ClaimMsg
+            ApplicationsPage ->
+                Applications.view model.applications |> Html.map ApplicationsMsg
         ]
 
 
@@ -143,6 +164,10 @@ sidebar model =
                         _ ->
                             False
                     )
+                ]
+            , menuLabel "開発者向け"
+            , ul [ class "menu-list" ]
+                [ menuButton "アプリケーション" ApplicationsPage (model.route == ApplicationsPage)
                 ]
             , menuLabel "操作"
             , ul [ class "menu-list" ]

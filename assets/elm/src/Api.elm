@@ -1,4 +1,4 @@
-module Api exposing (get,getTask)
+module Api exposing (get,getTask,post)
 
 import Http
 import Json.Decode as Decode
@@ -13,6 +13,19 @@ get data =
         , headers = [ Http.header "Authorization" ("Bearer " ++ data.token) ]
         , expect = data.expect
         , body = Http.emptyBody
+        , timeout = Maybe.Nothing
+        , tracker = Maybe.Nothing
+        }
+
+
+post : { a | url : String, token : String, expect : Http.Expect msg, body : Http.Body } -> Cmd msg
+post data =
+    Http.request
+        { method = "POST"
+        , url = data.url
+        , headers = [ Http.header "Authorization" ("Bearer " ++ data.token) ]
+        , expect = data.expect
+        , body = data.body
         , timeout = Maybe.Nothing
         , tracker = Maybe.Nothing
         }

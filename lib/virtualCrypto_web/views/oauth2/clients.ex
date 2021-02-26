@@ -9,7 +9,7 @@ defmodule VirtualCryptoWeb.Clients do
       "client_secret" => application.client_secret,
       "client_secret_expires_at" => 0,
       "redirect_uris" => redirect_uris |> Enum.map(& &1.redirect_uri),
-      "user_id" => user.id,
+      "user_id" => to_string(user.id),
       "discord_user_id" =>
         unless user.discord_id == nil do
           to_string(user.discord_id)
