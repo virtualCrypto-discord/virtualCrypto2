@@ -10,7 +10,8 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsView do
       "client_id" => application.client_id,
       "client_secret" => application.client_secret,
       "registration_access_token" => registration_access_token,
-      "registration_client_uri" => registration_client_uri
+      "registration_client_uri" => registration_client_uri,
+      "client_secret_expires_at" => 0,
     }
   end
 
