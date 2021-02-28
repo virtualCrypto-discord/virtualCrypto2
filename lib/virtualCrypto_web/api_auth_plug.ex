@@ -13,13 +13,6 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
 
       x when x in [:unauthorized, :invalid_token] ->
         conn
-        |> Plug.Conn.put_resp_header(
-          "WWW-Authenticate",
-          [
-            "Bearer"
-          ]
-          |> Enum.join(",")
-        )
         |> Plug.Conn.send_resp(401, """
         {
           "error": "invalid_token"
