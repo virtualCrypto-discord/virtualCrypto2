@@ -6,13 +6,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
+import Mypage.Applications as Applications
 import Mypage.Claim as Claim
 import Mypage.Dashboard as Dashboard
-import Mypage.Applications as Applications
+import Mypage.Error as Error
 import Mypage.Route exposing (Route(..))
-import Types.User exposing (User, userDecoder)
 import Task
+import Types.User exposing (User, userDecoder)
 import Url.Builder exposing (absolute)
+import Html
 
 
 type alias Model =
@@ -68,7 +70,10 @@ changePage route model =
             ( { model | route = ClaimPage }, Cmd.none )
 
         ApplicationsPage ->
-            ( { model | route = ApplicationsPage }, Cmd.none)
+            ( { model | route = ApplicationsPage }, Cmd.none )
+
+        ErrorPage ->
+            ( { model | route = ErrorPage }, Cmd.none )
 
 
 dispatch : msg -> Cmd msg
@@ -98,7 +103,7 @@ update msg model =
                 ( m_, cmd ) =
                     Applications.update msg_ model.applications
             in
-            ( { model | applications = m_ }, Cmd.map ApplicationsMsg cmd)
+            ( { model | applications = m_ }, Cmd.map ApplicationsMsg cmd )
 
         GoTo route ->
             changePage route model
@@ -107,14 +112,15 @@ update msg model =
             case res of
                 Ok userData ->
                     ( { model | userData = Just userData }
-                    , Cmd.batch [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData))
-                                , Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData))
-                                , Cmd.map ApplicationsMsg (dispatch (Applications.InjectUserData userData))
-                                ]
+                    , Cmd.batch
+                        [ Cmd.map ClaimMsg (dispatch (Claim.InjectUserData userData))
+                        , Cmd.map DashboardMsg (dispatch (Dashboard.InjectUserdata userData))
+                        , Cmd.map ApplicationsMsg (dispatch (Applications.InjectUserData userData))
+                        ]
                     )
 
                 Err _ ->
-                    ( { model | userData = Nothing }, Cmd.none )
+                    ( { model | userData = Nothing }, dispatch (GoTo ErrorPage) )
 
 
 subscriptions : Model -> Sub Msg
@@ -136,8 +142,12 @@ view model =
 
             ClaimPage ->
                 Claim.view model.claim |> Html.map ClaimMsg
+
             ApplicationsPage ->
                 Applications.view model.applications |> Html.map ApplicationsMsg
+
+            ErrorPage ->
+                Error.view 
         ]
 
 

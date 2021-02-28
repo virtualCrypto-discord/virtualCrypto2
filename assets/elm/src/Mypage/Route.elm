@@ -7,3 +7,4 @@ type Route
     = DashboardPage
     | ClaimPage
     | ApplicationsPage
+    | ErrorPage
