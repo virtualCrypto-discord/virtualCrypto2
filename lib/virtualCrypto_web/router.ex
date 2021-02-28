@@ -59,6 +59,7 @@ defmodule VirtualCryptoWeb.Router do
     scope "/" do
       pipe_through :api
       post "/token", TokenController, :post
+      post "/token/revoke", TokenRevocationController, :post
 
       scope "/clients" do
         pipe_through :api_auth

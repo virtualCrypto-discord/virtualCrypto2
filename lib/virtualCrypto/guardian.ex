@@ -77,11 +77,16 @@ defmodule VirtualCrypto.Guardian do
   @impl Guardian
   def verify_claims(%{"kind" => kind, "jti" => token_id} = claims, _options)
       when kind in ["user", "app"] do
-    case VirtualCrypto.Repo.exists?(VirtualCrypto.Auth.UserAccessToken,
-           token_id: token_id
-         ) do
-      true -> {:ok, claims}
-      false -> {:error, :token_not_found}
+    q =
+      from uat in VirtualCrypto.Auth.UserAccessToken,
+        where: uat.token_id == ^token_id
+
+    case VirtualCrypto.Repo.exists?(q) do
+      true ->
+        {:ok, claims}
+
+      false ->
+        {:error, :token_not_found}
     end
   end
 
@@ -96,15 +101,7 @@ defmodule VirtualCrypto.Guardian do
     {:ok, claims}
   end
 
-  def revoke_with_jti(%{"kind" => "app", "jti" => jti}) do
-    q =
-      from at in VirtualCrypto.Auth.AccessToken,
-        where: at.token_id == ^jti
-
-    VirtualCrypto.Repo.delete_all(q)
-  end
-
-  def revoke_with_jti(%{"kind" => "user", "jti" => jti}) do
+  def revoke_with_jti(%{"kind" => kind, "jti" => jti}) when kind in ["app", "user"] do
     q =
       from uat in VirtualCrypto.Auth.UserAccessToken,
         where: uat.token_id == ^jti
