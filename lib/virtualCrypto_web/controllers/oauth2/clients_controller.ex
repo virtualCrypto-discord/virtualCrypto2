@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
-  alias VirtualCrypto.Auth.Application.Metadata.Validater, as: Validater
+  alias VirtualCrypto.Auth.Application.Metadata.Validator, as: Validator
 
   defp fetch(m, k, e) do
     case Map.fetch(m, k) do
@@ -68,17 +68,17 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
            {{:validate_token, :user_verification_failed}, false} <-
              {{:validate_token, :user_verification_failed},
               Map.get(Discord.Api.V8.OAuth2.get_user_info(discord_access_token), "bot", false)},
-           %{} = response_types <- f.(:response_types, &Validater.validate_response_types/1),
-           %{} = grant_types <- f.(:grant_types, &Validater.validate_grant_types/1),
+           %{} = response_types <- f.(:response_types, &Validator.validate_response_types/1),
+           %{} = grant_types <- f.(:grant_types, &Validator.validate_grant_types/1),
            %{} = application_type <-
-             f.(:application_type, &Validater.validate_application_type/1),
+             f.(:application_type, &Validator.validate_application_type/1),
            %{} = client_name <- f.(:client_name, &{:ok, &1}),
-           %{} = client_uri <- f.(:client_uri, &Validater.validate_client_uri/1),
-           %{} = logo_uri <- f.(:logo_uri, &Validater.validate_logo_uri/1),
+           %{} = client_uri <- f.(:client_uri, &Validator.validate_client_uri/1),
+           %{} = logo_uri <- f.(:logo_uri, &Validator.validate_logo_uri/1),
            %{} = discord_support_server_invite_slug <-
              f.(
                :discord_support_server_invite_slug,
-               &Validater.validate_discord_support_server_invite_slug/1
+               &Validator.validate_discord_support_server_invite_slug/1
              ),
            redirect_uris when is_list(redirect_uris) <-
              fetch(req, "redirect_uris", {:invalid_redirect_uri, :redirect_uris_must_be_array}),

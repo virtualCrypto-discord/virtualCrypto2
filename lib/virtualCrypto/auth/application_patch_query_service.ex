@@ -1,5 +1,5 @@
 defmodule VirtualCrypto.Auth.Application.PatchQuery do
-  alias VirtualCrypto.Auth.Application.Metadata.Validater
+  alias VirtualCrypto.Auth.Application.Metadata.Validator
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Auth
   import Ecto.Query
@@ -33,11 +33,11 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
   end
 
   defp logo_uri(q, map) do
-    common(:logo_uri, q, map, &Validater.validate_logo_uri/1)
+    common(:logo_uri, q, map, &Validator.validate_logo_uri/1)
   end
 
   def application_type(q, map) do
-    common(:application_type, q, map, &Validater.validate_application_type/1)
+    common(:application_type, q, map, &Validator.validate_application_type/1)
   end
 
   defp client_name(q, map) do
@@ -45,7 +45,7 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
   end
 
   defp client_uri(q, map) do
-    common(:client_uri, q, map, &Validater.validate_client_uri/1)
+    common(:client_uri, q, map, &Validator.validate_client_uri/1)
   end
 
   defp discord_support_server_invite_slug(q, map) do
@@ -53,16 +53,16 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
       :discord_support_server_invite_slug,
       q,
       map,
-      &Validater.validate_discord_support_server_invite_slug/1
+      &Validator.validate_discord_support_server_invite_slug/1
     )
   end
 
   defp grant_types(q, map) do
-    common(:grant_types, q, map, &Validater.validate_grant_types/1)
+    common(:grant_types, q, map, &Validator.validate_grant_types/1)
   end
 
   defp response_types(q, map) do
-    common(:response_types, q, map, &Validater.validate_response_types/1)
+    common(:response_types, q, map, &Validator.validate_response_types/1)
   end
 
   defp client_secret_q(x, q, map) do
