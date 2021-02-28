@@ -1,0 +1,2 @@
+<script defer type="text/javascript" src="<%= "/static" <> Routes.static_path(@conn, "/js/application.js") %>"></script>
+<div id="elm-app" data-json="<%= @data %>"></div>

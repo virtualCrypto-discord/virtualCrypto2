@@ -45,6 +45,7 @@ defmodule VirtualCryptoWeb.Router do
     scope "/" do
       pipe_through :browser_auth
       get "/me", MyPageController, :index
+      get "/applications/:id", ApplicationController, :index
     end
   end
 

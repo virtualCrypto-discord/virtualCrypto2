@@ -204,19 +204,41 @@ defmodule VirtualCrypto.Auth do
     end
   end
 
-  def get_user_application(user_id) do
+  def get_user_applications(user_id) do
     q =
-      from applications in VirtualCrypto.Auth.Application,
+      from application in VirtualCrypto.Auth.Application,
         left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
-        on: redirect_uris.application_id == applications.id,
+        on: redirect_uris.application_id == application.id,
         join: owner_users in VirtualCrypto.User.User,
         join: application_users in VirtualCrypto.User.User,
         on:
-          owner_users.id == ^user_id and owner_users.discord_id == applications.owner_discord_id and
-            application_users.application_id == applications.id,
-        select: {applications, application_users, redirect_uris}
+          owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
+            application_users.application_id == application.id,
+        select: {application, application_users, redirect_uris}
 
     Repo.all(q)
+  end
+
+  def get_user_application(user_id, id) do
+    q =
+      from application in VirtualCrypto.Auth.Application,
+           left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
+           on: redirect_uris.application_id == application.id,
+           join: owner_users in VirtualCrypto.User.User,
+           join: application_users in VirtualCrypto.User.User,
+           on:
+             owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
+             application_users.application_id == application.id,
+           where: application.client_id == ^id,
+           select: {application, application_users, redirect_uris}
+
+    r = Repo.all(q)
+    if r == nil do
+      nil
+    else
+      h = hd r
+      {elem(h, 0), elem(h, 1), r |> Enum.map(&elem(&1, 2)) |> Enum.filter(&(&1 != nil))}
+    end
   end
 
   def get_application_user_id_by_client_id(client_id, client_secret) do
