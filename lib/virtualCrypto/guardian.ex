@@ -69,11 +69,6 @@ defmodule VirtualCrypto.Guardian do
   end
 
   @impl Guardian
-  def after_encode_and_sign(_resource, %{"typ" => "verify"}, token, _options) do
-    {:ok, token}
-  end
-
-  @impl Guardian
   def after_encode_and_sign(_resource, _cliams, _token, _options) do
     {:error, :invalid_kind}
   end
