@@ -1,0 +1,36 @@
+<div class="columns">
+    <div class="column is-7 is-offset-1">
+        <div class="title">BOTアカウントの認証</div>
+        <p>BotアカウントをVirtualCryptoのアプリケーションと紐つけます。</p>
+        <p>下に表示さているトークンを、BotのアプリケーションのDescriptionの一番下の行に追記してください。</p>
+        <p>そのあと、紐つけたいBotのID・VirtualCryptoと紐つけたいBotが一緒にいるサーバーIDを入力して、認証ボタンを押してください。</p>
+        <p>VirtualCryptoには サーバーの管理 権限が必要です。</p>
+
+        <div class="mt-2"> 現在紐つけられているID: <%= @now_id %> </div>
+
+        <div class="has-text-weight-bold mt-2">トークン</div>
+        <input id="uuid" type="text" value="<%= @uuid %>" placeholder="empty" class="input" readonly/>
+        <button onclick="copyUUID()" class="button mt-2">Copy</button>
+        <div class="has-text-weight-bold mt-5 subtitle">入力欄</div>
+        <form phx-change="change">
+            <div class="has-text-weight-bold">BotのユーザーID</div>
+            <input type="text" name="bot_id" value="<%= @bot_id %>" placeholder="BotのユーザーID" class="input" />
+            <div class="has-text-weight-bold mt-2">サーバーID</div>
+            <input type="text" name="guild_id" value="<%= @guild_id %>" placeholder="サーバーID" class="input" />
+        </form>
+
+        <%= if @bot_id == "" || @guild_id == "" || !@edit do %>
+            <button class="button my-5 has-background-info has-text-white" disabled>認証</button>
+        <% else %>
+            <button class="button my-5 has-background-info has-text-white" phx-click="verify">認証</button>
+        <% end %>
+        <p class="subtitle has-text-weight-bold">結果: <%= if @message do %><%= @message %><% end %></p>
+    </div>
+</div>
+
+<script>
+function copyUUID() {
+    document.getElementById("uuid").select();
+    document.execCommand("Copy");
+}
+</script>

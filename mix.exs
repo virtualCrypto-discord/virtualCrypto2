@@ -52,7 +52,9 @@ defmodule VirtualCrypto.MixProject do
       {:earmark, "~> 1.4.13"},
       {:quantum, "~> 3.0"},
       {:ex_url, "~> 1.3"},
-      {:cachex, "~> 3.3"}
+      {:cachex, "~> 3.3"},
+      {:phoenix_live_view, "~> 0.15.4"},
+      {:elixir_uuid, "~> 1.2"}
     ]
   end
 

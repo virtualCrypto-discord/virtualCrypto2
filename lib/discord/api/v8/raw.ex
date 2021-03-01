@@ -51,4 +51,11 @@ defmodule Discord.Api.V8.Raw do
 
     Jason.decode!(response.body)
   end
+
+  def get_guild_integrations(guild_id) do
+    IO.inspect guild_id
+    {:ok, response} = get(["guilds", to_string(guild_id), "integrations"], [])
+
+    Jason.decode!(response.body)
+  end
 end

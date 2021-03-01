@@ -31,8 +31,7 @@ defmodule VirtualCryptoWeb.ApplicationController do
              )
     end
   rescue
-    err ->
-     IO.inspect err
-      conn |> resp(404, "Not found2") |> send_resp()
+    _ ->
+      conn |> resp(404, "Not found") |> send_resp()
   end
 end
