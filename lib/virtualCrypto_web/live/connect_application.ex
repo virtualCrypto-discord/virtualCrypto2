@@ -8,8 +8,8 @@ defmodule VirtualCryptoWeb.ConnectApplication do
 
   def mount( params, session, socket ) do
     user = session["user"]
-    case String.match?(params["id"], ~r/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/) do
-      true ->
+    case UUID.info(params["id"]) do
+      {:ok, _} ->
         app = Auth.get_user_application(user.id, params["id"])
 
         case app do
@@ -26,7 +26,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
               edit: false
             ) }
         end
-      false ->
+      {:error, _} ->
         { :ok, push_redirect(socket, to: "/applications/" <> params["id"]) }
     end
   end
