@@ -6,31 +6,29 @@ defmodule VirtualCryptoWeb.ConnectApplication do
     VirtualCryptoWeb.LiveView.render("connect.html", assigns)
   end
 
-  def mount(params, session, socket) do
-    user = session["user"]
-    app = Auth.get_user_application(user.id, params["id"])
+  def mount( _params, _session, socket ) do
+    user = _session["user"]
+    case String.match?(_params["id"], ~r/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) do
+      true ->
+        app = Auth.get_user_application(user.id, _params["id"])
 
-    case app do
-      nil ->
-        {:ok, push_redirect(socket, to: "/applications/" <> params["id"])}
-
-      _ ->
-        {application, app_user, _redirect_uris} = app
-
-        {:ok,
-         assign(socket,
-           app: application,
-           message: "",
-           uuid: UUID.uuid4(),
-           bot_id: "",
-           guild_id: "",
-           now_id: app_user.discord_id,
-           edit: false
-         )}
+        case app do
+          nil -> { :ok, push_redirect(socket, to: "/applications/" <> _params["id"]) }
+          _ ->
+            {application, app_user, redirect_uris} = app
+            { :ok, assign( socket,
+              app: application,
+              message: "",
+              uuid: UUID.uuid4(),
+              bot_id: "",
+              guild_id: "",
+              now_id: app_user.discord_id,
+              edit: false
+            ) }
+        end
+      false ->
+        { :ok, push_redirect(socket, to: "/applications/" <> _params["id"]) }
     end
-  rescue
-    _err ->
-      {:ok, push_redirect(socket, to: "/applications/" <> params["id"])}
   end
 
   defp failed(socket, msg,edit \\ false) do
