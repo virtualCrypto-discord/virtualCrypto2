@@ -40,21 +40,32 @@ defmodule Discord.Api.V8.Raw do
   end
 
   def get_guild(guild_id, with_counts \\ false) do
+    {200, body} = get_guild_with_status_code(guild_id, with_counts)
+
+    body
+  end
+
+  def get_guild_with_status_code(guild_id, with_counts \\ false) do
     {:ok, response} =
       get(["guilds", to_string(guild_id)], [{"with_counts", to_string(with_counts)}])
 
-    Jason.decode!(response.body)
+    {response.status_code, Jason.decode!(response.body)}
   end
 
   def get_user(user_id) do
-    {:ok, response} = get(["users", to_string(user_id)], [])
+    {200,body} = get_user_with_status(user_id)
 
-    Jason.decode!(response.body)
+    body
   end
 
-  def get_guild_integrations(guild_id) do
-    {:ok, response} = get(["guilds", to_string(guild_id), "integrations"], [])
+  def get_user_with_status(user_id) do
+    {:ok, response} = get(["users", to_string(user_id)], [])
 
-    Jason.decode!(response.body)
+    {response.status_code, Jason.decode!(response.body)}
+  end
+
+  def get_guild_integrations_with_status_code(guild_id) do
+    {:ok, response} = get(["guilds", to_string(guild_id), "integrations"], [])
+    {response.status_code, Jason.decode!(response.body)}
   end
 end

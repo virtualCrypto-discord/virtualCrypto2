@@ -17,9 +17,19 @@ defmodule VirtualCrypto.User do
   end
 
   def set_discord_user_id(application_id, discord_id) do
-    VirtualCrypto.User.User
-    |> where([u], u.application_id == ^application_id)
-    |> update(set: [discord_id: ^discord_id])
-    |> Repo.update_all([])
+    Repo.transaction(fn ->
+      case Repo.get_by(VirtualCrypto.User.User, discord_id: discord_id) do
+        nil ->
+          case VirtualCrypto.User.User
+          |> where([u], u.application_id == ^application_id)
+          |> update(set: [discord_id: ^discord_id])
+          |> Repo.update_all([]) do
+            {1, _} -> nil
+            {_,_} -> Repo.rollback(:illegal_state)
+          end
+        _ ->
+          Repo.rollback(:confilicted_user_id)
+      end
+    end)
   end
 end
