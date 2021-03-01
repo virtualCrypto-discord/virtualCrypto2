@@ -83,4 +83,7 @@ config :virtualCrypto, VirtualCrypto.Guardian, issuer: "virtualCrypto", secret_k
 config :virtualCrypto, :site_url, "https://localhost:4000"
 
 config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/callback/discord"
+
+# mix phx.gen.secret 32
+config :virtualCrypto, VirtualCryptoWeb.Endpoint, live_view: [signing_salt: ""]
 ```
