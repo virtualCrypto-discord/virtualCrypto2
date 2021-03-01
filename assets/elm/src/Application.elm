@@ -97,7 +97,8 @@ view model =
         [ div [class "column is-7 is-offset-1"]
             [ div [class "is-size-3 has-text-weight-bold mb-3"] [text "アプリケーションの詳細"]
             , div [class "ml-5"]
-                [ sec "名前"
+                [ a [href ("/applications/" ++ model.application.client_id ++ "/connect"), class "button has-background-info has-text-white my-2"] [text "Discord Botと紐つける"]
+                , sec "名前"
                 , viewInput "名前" (withDefault "" model.application.client_name) (EditName)
                 , sec "ロゴURL"
                 , viewInput "ロゴURL" (withDefault "" model.application.logo_uri) (EditLogo)
@@ -114,9 +115,6 @@ view model =
                 ]
             ]
         ]
-
-maybeText : String -> Maybe String -> Html msg
-maybeText d t = text (withDefault d t)
 
 viewInput : String -> String -> (String -> Msg) -> Html Msg
 viewInput p v toMsg =
