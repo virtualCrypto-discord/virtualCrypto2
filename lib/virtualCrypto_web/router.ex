@@ -43,6 +43,8 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/callback/discord", WebAuthController, :discord_callback
 
+    get "/applications/verification", ApplicationController, :readme
+
     scope "/document" do
       get "/", DocumentController, :index
       get "/about", DocumentController, :about

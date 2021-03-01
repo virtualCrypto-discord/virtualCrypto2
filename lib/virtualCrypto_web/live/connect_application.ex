@@ -19,7 +19,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
             { :ok, assign( socket,
               app: application,
               message: "",
-              uuid: UUID.uuid4(),
+              uuid: "https://vcrypto.sumidora.com/applications/verification?q=" <> UUID.uuid4(),
               bot_id: "",
               guild_id: "",
               now_id: app_user.discord_id,
@@ -49,7 +49,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
             end)},
          {:validate_description, true} <-
            {:validate_description,
-            String.match?(integration["application"]["description"], ~r/#{assigns.uuid}/)},
+            String.contains?(integration["application"]["description"], assigns.uuid)},
          {:update_discord_user_id, {:ok, _}} <-
            {:update_discord_user_id,
             VirtualCrypto.User.set_discord_user_id(
