@@ -68,6 +68,8 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
   end
 
   def post(conn, %{"grant_type" => "client_credentials", "scope" => scope}) do
+    allowed_scope_set = MapSet.new(["vc.pay", "vc.claim", "oauth2.register"])
+
     params =
       with {:validate_credentials, {client_id, client_secret}} <-
              {:validate_credentials, Plug.BasicAuth.parse_basic_auth(conn)},
@@ -76,11 +78,17 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
               Auth.get_application_user_id_by_client_id(
                 client_id,
                 client_secret
-              )} do
+              )},
+           scopes <- String.split(scope, " "),
+           scope_set <- MapSet.new(scopes),
+           {:validate_scopes, true} <-
+             {:validate_scopes, MapSet.size(scope_set) == length(scopes)},
+           {:validate_scopes, true} <-
+             {:validate_scopes, MapSet.subset?(scope_set, allowed_scope_set)} do
         {:ok, access_token, %{"exp" => expires}} =
           VirtualCrypto.Guardian.issue_token_for_app(
             id,
-            String.split(scope, " ")
+            scopes
           )
 
         {:ok,
@@ -91,6 +99,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
          }}
       else
         {:validate_credentials, _} -> {:error, :invalid_client}
+        {:validate_scopes, _} -> {:error, :invalid_request}
       end
 
     case params do
