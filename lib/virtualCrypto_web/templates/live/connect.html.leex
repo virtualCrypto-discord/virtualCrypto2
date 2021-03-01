@@ -6,7 +6,9 @@
         <p>そのあと、紐つけたいBotのID・VirtualCryptoと紐つけたいBotが一緒にいるサーバーIDを入力して、認証ボタンを押してください。</p>
         <p>VirtualCryptoには サーバーの管理 権限が必要です。</p>
 
-        <div class="mt-2"> 現在紐つけられているID: <%= @now_id %> </div>
+        <div class="mt-5"> アプリケーションID: <%= @app.client_id %> </div>
+        <div class=""> アプリケーション名: <%= @app.client_name %> </div>
+        <div class=""> 現在紐つけられているDiscord ID: <%= @now_id %> </div>
 
         <div class="has-text-weight-bold mt-2">トークン</div>
         <input id="uuid" type="text" value="<%= @uuid %>" placeholder="empty" class="input" readonly/>
