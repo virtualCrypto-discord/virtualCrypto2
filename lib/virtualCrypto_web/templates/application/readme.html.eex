@@ -1,0 +1,10 @@
+<div class="columns">
+    <div class="column is-7 is-offset-1-desktop">
+        <div class="title">このページは?</div>
+        <div class="mt-5">
+            <p>VirtualCryptoのアプリケーションとDiscordのBotを紐つけるためのトークンのページです。</p>
+            <p class="has-text-weight-bold is-size-5">このページのURLをDiscordのアプリケーションのDescriptionに貼り付けて欲しいと言われたらあなたは11割騙されています！</p>
+            <p class="has-text-weight-bold is-size-5 has-text-danger">このページのURLを貼り付けたらあなたのDiscordのアプリケーションが不正に紐つけられてしまいます！</p>
+        </div>
+    </div>
+</div>

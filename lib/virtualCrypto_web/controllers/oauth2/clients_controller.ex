@@ -31,7 +31,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
     with {{:validate_token, :token_verification_failed},
           %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
            {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)} do
-      conn |> render("clients.register.json", applications: Auth.get_user_application(user_id))
+      conn |> render("clients.register.json", applications: Auth.get_user_applications(user_id))
     else
       {{:validate_token, more}, _} ->
         conn

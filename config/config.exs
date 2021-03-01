@@ -37,3 +37,6 @@ config :virtualCrypto, VirtualCrypto.Scheduler,
   jobs: [
     {"@daily", fn -> VirtualCrypto.Money.reset_pool_amount() end}
   ]
+
+config :phoenix, :template_engines,
+  leex: Phoenix.LiveView.Engine

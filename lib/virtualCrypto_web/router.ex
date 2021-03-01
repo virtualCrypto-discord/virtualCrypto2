@@ -4,8 +4,17 @@ defmodule VirtualCryptoWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
+
+  pipeline :live_browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :protect_from_forgery
+    plug :put_root_layout, {VirtualCryptoWeb.LayoutView, :liveapp}
     plug :put_secure_browser_headers
   end
 
@@ -34,6 +43,8 @@ defmodule VirtualCryptoWeb.Router do
 
     get "/callback/discord", WebAuthController, :discord_callback
 
+    get "/applications/verification", ApplicationController, :readme
+
     scope "/document" do
       get "/", DocumentController, :index
       get "/about", DocumentController, :about
@@ -45,7 +56,15 @@ defmodule VirtualCryptoWeb.Router do
     scope "/" do
       pipe_through :browser_auth
       get "/me", MyPageController, :index
+      get "/applications/:id", ApplicationController, :index
     end
+  end
+
+  scope "/", VirtualCryptoWeb do
+    pipe_through :live_browser
+    pipe_through :browser_auth
+
+    live "/applications/:id/connect", ConnectApplication
   end
 
   scope "/oauth2", VirtualCryptoWeb.OAuth2 do
