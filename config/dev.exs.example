@@ -36,6 +36,18 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
               ]
        ]
 
+# Watch static and templates for browser reloading.
+config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+       live_reload: [
+              patterns: [
+                     ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+                     ~r"priv/gettext/.*(po)$",
+                     ~r"lib/virtualCrypto_web/(live|views)/.*(ex)$",
+                     ~r"lib/virtualCrypto_web/templates/.*(eex)$",
+                     ~r"lib/virtualCrypto_web/templates/.*(leex)$"
+              ]
+       ]
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
