@@ -6,14 +6,14 @@ defmodule VirtualCryptoWeb.ConnectApplication do
     VirtualCryptoWeb.LiveView.render("connect.html", assigns)
   end
 
-  def mount( _params, _session, socket ) do
-    user = _session["user"]
-    case String.match?(_params["id"], ~r/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) do
+  def mount( params, session, socket ) do
+    user = session["user"]
+    case String.match?(params["id"], ~r/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/) do
       true ->
-        app = Auth.get_user_application(user.id, _params["id"])
+        app = Auth.get_user_application(user.id, params["id"])
 
         case app do
-          nil -> { :ok, push_redirect(socket, to: "/applications/" <> _params["id"]) }
+          nil -> { :ok, push_redirect(socket, to: "/applications/" <> params["id"]) }
           _ ->
             {application, app_user, redirect_uris} = app
             { :ok, assign( socket,
@@ -27,7 +27,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
             ) }
         end
       false ->
-        { :ok, push_redirect(socket, to: "/applications/" <> _params["id"]) }
+        { :ok, push_redirect(socket, to: "/applications/" <> params["id"]) }
     end
   end
 
@@ -60,34 +60,33 @@ defmodule VirtualCryptoWeb.ConnectApplication do
     else
       {:fetch_integrations, {403, _data}} ->
         case Discord.Api.V8.Raw.get_guild_with_status_code(assigns.guild_id) do
-          {403,_} -> failed(socket, "Integrationが取得できませんでした。(VirtualCryptoがサーバーに導入されていることならびにサーバーIDを確認してください。)",edit: true)
-          {200,_} -> failed(socket, "Integrationが取得できませんでした。(VirtualCryptoが サーバーの管理 の権限を持っていることを確認してください。)",edit: true)
+          {403, _} -> failed(socket, "Integrationが取得できませんでした。(VirtualCryptoがサーバーに導入されていることならびにサーバーIDを確認してください。)", edit: true)
+          {200, _} -> failed(socket, "Integrationが取得できませんでした。(VirtualCryptoが サーバーの管理 の権限を持っていることを確認してください。)", edit: true)
         end
       {:fetch_integrations, {404, _data}} ->
-        failed(socket, "指定されたサーバーIDのサーバーは存在しません。",edit: false)
+        failed(socket, "指定されたサーバーIDのサーバーは存在しません。", edit: false)
 
       {:fetch_integrations, {code, _data}} ->
-        failed(socket, ~s/Integrationの取得が#{code}で失敗しました。/,edit: true)
+        failed(socket, ~s/Integrationの取得が#{code}で失敗しました。/, edit: true)
 
       {:find_target_integration, _} ->
         case Discord.Api.V8.Raw.get_user_with_status(assigns.bot_id) do
-          {200,_} ->
+          {200, _} ->
             failed(
               socket,
-              "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。(ギルドIDならびにギルドに指定のユーザーIDのBotが導入されていることを確認してください。)",edit: true
+              "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。(ギルドIDならびにギルドに指定のユーザーIDのBotが導入されていることを確認してください。)", edit: true
             )
-          {404,_} ->
+          {404, _} ->
             failed(
               socket,
-              "指定されたユーザーIDのユーザーは存在しません。(ユーザーIDを確認してください。)",edit: false
+              "指定されたユーザーIDのユーザーは存在しません。(ユーザーIDを確認してください。)", edit: false
             )
         end
-
 
       {:validate_description, _} ->
         failed(
           socket,
-          "取得したIntegrationのDescriptionにトークンが含まれていません。(BotのユーザーIDならびにDescirption、Discoed Developer Portalにおいて設定が保存されていることを確認してください。)",edit: true
+          "取得したIntegrationのDescriptionにトークンが含まれていません。(BotのユーザーIDならびにDescirption、Discoed Developer Portalにおいて設定が保存されていることを確認してください。)", edit: true
         )
 
       {:update_discord_user_id, {:error, :confilicted_user_id}} ->

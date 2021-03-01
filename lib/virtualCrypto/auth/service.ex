@@ -233,7 +233,7 @@ defmodule VirtualCrypto.Auth do
            select: {application, application_users, redirect_uris}
 
     r = Repo.all(q)
-    if r == nil do
+    if r == [] do
       nil
     else
       h = hd r
