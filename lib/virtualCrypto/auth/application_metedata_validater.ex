@@ -1,4 +1,4 @@
-defmodule VirtualCrypto.Auth.Application.Metadata.Validater do
+defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
   def validate_response_types(nil) do
     {:ok, nil}
   end
