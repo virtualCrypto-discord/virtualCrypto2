@@ -53,7 +53,7 @@ defmodule Discord.Api.V8.Raw do
   end
 
   def get_user(user_id) do
-    {200,body} = get_user_with_status(user_id)
+    {200, body} = get_user_with_status(user_id)
 
     body
   end

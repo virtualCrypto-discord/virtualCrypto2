@@ -222,21 +222,22 @@ defmodule VirtualCrypto.Auth do
   def get_user_application(user_id, id) do
     q =
       from application in VirtualCrypto.Auth.Application,
-           left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
-           on: redirect_uris.application_id == application.id,
-           join: owner_users in VirtualCrypto.User.User,
-           join: application_users in VirtualCrypto.User.User,
-           on:
-             owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
-             application_users.application_id == application.id,
-           where: application.client_id == ^id,
-           select: {application, application_users, redirect_uris}
+        left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
+        on: redirect_uris.application_id == application.id,
+        join: owner_users in VirtualCrypto.User.User,
+        join: application_users in VirtualCrypto.User.User,
+        on:
+          owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
+            application_users.application_id == application.id,
+        where: application.client_id == ^id,
+        select: {application, application_users, redirect_uris}
 
     r = Repo.all(q)
+
     if r == [] do
       nil
     else
-      h = hd r
+      h = hd(r)
       {elem(h, 0), elem(h, 1), r |> Enum.map(&elem(&1, 2)) |> Enum.filter(&(&1 != nil))}
     end
   end

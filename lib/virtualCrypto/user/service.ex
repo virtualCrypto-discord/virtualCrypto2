@@ -15,6 +15,4 @@ defmodule VirtualCrypto.User do
   def get_user_by_id(id) do
     Repo.get_by(VirtualCrypto.User.User, id: id)
   end
-
-
 end
