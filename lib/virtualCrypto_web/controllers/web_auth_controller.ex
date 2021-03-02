@@ -72,8 +72,8 @@ defmodule VirtualCryptoWeb.WebAuthController do
         case Discord.Api.V8.OAuth2.exchange_code(code) do
           :error ->
             conn
-            |> put_flash(:error, "Invalid code!")
             |> configure_session(drop: true)
+            |> put_flash(:error, "Invalid code!")
             |> redirect(to: "/")
             |> halt()
 
@@ -83,9 +83,9 @@ defmodule VirtualCryptoWeb.WebAuthController do
 
       _ ->
         conn
-        |> put_flash(:error, "Invalid state!")
         |> configure_session(drop: true)
-        |> redirect(to: "/document")
+        |> put_flash(:error, "Invalid state!")
+        |> redirect(to: "/")
         |> halt()
     end
   end

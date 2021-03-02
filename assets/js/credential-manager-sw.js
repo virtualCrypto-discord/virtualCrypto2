@@ -5,7 +5,7 @@ localforage.setDriver(localforage.INDEXEDDB);
 
 function onFetchCallbackPage(ev) {
   async function asyncAction() {
-    const res = await fetch(ev.request);
+    const res = await fetch(ev.request.url);
     const headers = res.headers;
     const access_token = headers.get("x-access-token");
     const expires_in = headers.get("x-expires-in");
