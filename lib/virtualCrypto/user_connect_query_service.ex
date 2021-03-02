@@ -51,7 +51,7 @@ defmodule VirtualCrypto.ConnectUser do
         from(assets in VirtualCrypto.Money.Asset,
           update: [inc: [amount: fragment("EXCLUDED.amount")]]
         ),
-      conflict_target: {:money_id, :user_id}
+      conflict_target: [:money_id, :user_id]
     )
 
     # replace user_id of histories
@@ -83,7 +83,7 @@ defmodule VirtualCrypto.ConnectUser do
     Repo.update_all(
       from(claims in VirtualCrypto.Money.Claim,
         where: claims.claimant_user_id == ^source_user_id,
-        update: [set: [sender_id: ^base_user_id]]
+        update: [set: [claimant_user_id: ^base_user_id]]
       ),
       []
     )
@@ -91,9 +91,11 @@ defmodule VirtualCrypto.ConnectUser do
     Repo.update_all(
       from(claims in VirtualCrypto.Money.Claim,
         where: claims.payer_user_id == ^source_user_id,
-        update: [set: [sender_id: ^base_user_id]]
+        update: [set: [payer_user_id: ^base_user_id]]
       ),
       []
     )
+
+    Repo.delete_all(from(users in VirtualCrypto.User.User, where: users.id == ^source_user_id))
   end
 end
