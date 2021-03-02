@@ -1,9 +1,25 @@
 defmodule VirtualCrypto.ConnectUser do
   alias VirtualCrypto.Repo
   import Ecto.Query
-
-  def execute(base_user_id, source_user_id) do
+  def set_discord_user_id(application_user_id, discord_id) do
     Repo.transaction(fn ->
+      case Repo.get_by(VirtualCrypto.User.User, discord_id: discord_id) do
+        nil ->
+        source_user ->
+          _merge(application_user_id,source_user.id)
+      end
+      case VirtualCrypto.User.User
+      |> where([u], u.id == ^application_user_id)
+      |> update(set: [discord_id: ^discord_id])
+      |> Repo.update_all([]) do
+        {1, _} -> nil
+        {_,_} -> Repo.rollback(:illegal_state)
+      end
+      
+    end)
+  end
+
+  defp _merge(base_user_id, source_user_id) do
       now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
       # merge base_user and from_user asset
@@ -76,6 +92,5 @@ defmodule VirtualCrypto.ConnectUser do
         ),
         []
       )
-    end)
   end
 end

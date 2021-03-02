@@ -52,8 +52,8 @@ defmodule VirtualCryptoWeb.ConnectApplication do
             String.contains?(integration["application"]["description"], assigns.uuid)},
          {:update_discord_user_id, {:ok, _}} <-
            {:update_discord_user_id,
-            VirtualCrypto.User.set_discord_user_id(
-              assigns.app.id,
+            VirtualCrypto.ConnectUser.set_discord_user_id(
+              assigns.app_user_id,
               String.to_integer(assigns.bot_id)
             )} do
       {:noreply, socket |> assign(message: "認証成功しました。(トークンは削除して差し支えありません。)", now_id: assigns.bot_id, edit: false)}
