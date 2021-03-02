@@ -26,7 +26,7 @@ defmodule VirtualCrypto.ConnectUser do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     # merge base_user and from_user asset
-    {:ok, assets} =
+    {_, assets} =
       Repo.delete_all(
         from(assets in VirtualCrypto.Money.Asset,
           where: assets.user_id == ^source_user_id,
