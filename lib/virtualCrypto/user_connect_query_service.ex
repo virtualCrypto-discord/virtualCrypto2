@@ -49,7 +49,10 @@ defmodule VirtualCrypto.ConnectUser do
       end),
       on_conflict:
         from(assets in VirtualCrypto.Money.Asset,
-          update: [inc: [amount: fragment("EXCLUDED.amount")]]
+          update: [
+            inc: [amount: fragment("EXCLUDED.amount")],
+            set: [user_id: ^base_user_id, updated_at: ^now]
+          ]
         ),
       conflict_target: [:money_id, :user_id]
     )
