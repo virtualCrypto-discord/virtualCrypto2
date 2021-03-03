@@ -21,7 +21,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
     "エラー: 不正な金額です"
   end
 
-  def render(:ok, {receiver, amount, unit}) do
+  def render(:ok, {receiver, amount, unit, pool_amount}) do
     %{
       type: 3,
       data: %{
@@ -29,8 +29,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
         embeds: [
           %{
             "description" =>
-              "\u2705 " <>
-                mention(receiver) <> "へ" <> Integer.to_string(amount) <> unit <> "発行されました。",
+              ~s/\u2705 #{mention(receiver)}へ`#{Integer.to_string(amount)}#{unit}`発行されました。\n残りの発行枠: `#{pool_amount}#{unit}`/,
             color: 0x38EA42
           }
         ],

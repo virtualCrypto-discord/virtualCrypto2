@@ -51,7 +51,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
       int_guild = String.to_integer(guild)
 
       case VirtualCrypto.Money.give(receiver: int_receiver, amount: amount, guild: int_guild) do
-        {:ok, %VirtualCrypto.Money.Info{unit: unit}} -> {:ok, {receiver, amount, unit}}
+        {:ok, %VirtualCrypto.Money.Info{unit: unit, pool_amount: pool_amount}} -> {:ok, {receiver, amount, unit, pool_amount}}
         {:error, v} -> {:error, v}
       end
     else
