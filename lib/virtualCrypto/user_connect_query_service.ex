@@ -8,8 +8,11 @@ defmodule VirtualCrypto.ConnectUser do
         nil ->
           nil
 
-        source_user ->
-          _merge(application_user_id, source_user.id)
+        %VirtualCrypto.User.User{application_id: nil, id: source_user_id} ->
+          _merge(application_user_id, source_user_id)
+
+        _ ->
+          Repo.rollback(:confilicted_user_id)
       end
 
       case VirtualCrypto.User.User
