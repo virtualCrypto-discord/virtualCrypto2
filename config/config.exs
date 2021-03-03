@@ -35,7 +35,9 @@ config :virtualCrypto, VirtualCrypto.Scheduler,
   overlap: false,
   timezone: :utc,
   jobs: [
-    {"@daily", fn -> VirtualCrypto.Money.reset_pool_amount() end}
+    {"@daily", fn -> VirtualCrypto.Money.reset_pool_amount() end},
+    {"* * * * *", fn -> VirtualCrypto.Auth.purge_user_access_tokens() end},
+    {"* * * * *", fn -> VirtualCrypto.Auth.purge_access_tokens() end}
   ]
 
 config :phoenix, :template_engines, leex: Phoenix.LiveView.Engine
