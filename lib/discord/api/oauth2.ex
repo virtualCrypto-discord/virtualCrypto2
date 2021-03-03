@@ -36,7 +36,7 @@ defmodule Discord.Api.V8.OAuth2 do
     Jason.decode!(response.body)
   end
 
-  @spec refresh_token(String.t()) :: OAuth2.Client | :error
+  @spec refresh_token(String.t()) :: {:ok,OAuth2.Client} | {:error,any()}
   def refresh_token(refresh_token_) do
     try do
       client =
