@@ -3,8 +3,8 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
 
 ## Developing
   - Rename config/dev.exs.example to config/dev.exs.
-  - Access to [discord dev portal](https://discord.com/developers).
-  - Create new application.
+  - Access [discord dev portal](https://discord.com/developers).
+  - Create a new application.
   - Create bot.
   - Add redirect url(e.g. `https://localhost:4000/callback/discord`),at [discord dev portal](https://discord.com/developers),according to dev.exs.
   - Put `bot_token`,`public_key`,`client_id`,`client_secret`,`invite_url` to dev.exs by seeing [discord dev portal](https://discord.com/developers).
@@ -13,7 +13,7 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs for signing jwt token.
   - Execute `mix phx.gen.cert` to create self-signed cerificature for developing.
   - Execute `iex -S mix phx.server` to execute server.
-  - Fill Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) for receive interactions via http.
+  - Fill Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) to receive interactions via http.
   - Add your bot to server.
   - Execute `mix register.commands <your guild id>` to register slash commands.
 ### Example of config/dev.exs
