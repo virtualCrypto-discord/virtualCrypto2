@@ -34,10 +34,8 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
-
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
-
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
@@ -71,3 +69,5 @@ config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/cal
 
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
+
+config :logger, level: :error
