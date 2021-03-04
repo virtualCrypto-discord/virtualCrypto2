@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Bal do
         asset: %VirtualCrypto.Money.Asset{amount: amount},
         currency: %VirtualCrypto.Money.Info{unit: unit, name: name}
       }),
-      do: name <> ": " <> Integer.to_string(amount) <> unit
+      do: ~s/#{name}: #{amount} #{unit}/
 
   def render_content([]) do
     "所持通貨一覧\n```\n通貨を持っていません。\n```"

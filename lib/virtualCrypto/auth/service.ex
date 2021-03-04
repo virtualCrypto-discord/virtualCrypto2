@@ -263,14 +263,17 @@ defmodule VirtualCrypto.Auth do
         where:
           tokens.expires <=
             ^(time |> NaiveDateTime.add(-5 * 60, :second) |> NaiveDateTime.truncate(:second))
+
     Repo.delete_all(q)
   end
+
   def purge_access_tokens(time \\ NaiveDateTime.utc_now()) do
     q =
       from tokens in VirtualCrypto.Auth.AccessToken,
         where:
           tokens.expires <=
             ^(time |> NaiveDateTime.add(-5 * 60, :second) |> NaiveDateTime.truncate(:second))
+
     Repo.delete_all(q)
   end
 end
