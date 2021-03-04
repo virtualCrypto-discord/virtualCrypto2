@@ -4,14 +4,14 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
 
   defp get(%{"id" => id}) do
     case Integer.parse(id) do
-      {int_id, ""} when int_id>=1 -> {:ok, {:guild, int_id}}
+      {int_id, ""} when int_id >= 1 -> {:ok, {:guild, int_id}}
       _ -> {:error, {:invalid_request, :id_must_be_positive_integer}}
     end
   end
 
   defp get(%{"guild" => guild_id}) do
     case Integer.parse(guild_id) do
-      {int_guild_id, ""}  when int_guild_id>=1 -> {:ok, {:guild, int_guild_id}}
+      {int_guild_id, ""} when int_guild_id >= 1 -> {:ok, {:guild, int_guild_id}}
       _ -> {:error, {:invalid_request, :guild_id_must_be_positive_integer}}
     end
   end
