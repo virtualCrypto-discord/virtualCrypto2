@@ -4,7 +4,10 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>VirtualCrypto · Discord Virtual Currency Bot</title>
+    <meta name="description" content="VirtualCryptoは、Discordのサーバー向けの架空の通貨を作成するBotです。サーバー内での記念品や対価、報酬に使用できます。">
+    <meta name="keywords" content="Discord,Discord Bot,仮想通貨">
     <link rel="stylesheet" href="<%= "/static" <> Routes.static_path(@conn, "/css/app.css") %>"/>
+    <link rel="icon" href="<%= "/static" <> Routes.static_path(@conn, "/favicon.ico") %>"/>
     <script defer type="text/javascript" src="<%= "/static" <> Routes.static_path(@conn, "/js/header.js") %>"></script>
   </head>
   <body>
