@@ -54,7 +54,8 @@ defmodule VirtualCrypto.MixProject do
       {:ex_url, "~> 1.3"},
       {:cachex, "~> 3.3"},
       {:phoenix_live_view, "~> 0.15.4"},
-      {:elixir_uuid, "~> 1.2"}
+      {:elixir_uuid, "~> 1.2"},
+      {:tzdata, "~> 1.1"}
     ]
   end
 

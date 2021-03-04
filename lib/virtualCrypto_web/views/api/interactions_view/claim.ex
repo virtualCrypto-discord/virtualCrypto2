@@ -1,42 +1,42 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
-  def render_error(:not_found) do
+  defp render_error(:not_found) do
     "そのidの請求は見つかりませんでした。"
   end
 
-  def render_error(:not_enough_amount) do
+  defp render_error(:not_enough_amount) do
     "お金が足りません。"
   end
 
-  def render_error(:money_not_found) do
+  defp render_error(:money_not_found) do
     "指定された通貨は存在しません。"
   end
 
-  def render_error(:invalid_amount) do
+  defp render_error(:invalid_amount) do
     "不正な金額です。"
   end
 
-  def render_error(:not_found_sender_asset) do
+  defp render_error(:not_found_sender_asset) do
     render_error(:not_enough_amount)
   end
 
-  def render_sent_claim(sent_claims) do
+  defp render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->
       ~s/id: #{claim.id}, 請求先: #{mention(payer.discord_id)}, 請求額: **#{claim.amount}** `#{
         money.unit
-      }`, 請求日: #{claim.inserted_at}/
+      }`, 請求日: #{format_date_time(claim.inserted_at)}/
     end)
     |> Enum.join("\n")
   end
 
-  def render_received_claim(received_claims) do
+  defp render_received_claim(received_claims) do
     received_claims
     |> Enum.map(fn {claim, money, claimant, _payer} ->
       ~s/id: #{claim.id}, 請求元: #{mention(claimant.discord_id)}, 請求額: **#{claim.amount}** `#{
         money.unit
-      }`, 請求日: #{claim.inserted_at}/
+      }`, 請求日: #{format_date_time(claim.inserted_at)}/
     end)
     |> Enum.join("\n")
   end
