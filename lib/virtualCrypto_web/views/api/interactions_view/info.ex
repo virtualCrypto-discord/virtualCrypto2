@@ -8,11 +8,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
   end
 
   def render_all_amount(data) do
-    ~s/総発行量: #{to_string(data.amount)}#{data.unit}\n/
+    ~s/総発行量: #{data.amount} #{data.unit}\n/
   end
 
   def render_pool_amount(data) do
-    ~s/発行枠: #{to_string(data.pool_amount)}#{data.unit}(一日一回総発行量の0.5%にリセット)\n/
+    ~s/発行枠: #{data.pool_amount} #{data.unit}(一日一回総発行量の0.5%にリセット)\n/
   end
 
   def render_guild(guild) do
@@ -23,7 +23,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
   end
 
   def render_user_amount(data, user_amount) do
-    ~s/あなたが持っている量: #{user_amount}#{data.unit}\n/
+    ~s/あなたが持っている量: #{user_amount} #{data.unit}\n/
   end
 
   def render(:error, _, _, _) do

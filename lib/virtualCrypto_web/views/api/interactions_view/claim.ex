@@ -1,4 +1,5 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
+  import VirtualCryptoWeb.Api.InteractionsView.Util
   def render_error(:not_found) do
     "そのidの請求は見つかりませんでした。"
   end
@@ -22,7 +23,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   def render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->
-      ~s/id: #{claim.id}, 請求先: <@#{payer.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
+      ~s/id: #{claim.id}, 請求先: #{mention(payer.discord_id)}, 請求額: **#{claim.amount}** `#{money.unit}`, 請求日: #{
         claim.inserted_at
       }/
     end)
@@ -32,7 +33,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   def render_received_claim(received_claims) do
     received_claims
     |> Enum.map(fn {claim, money, claimant, _payer} ->
-      ~s/id: #{claim.id}, 請求元: <@#{claimant.discord_id}>, 請求額: #{claim.amount}#{money.unit}, 請求日: #{
+      ~s/id: #{claim.id}, 請求元: #{mention(claimant.discord_id)}, 請求額: **#{claim.amount}** `#{money.unit}`, 請求日: #{
         claim.inserted_at
       }/
     end)
