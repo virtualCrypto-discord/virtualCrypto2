@@ -137,8 +137,9 @@ defmodule VirtualCryptoWeb.CommandHandler do
         }
       end)
 
-    {:ok, "list", Enum.slice(sent_claims |> Enum.reverse(), 0, 10),
-     Enum.slice(received_claims |> Enum.reverse(), 0, 10)}
+    {:ok, "list",
+     Enum.slice(sent_claims |> Enum.sort(&(elem(&1, 0).id <= elem(&2, 0).id)), 0, 10),
+     Enum.slice(received_claims |> Enum.sort(&(elem(&1, 0).id <= elem(&2, 0).id)), 0, 10)}
   end
 
   def handle(
