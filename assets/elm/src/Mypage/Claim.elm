@@ -175,7 +175,7 @@ sentClaimsView : Model -> GroupedClaims -> Html Msg
 sentClaimsView model claims =
     div []
         [ title "自分の請求"
-        , claims.sent |> filterDataWithPage model.sent_page |> List.map sentClaimView |> div []
+        , claims.sent |> filterDataWithPage model.sent_page |> List.sortWith compareString |> List.map sentClaimView |> div [class "columns is-multiline"]
         , nav [ class "pagination" ]
             [ previousButton Sent (model.sent_page == 0)
             , nextButton Sent (model.sent_page == getMaxPage claims.sent)
@@ -186,7 +186,7 @@ receivedClaimsView : Model -> GroupedClaims -> Html Msg
 receivedClaimsView model claims =
     div []
         [ title "自分に来た請求"
-        , claims.received |> filterDataWithPage model.received_page |> List.map receivedClaimView |> div []
+        , claims.received |> filterDataWithPage model.received_page |> List.sortWith compareString |> List.map receivedClaimView |> div [class "columns is-multiline"]
         , nav [ class "pagination" ]
             [ previousButton Received (model.received_page == 0)
             , nextButton Received (model.received_page == getMaxPage claims.received)
@@ -217,18 +217,20 @@ nextButton t d =
 
 sentClaimView : Claim -> Html Msg
 sentClaimView claim =
-    div [ class "card my-3" ]
-        [ header [class "card-header"]
-            [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
-            ]
-        , div [class "card-content"]
-            [ div [class "content"] [text <| "請求先ユーザー: " ++ (username claim.payer)]
-            , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
-            ]
-        , footer [class "card-footer"]
-            [ div [class "card-footer-item"] [text <| "請求日時: " ++ claim.created_at]
-            , a [class "card-footer-item"] []
-            , a [class "card-footer-item"] []
+    div [class "column is-half"]
+        [ div [ class "card my-3" ]
+            [ header [class "card-header has-background-info-light"]
+                [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
+                ]
+            , div [class "card-content"]
+                [ div [class "content"] [text <| "請求先ユーザー: " ++ (username claim.payer)]
+                , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
+                ]
+            , footer [class "card-footer"]
+                [ div [class "card-footer-item"] [text <| "請求日時: " ++ claim.created_at]
+                , a [class "card-footer-item"] []
+                , a [class "card-footer-item"] []
+                ]
             ]
         ]
 
@@ -240,8 +242,9 @@ username u =
 
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
-    div [ class "card my-3" ]
-            [ header [class "card-header"]
+    div [class "column is-half"]
+        [ div [ class "card my-3" ]
+            [ header [class "card-header has-background-info-light"]
                 [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
                 ]
             , div [class "card-content"]
@@ -254,6 +257,7 @@ receivedClaimView claim =
                 , a [class "card-footer-item"] []
                 ]
             ]
+        ]
 
 
 filterDataWithPage : Int -> List Claim -> List Claim
@@ -272,3 +276,8 @@ boldText s =
 unitText: String -> Html Msg
 unitText s =
     span [class "ml-1"] [text s]
+
+
+compareString l r =
+    compare (String.toInt l.id |> Maybe.withDefault 0) (String.toInt r.id |> Maybe.withDefault 0)
+
