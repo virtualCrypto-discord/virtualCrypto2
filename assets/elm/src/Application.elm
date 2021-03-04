@@ -1,4 +1,4 @@
-module Application exposing (..)
+port module Application exposing (..)
 
 import Browser
 import Browser.Navigation
@@ -28,6 +28,7 @@ type Msg =
     | GotPatchResponse (Result Http.Error ())
     | Save
     | Regenerate
+    | Copy String
 
 getToken : String -> String -> Cmd Msg
 getToken id secret =
@@ -89,6 +90,11 @@ update msg model =
             (model, getToken model.application.client_id model.application.client_secret)
         Regenerate ->
             ({model | refresh_secret = True}, getToken model.application.client_id model.application.client_secret)
+        Copy t ->
+            (model, copy t)
+
+
+port copy : String -> Cmd msg
 
 
 view : Model -> Html Msg
@@ -107,10 +113,14 @@ view model =
                 , sec "webサイトのurl"
                 , viewInput "https://vcrypto.sumidora.com" (withDefault "" model.application.client_uri) (EditURI)
                 , sec "クライアントID"
-                , showInput model.application.client_id
+                , showInput model.application.client_id "client_id"
+                , copyButton "#client_id"
                 , sec "クライアントシークレット"
-                , button [ class "button has-background-info has-text-white my-2", onClick Regenerate] [ text "再生成" ]
-                , showInput model.application.client_secret
+                , showInput model.application.client_secret "client_secret"
+                , div []
+                    [ copyButton "#client_secret"
+                    , button [ class "button has-background-info has-text-white my-2", onClick Regenerate] [ text "再生成" ]
+                    ]
                 , saveButton model
                 ]
             ]
@@ -120,9 +130,9 @@ viewInput : String -> String -> (String -> Msg) -> Html Msg
 viewInput p v toMsg =
     input [ type_ "text", placeholder p, value v, onInput toMsg, class "input" ] []
 
-showInput : String -> Html Msg
-showInput v =
-    input [ type_ "text", value v, class "input", readonly True] []
+showInput : String -> String -> Html Msg
+showInput v id_ =
+    input [ type_ "text", value v, class "input", readonly True, id id_] []
 
 sec : String -> Html Msg
 sec t = div [class "has-text-weight-bold mt-2"] [text t]
@@ -132,6 +142,10 @@ saveButton model =
     if model.edit
         then button [ class "button has-background-info has-text-white mt-3", onClick Save] [ text "保存" ]
         else button [ class "button has-background-info has-text-white mt-3", attribute "disabled" ""] [ text "保存" ]
+
+copyButton : String -> Html Msg
+copyButton t =
+    button [ class "button my-2 mr-3 has-background-info has-text-white", onClick (Copy t)] [ text "コピー"  ]
 
 getString : String -> Maybe String
 getString s =
