@@ -7,6 +7,7 @@
     <%= csrf_meta_tag() %>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/static/js/app.js") %>"></script>
     <link rel="stylesheet" href="<%= "/static" <> Routes.static_path(@conn, "/css/app.css") %>"/>
+    <link rel="icon" href="<%= "/static" <> Routes.static_path(@conn, "/favicon.ico") %>"/>
     <script defer type="text/javascript" src="<%= "/static" <> Routes.static_path(@conn, "/js/header.js") %>"></script>
 </head>
 <body>
