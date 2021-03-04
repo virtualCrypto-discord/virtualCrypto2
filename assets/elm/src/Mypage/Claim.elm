@@ -165,23 +165,34 @@ claimView model claims =
     div [ class "column" ]
         [ div [ class "columns" ]
             [ div [ class "column is-three-quarters" ]
-                [ title "自分に来た請求"
-                , receivedHeader
-                , claims.received |> filterDataWithPage model.received_page |> List.map receivedClaimView |> div []
-                , nav [ class "pagination" ]
-                    [ previousButton Received (model.received_page == 0)
-                    , nextButton Received (model.received_page == getMaxPage claims.received)
-                    ]
-                , title "自分の請求"
-                , sentHeader
-                , claims.sent |> filterDataWithPage model.sent_page |> List.map sentClaimView |> div []
-                , nav [ class "pagination" ]
-                    [ previousButton Sent (model.sent_page == 0)
-                    , nextButton Sent (model.sent_page == getMaxPage claims.sent)
-                    ]
+                [ receivedClaimsView model claims
+                , sentClaimsView model claims
                 ]
             ]
         ]
+
+sentClaimsView : Model -> GroupedClaims -> Html Msg
+sentClaimsView model claims =
+    div []
+        [ title "自分の請求"
+        , claims.sent |> filterDataWithPage model.sent_page |> List.map sentClaimView |> div []
+        , nav [ class "pagination" ]
+            [ previousButton Sent (model.sent_page == 0)
+            , nextButton Sent (model.sent_page == getMaxPage claims.sent)
+            ]
+        ]
+
+receivedClaimsView : Model -> GroupedClaims -> Html Msg
+receivedClaimsView model claims =
+    div []
+        [ title "自分に来た請求"
+        , claims.received |> filterDataWithPage model.received_page |> List.map receivedClaimView |> div []
+        , nav [ class "pagination" ]
+            [ previousButton Received (model.received_page == 0)
+            , nextButton Received (model.received_page == getMaxPage claims.received)
+            ]
+        ]
+
 
 
 loadingView : Html msg
@@ -204,44 +215,20 @@ nextButton t d =
     a [ onClick (Next t), class "pagination-next", disabled d ] [ text "次ページ" ]
 
 
-sentHeader : Html msg
-sentHeader =
-    div [ class "card my-3" ]
-        [ div [ class "card-content" ]
-            [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text "ID" ]
-                , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求先" ]
-                , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求量" ]
-                , div [ class "media-right mr-2  has-text-weight-bold" ] [ text "請求日" ]
-                ]
-            ]
-        ]
-
-
 sentClaimView : Claim -> Html Msg
 sentClaimView claim =
     div [ class "card my-3" ]
-        [ div [ class "card-content" ]
-            [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
-                , div [ class "media-content mr-2" ] [ text (username claim.payer) ]
-                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.currency.unit) ]
-                , div [ class "media-right mr-2" ] [ text claim.created_at ]
-                ]
+        [ header [class "card-header"]
+            [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
             ]
-        ]
-
-
-receivedHeader : Html msg
-receivedHeader =
-    div [ class "card my-3" ]
-        [ div [ class "card-content" ]
-            [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text "ID" ]
-                , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求元" ]
-                , div [ class "media-content mr-2 has-text-weight-bold" ] [ text "請求量" ]
-                , div [ class "media-right mr-2  has-text-weight-bold" ] [ text "請求日" ]
-                ]
+        , div [class "card-content"]
+            [ div [class "content"] [text <| "請求先ユーザー: " ++ (username claim.payer)]
+            , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
+            ]
+        , footer [class "card-footer"]
+            [ div [class "card-footer-item"] [text <| "請求日時: " ++ claim.created_at]
+            , a [class "card-footer-item"] []
+            , a [class "card-footer-item"] []
             ]
         ]
 
@@ -254,15 +241,19 @@ username u =
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
     div [ class "card my-3" ]
-        [ div [ class "card-content" ]
-            [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text claim.id ]
-                , div [ class "media-content mr-2" ] [ text (username claim.claimant) ]
-                , div [ class "media-content mr-2" ] [ text (claim.amount ++ claim.currency.unit) ]
-                , div [ class "media-right mr-2" ] [ text claim.created_at ]
+            [ header [class "card-header"]
+                [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
+                ]
+            , div [class "card-content"]
+                [ div [class "content"] [text <| "請求元ユーザー: " ++ (username claim.claimant)]
+                , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
+                ]
+            , footer [class "card-footer"]
+                [ div [class "card-footer-item"] [text <| "請求日時: " ++ claim.created_at]
+                , a [class "card-footer-item"] []
+                , a [class "card-footer-item"] []
                 ]
             ]
-        ]
 
 
 filterDataWithPage : Int -> List Claim -> List Claim
@@ -273,3 +264,11 @@ filterDataWithPage page data =
 getMaxPage : List Claim -> Int
 getMaxPage data =
     List.length data // 20
+
+boldText : String -> Html Msg
+boldText s =
+    span [class "has-text-weight-bold"] [text s]
+
+unitText: String -> Html Msg
+unitText s =
+    span [class "ml-1"] [text s]
