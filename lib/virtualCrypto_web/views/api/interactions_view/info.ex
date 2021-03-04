@@ -34,7 +34,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
         flags: 64,
         content: render_error(),
         embeds: [],
-        allowed_mentions: []
+        allowed_mentions: %{
+          parse: []
+        }
       }
     }
   end

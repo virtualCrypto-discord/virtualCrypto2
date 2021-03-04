@@ -34,7 +34,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
             color: 0x38EA42
           }
         ],
-        allowed_mentions: []
+        allowed_mentions: %{
+          parse: []
+        }
       }
     }
   end
@@ -46,7 +48,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
         tts: false,
         flags: 64,
         content: render_error(v),
-        allowed_mentions: []
+        allowed_mentions: %{
+          parse: []
+        }
       }
     }
   end
