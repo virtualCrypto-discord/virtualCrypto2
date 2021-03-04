@@ -76,6 +76,12 @@ defmodule InfoControllerTest do
     assert json_response(conn, 400) == @need_one_parameter_from_id_guild_name_or_unit
   end
 
+  test "supply too many parameter", %{conn: conn} do
+    conn = get(conn, Routes.info_path(conn, :index, %{guild: "1", id: 1}))
+
+    assert json_response(conn, 400) == @need_one_parameter_from_id_guild_name_or_unit
+  end
+
   test "supply invalid guild parameter", %{conn: conn} do
     conn = get(conn, Routes.info_path(conn, :index, %{guild: "x"}))
 
