@@ -28,7 +28,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
             color: 0x38EA42
           }
         ],
-        allowed_mentions: []
+        allowed_mentions: %{
+          parse: []
+        }
       }
     }
   end
@@ -41,7 +43,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
         flags: 64,
         content: render_error(err),
         embeds: [],
-        allowed_mentions: []
+        allowed_mentions: %{
+          parse: []
+        }
       }
     }
   end
