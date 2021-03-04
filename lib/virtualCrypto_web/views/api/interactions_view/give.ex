@@ -29,7 +29,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
         embeds: [
           %{
             "description" =>
-              ~s/\u2705 #{mention(receiver)}へ`#{Integer.to_string(amount)}#{unit}`発行されました。\n残りの発行枠: `#{pool_amount}#{unit}`/,
+              ~s/\u2705 #{mention(receiver)}へ`#{Integer.to_string(amount)}#{unit}`発行されました。\n/ <>
+                ~s/残りの発行枠: `#{pool_amount}#{unit}`/,
             color: 0x38EA42
           }
         ],
