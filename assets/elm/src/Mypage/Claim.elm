@@ -171,17 +171,12 @@ view model =
 
 claimView : Model -> GroupedClaims -> Html Msg
 claimView model claims =
-    div []
-        [ div [ class "column" ]
-            [ div [ class "columns" ]
-                [ div [ class "column is-three-quarters" ]
-                    [ receivedClaimsView model claims
-                    , sentClaimsView model claims
-                    ]
-                ]
-            ]
+    div [ class "column"]
+        [ receivedClaimsView model claims
+        , sentClaimsView model claims
         , UserOperation.view model.user_operation_model |> Html.map UserOperationMsg
         ]
+
 
 sentClaimsView : Model -> GroupedClaims -> Html Msg
 sentClaimsView model claims =
@@ -214,7 +209,7 @@ loadingView =
 
 title : String -> Html msg
 title text_ =
-    div [ class "is-size-3 has-text-weight-bold my-5" ] [ text text_ ]
+    div [ class "is-3 has-text-weight-bold my-5" ] [ text text_ ]
 
 
 previousButton : ClaimType -> Bool -> Html Msg
