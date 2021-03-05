@@ -6,10 +6,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (..)
 import Types.Balance exposing (Balance, Balances, balancesDecoder)
-import Types.User exposing (User)
+import Types.User exposing (User, avatarURL)
 import Url.Builder exposing (absolute)
+import UserOperation
 
 
 getMaxPage : Balances -> Int
@@ -28,6 +28,7 @@ type alias Model =
     , accessToken : String
     , balances : DynamicData Balances
     , page : Int
+    , user_operation_model : UserOperation.Model
     }
 
 
@@ -36,9 +37,10 @@ type Msg
     | GotBalances (Result Http.Error Balances)
     | Previous
     | Next
+    | UserOperationMsg UserOperation.Msg
 
 
-init : String -> Maybe User -> ( Model, Cmd msg )
+init : String -> Maybe User -> ( Model, Cmd Msg )
 init accessToken userData =
     ( { accessToken = accessToken
       , userData =
@@ -50,6 +52,7 @@ init accessToken userData =
                     Pending
       , balances = Pending
       , page = 0
+      , user_operation_model = UserOperation.defaultModel accessToken
       }
     , Cmd.none
     )
@@ -88,6 +91,11 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+        UserOperationMsg msg_ ->
+            let
+                ( m_, cmd ) = UserOperation.update msg_ model.user_operation_model
+            in
+            ( { model | user_operation_model = m_ }, Cmd.map UserOperationMsg cmd)
 
 
 view : Model -> Html Msg
@@ -121,20 +129,11 @@ view model =
                         [ div [ class "is-size-2 mx-5" ] [ text "Failed..." ] ]
                 )
             ]
+        , UserOperation.view model.user_operation_model |> Html.map UserOperationMsg
         ]
 
 
-avatarURL : User -> String
-avatarURL userData =
-    case userData.discord.avatar of
-        Just a ->
-            "https://cdn.discordapp.com/avatars/" ++ userData.discord.id ++ "/" ++ a ++ ".png?size=128"
-
-        Nothing ->
-            "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
-
-
-userInfo : Model -> Html msg
+userInfo : Model -> Html Msg
 userInfo model =
     div [ class "columns" ]
         [ div [ class "column is-2" ]
@@ -180,21 +179,31 @@ filterDataWithPage page data =
     toList <| slice (page * 5) (page * 5 + 4) (fromList data)
 
 
-balanceView : Balance -> Html msg
+balanceView : Balance -> Html Msg
 balanceView balance =
     div [ class "card my-3" ]
         [ div [ class "card-content" ]
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text balance.currency.name ]
-                , div [ class "media-content mr-2" ] [ text (balance.amount ++ balance.currency.unit) ]
+                , div [ class "media-content mr-2" ] [ boldText balance.amount, unitText balance.currency.unit ]
                 ]
             ]
         , footer [ class "card-footer" ]
             [ div [ class "card-footer-item" ] [ text "詳細" ]
             , div [ class "card-footer-item" ] [ text "取引履歴" ]
-            , div [ class "card-footer-item" ] [ text "送金" ]
+            , UserOperation.pay_card_footer "送金" "" "" balance.currency.unit |> Html.map UserOperationMsg
             ]
         ]
+
+
+boldText : String -> Html Msg
+boldText s =
+    span [class "has-text-weight-bold"] [text s]
+
+unitText: String -> Html Msg
+unitText s =
+    span [class "ml-1"] [text s]
+
 
 
 getBalances : String -> Cmd Msg

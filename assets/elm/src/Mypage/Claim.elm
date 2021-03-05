@@ -7,11 +7,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Mypage.Dashboard exposing (DynamicData(..))
-import Types.User exposing (User)
+import Types.User exposing (User, avatarURL)
 import Types.Claim exposing (Claims,claimsDecoder,Claim)
 import Platform exposing (Task)
 import Task exposing (Task)
 import Url.Builder exposing (absolute)
+import UserOperation exposing (username)
 
 type ClaimType
     = Sent
@@ -34,6 +35,7 @@ type alias Model =
     , asyncData : AsyncData
     , sent_page : Int
     , received_page : Int
+    , user_operation_model : UserOperation.Model
     }
 
 
@@ -42,6 +44,7 @@ type Msg
     | GotClaims (Result Http.Error GroupedClaims)
     | Previous ClaimType
     | Next ClaimType
+    | UserOperationMsg UserOperation.Msg
 
 
 getClaims : String -> String -> Task Http.Error GroupedClaims
@@ -61,6 +64,7 @@ init accessToken userData =
       , asyncData = Maybe.withDefault LoadingUserData (Maybe.map LoadingClaims userData)
       , sent_page = 0
       , received_page = 0
+      , user_operation_model = UserOperation.defaultModel accessToken
       }
     , Cmd.none
     )
@@ -148,6 +152,11 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
+        UserOperationMsg msg_ ->
+            let
+                ( m_, cmd ) = UserOperation.update msg_ model.user_operation_model
+            in
+            ( { model | user_operation_model = m_ }, Cmd.map UserOperationMsg cmd)
 
 
 view : Model -> Html Msg
@@ -162,13 +171,16 @@ view model =
 
 claimView : Model -> GroupedClaims -> Html Msg
 claimView model claims =
-    div [ class "column" ]
-        [ div [ class "columns" ]
-            [ div [ class "column is-three-quarters" ]
-                [ receivedClaimsView model claims
-                , sentClaimsView model claims
+    div []
+        [ div [ class "column" ]
+            [ div [ class "columns" ]
+                [ div [ class "column is-three-quarters" ]
+                    [ receivedClaimsView model claims
+                    , sentClaimsView model claims
+                    ]
                 ]
             ]
+        , UserOperation.view model.user_operation_model |> Html.map UserOperationMsg
         ]
 
 sentClaimsView : Model -> GroupedClaims -> Html Msg
@@ -218,12 +230,12 @@ nextButton t d =
 sentClaimView : Claim -> Html Msg
 sentClaimView claim =
     div [class "column is-half"]
-        [ div [ class "card my-3" ]
+        [ div [ class "box my-3"]
             [ header [class "card-header has-background-info-light"]
                 [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
                 ]
             , div [class "card-content"]
-                [ div [class "content"] [text <| "請求先ユーザー: " ++ (username claim.payer)]
+                [ div [class "content"] [text <| "請求先ユーザー: ", username claim.payer |> Html.map UserOperationMsg]
                 , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
                 ]
             , footer [class "card-footer"]
@@ -235,20 +247,15 @@ sentClaimView claim =
         ]
 
 
-username : User -> String
-username u =
-    "@" ++ u.discord.username ++ "#" ++ u.discord.discriminator
-
-
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
     div [class "column is-half"]
-        [ div [ class "card my-3" ]
+        [ div [ class "box my-3" ]
             [ header [class "card-header has-background-info-light"]
                 [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
                 ]
             , div [class "card-content"]
-                [ div [class "content"] [text <| "請求元ユーザー: " ++ (username claim.claimant)]
+                [ div [class "content"] [text <| "請求元ユーザー: ", username claim.claimant |> Html.map UserOperationMsg]
                 , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
                 ]
             , footer [class "card-footer"]
