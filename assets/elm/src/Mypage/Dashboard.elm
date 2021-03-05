@@ -186,7 +186,7 @@ balanceView balance =
         [ div [ class "card-content" ]
             [ div [ class "media" ]
                 [ div [ class "media-left has-text-weight-bold" ] [ text balance.currency.name ]
-                , div [ class "media-content mr-2" ] [ text (balance.amount ++ balance.currency.unit) ]
+                , div [ class "media-content mr-2" ] [ boldText balance.amount, unitText balance.currency.unit ]
                 ]
             ]
         , footer [ class "card-footer" ]
@@ -204,3 +204,12 @@ getBalances token =
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
         }
+
+
+boldText : String -> Html msg
+boldText s =
+    span [class "has-text-weight-bold"] [text s]
+
+unitText: String -> Html msg
+unitText s =
+    span [class "ml-1"] [text s]
