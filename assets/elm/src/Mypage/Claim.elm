@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Mypage.Dashboard exposing (DynamicData(..))
-import Types.User exposing (User)
+import Types.User exposing (User, avatarURL)
 import Types.Claim exposing (Claims,claimsDecoder,Claim)
 import Platform exposing (Task)
 import Task exposing (Task)
@@ -218,12 +218,12 @@ nextButton t d =
 sentClaimView : Claim -> Html Msg
 sentClaimView claim =
     div [class "column is-half"]
-        [ div [ class "card my-3" ]
+        [ div [ class "box my-3"]
             [ header [class "card-header has-background-info-light"]
                 [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
                 ]
             , div [class "card-content"]
-                [ div [class "content"] [text <| "請求先ユーザー: " ++ (username claim.payer)]
+                [ div [class "content"] [text <| "請求先ユーザー: ", (username claim.payer)]
                 , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
                 ]
             , footer [class "card-footer"]
@@ -235,20 +235,38 @@ sentClaimView claim =
         ]
 
 
-username : User -> String
+username : User -> Html Msg
 username u =
-    "@" ++ u.discord.username ++ "#" ++ u.discord.discriminator
+    div [class "dropdown is-hoverable"]
+        [ div [class "dropdown-trigger"]
+            [ p [attribute "aria-haspopup" "true", attribute "aria-controls" "dropdown-menu"]
+                [ span [class "has-text-info has-text-weight-bold"] [text <| "@" ++ u.discord.username ++ "#" ++ u.discord.discriminator]
+                ]
+            ]
+        , div [class "dropdown-menu", id "dropdown-menu", attribute "role" "menu"]
+            [ div [class "dropdown-content"]
+                [ div [class "dropdown-item"]
+                    [ figure [class "image is-128x128"]
+                        [ img [class "is-rounded", src <| avatarURL u] []
+                        ]
+                    ]
+                , div [class "dropdown-item"]
+                    [ p [class "has-text-info has-text-weight-bold has-text-centered is-size-4"] [text <| u.discord.username ++ "#" ++ u.discord.discriminator]
+                    ]
+                ]
+            ]
+        ]
 
 
 receivedClaimView : Claim -> Html Msg
 receivedClaimView claim =
     div [class "column is-half"]
-        [ div [ class "card my-3" ]
+        [ div [ class "box my-3" ]
             [ header [class "card-header has-background-info-light"]
                 [ p [class "card-header-title"] [text ("ID: " ++ claim.id)]
                 ]
             , div [class "card-content"]
-                [ div [class "content"] [text <| "請求元ユーザー: " ++ (username claim.claimant)]
+                [ div [class "content"] [text <| "請求元ユーザー: ", username claim.claimant]
                 , div [class "content"] [text "請求量: ", boldText claim.amount, unitText claim.currency.unit]
                 ]
             , footer [class "card-footer"]

@@ -6,9 +6,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
-import Json.Decode exposing (..)
 import Types.Balance exposing (Balance, Balances, balancesDecoder)
-import Types.User exposing (User)
+import Types.User exposing (User, avatarURL)
 import Url.Builder exposing (absolute)
 
 
@@ -122,16 +121,6 @@ view model =
                 )
             ]
         ]
-
-
-avatarURL : User -> String
-avatarURL userData =
-    case userData.discord.avatar of
-        Just a ->
-            "https://cdn.discordapp.com/avatars/" ++ userData.discord.id ++ "/" ++ a ++ ".png?size=128"
-
-        Nothing ->
-            "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
 
 
 userInfo : Model -> Html msg
