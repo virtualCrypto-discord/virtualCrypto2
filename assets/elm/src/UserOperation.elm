@@ -1,11 +1,11 @@
-module UserOperation exposing (Model, Msg, update, username, defaultModel, view)
+module UserOperation exposing (..)
 import Types.User exposing (User, avatarURL)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Api
-import Url.Builder exposing (absolute, string)
+import Url.Builder exposing (absolute)
 import Types.Transcations exposing (transactionsEncoder)
 
 
@@ -132,7 +132,7 @@ payViewSubmitButton model =
 payViewBody : Model -> Html Msg
 payViewBody model =
     div [class "my-3 ml-2"]
-        [ sec "送金先ユーザー"
+        [ sec "送金先DiscordユーザーID"
         , input [type_ "number", placeholder "212513828641046529", value model.user_id, onInput ChangeID, class "input"] []
         , sec "送金金額"
         , input [type_ "number", placeholder "100", value model.amount, onInput ChangeAmount, class "input"] []
@@ -192,3 +192,7 @@ username u =
                 ]
             ]
         ]
+
+pay_card_footer : String -> String -> String -> String -> Html Msg
+pay_card_footer txt discord_id amount unit =
+    a [ class "card-footer-item has-text-info has-text-weight-bold", onClick (ShowModal discord_id amount unit Pay)  ] [ text txt ]
