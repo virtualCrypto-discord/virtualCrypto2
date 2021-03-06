@@ -134,7 +134,7 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    div [ class "columns ml-5" ]
+    div [ class "columns mx-5" ]
         [ sidebar model
         , case model.route of
             DashboardPage ->
