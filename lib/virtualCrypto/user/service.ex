@@ -1,6 +1,5 @@
 defmodule VirtualCrypto.User do
   alias VirtualCrypto.Repo
-  import Ecto.Query
 
   def insert_user_if_not_exists(discord_id) do
     with {:ok, nil} <- {:ok, Repo.get_by(VirtualCrypto.User.User, discord_id: discord_id)},

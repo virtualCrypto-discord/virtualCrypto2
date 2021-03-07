@@ -216,7 +216,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     patch_(conn, id, &Money.cancel_claim/3)
   end
 
-  def patch(conn, %{"id" => id}) do
+  def patch(conn, %{"id" => _id}) do
     conn
     |> put_status(400)
     |> render("error.json", error: :invalid_request, error_description: :must_supply_valid_status)
