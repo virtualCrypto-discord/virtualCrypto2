@@ -15,16 +15,26 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("bal", _options, %{
-        "member" => %{"user" => %{"id" => executor}}
-      }) do
+  def handle(
+        "bal",
+        _options,
+        %{
+          "member" => %{"user" => %{"id" => executor}}
+        },
+        _conn
+      ) do
     int_executor = String.to_integer(executor)
     Money.balance(DiscordService, user: int_executor)
   end
 
-  def handle("pay", %{"unit" => unit, "user" => receiver, "amount" => amount}, %{
-        "member" => %{"user" => %{"id" => sender}}
-      }) do
+  def handle(
+        "pay",
+        %{"unit" => unit, "user" => receiver, "amount" => amount},
+        %{
+          "member" => %{"user" => %{"id" => sender}}
+        },
+        _conn
+      ) do
     int_receiver = String.to_integer(receiver)
     int_sender = String.to_integer(sender)
 
@@ -40,10 +50,15 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("give", %{"user" => receiver, "amount" => amount}, %{
-        "guild_id" => guild,
-        "member" => %{"permissions" => perms}
-      }) do
+  def handle(
+        "give",
+        %{"user" => receiver, "amount" => amount},
+        %{
+          "guild_id" => guild,
+          "member" => %{"permissions" => perms}
+        },
+        _conn
+      ) do
     int_permissions = String.to_integer(perms)
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
@@ -62,7 +77,12 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("create", options, %{"guild_id" => guild_id, "member" => %{"user" => user}} = params) do
+  def handle(
+        "create",
+        options,
+        %{"guild_id" => guild_id, "member" => %{"user" => user}} = params,
+        _conn
+      ) do
     int_guild_id = String.to_integer(guild_id)
     int_user_id = String.to_integer(user["id"])
     int_permissions = String.to_integer(params["member"]["permissions"])
@@ -91,7 +111,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle("info", options, %{"guild_id" => guild_id, "member" => %{"user" => user}}) do
+  def handle("info", options, %{"guild_id" => guild_id, "member" => %{"user" => user}}, _conn) do
     int_user_id = String.to_integer(user["id"])
 
     case VirtualCrypto.Money.info(name: options["name"], unit: options["unit"], guild: guild_id) do
@@ -101,24 +121,25 @@ defmodule VirtualCryptoWeb.CommandHandler do
       info ->
         case Money.balance(DiscordService, user: int_user_id)
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.V8.get_guild(info.guild)}
-          [] -> {:ok, info, 0, Discord.Api.V8.get_guild(info.guild)}
+          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.V8.Raw.get_guild(info.guild)}
+          [] -> {:ok, info, 0, Discord.Api.V8.Raw.get_guild(info.guild)}
         end
     end
   end
 
-  def handle("help", _options, _params) do
+  def handle("help", _options, _params, _conn) do
     {@bot_invite_url, @guild_invite_url, @site_url}
   end
 
-  def handle("invite", _, _) do
+  def handle("invite", _, _, _conn) do
     {@bot_invite_url, @guild_invite_url}
   end
 
   def handle(
         "claim",
         %{"subcommand" => "list"},
-        %{"member" => %{"user" => user}}
+        %{"member" => %{"user" => user}},
+        _conn
       ) do
     int_user_id = String.to_integer(user["id"])
 
@@ -145,7 +166,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle(
         "claim",
         %{"subcommand" => "make"} = options,
-        %{"member" => %{"user" => user}}
+        %{"member" => %{"user" => user}},
+        _conn
       ) do
     int_payer_id = options["sub_options"]["user"] |> String.to_integer()
     int_user_id = user["id"] |> String.to_integer()
@@ -166,7 +188,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle(
         "claim",
         %{"subcommand" => "approve"} = options,
-        %{"member" => %{"user" => user}}
+        %{"member" => %{"user" => user}},
+        _conn
       ) do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
@@ -180,7 +203,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle(
         "claim",
         %{"subcommand" => "deny"} = options,
-        %{"member" => %{"user" => user}}
+        %{"member" => %{"user" => user}},
+        _conn
       ) do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
@@ -194,7 +218,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   def handle(
         "claim",
         %{"subcommand" => "cancel"} = options,
-        %{"member" => %{"user" => user}}
+        %{"member" => %{"user" => user}},
+        _conn
       ) do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
@@ -205,6 +230,6 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle(_, _, _) do
+  def handle(_, _, _, _conn) do
   end
 end

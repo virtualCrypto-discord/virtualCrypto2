@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.ConnCase do
+defmodule VirtualCryptoWeb.RestCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -22,10 +22,11 @@ defmodule VirtualCryptoWeb.ConnCase do
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
-      import VirtualCryptoWeb.ConnCase
+      import VirtualCryptoWeb.RestCase
+      import EnviromentBootstrapper
 
       alias VirtualCryptoWeb.Router.Helpers, as: Routes
-
+      alias VirtualCrypto.Repo
       # The default endpoint for testing
       @endpoint VirtualCryptoWeb.Endpoint
     end
@@ -38,6 +39,18 @@ defmodule VirtualCryptoWeb.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(VirtualCrypto.Repo, {:shared, self()})
     end
 
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+    conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("accept", "application/json")
+
+    conn =
+      if tags[:ctype] == :json do
+        conn |> Plug.Conn.put_req_header("content-type", "application/json")
+      else
+        conn
+      end
+
+    {:ok,
+     %{
+       conn: conn
+     }}
   end
 end
