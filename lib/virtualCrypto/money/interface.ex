@@ -137,7 +137,8 @@ defmodule VirtualCrypto.Money do
       Keyword.get(kw, :retry_count, 5)
     )
   end
-  #TODO: separate this
+
+  # TODO: separate this
   @spec balance(module(), user: non_neg_integer(), currency: non_neg_integer()) ::
           [
             %{

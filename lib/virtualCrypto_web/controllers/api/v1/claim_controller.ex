@@ -62,7 +62,8 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     end
   end
 
-  def post(conn, %{"payer_discord_id" => payer_discord_id, "unit" => unit, "amount" => amount}) when is_binary(payer_discord_id) and is_binary(amount) do
+  def post(conn, %{"payer_discord_id" => payer_discord_id, "unit" => unit, "amount" => amount})
+      when is_binary(payer_discord_id) and is_binary(amount) do
     case {Guardian.Plug.current_resource(conn), Integer.parse(payer_discord_id),
           Integer.parse(amount)} do
       {%{"sub" => user_id, "vc.claim" => true}, {payer_discord_id, ""}, {amount, ""}} ->
@@ -114,10 +115,14 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     end
   end
 
-  def post(conn, %{"payer_discord_id" => payer_discord_id}) when not is_binary(payer_discord_id) do
+  def post(conn, %{"payer_discord_id" => payer_discord_id})
+      when not is_binary(payer_discord_id) do
     conn
     |> put_status(400)
-    |> render("error.json", error: :invalid_request, error_description: :invalid_payer_discord_id_type)
+    |> render("error.json",
+      error: :invalid_request,
+      error_description: :invalid_payer_discord_id_type
+    )
   end
 
   def post(conn, %{"amount" => amount}) when not is_binary(amount) do
@@ -125,6 +130,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     |> put_status(400)
     |> render("error.json", error: :invalid_request, error_description: :invalid_amount_type)
   end
+
   def post(conn, %{"payer_discord_id" => _payer_discord_id, "unit" => _unit}) do
     conn
     |> put_status(400)

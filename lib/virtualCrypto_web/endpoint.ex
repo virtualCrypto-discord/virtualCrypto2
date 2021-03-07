@@ -53,8 +53,10 @@ defmodule VirtualCryptoWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
   if Mix.env() != :test do
     plug VirtualCryptoWeb.Plug.DiscordApiService
   end
+
   plug VirtualCryptoWeb.Router
 end

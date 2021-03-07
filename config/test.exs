@@ -9,6 +9,7 @@ config :virtualCrypto, VirtualCrypto.Repo,
   show_sensitive_data_on_connection_error: true,
   pool: Ecto.Adapters.SQL.Sandbox,
   log: false
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -71,4 +72,4 @@ config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/cal
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
 
-config :logger,  backends: []
+config :logger, backends: []

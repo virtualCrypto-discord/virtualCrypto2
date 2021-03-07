@@ -64,7 +64,7 @@ defmodule InfoControllerTest do
     assert json_response(conn, 404) == @not_found
   end
 
-  test "supply match guild parameter", %{conn: conn} =ctx do
+  test "supply match guild parameter", %{conn: conn} = ctx do
     conn = get(conn, Routes.info_path(conn, :index, %{guild: ctx.guild}))
 
     assert json_response(conn, 200) == success(ctx)
@@ -76,7 +76,7 @@ defmodule InfoControllerTest do
     assert json_response(conn, 404) == @not_found
   end
 
-  test "supply match unit parameter", %{conn: conn}=ctx do
+  test "supply match unit parameter", %{conn: conn} = ctx do
     conn = get(conn, Routes.info_path(conn, :index, %{unit: ctx.unit}))
 
     assert json_response(conn, 200) == success(ctx)
@@ -112,8 +112,8 @@ defmodule InfoControllerTest do
     assert json_response(conn, 404) == @not_found
   end
 
-  test "supply match id parameter", %{conn: conn} =ctx do
-    #TODO it is bug #234
+  test "supply match id parameter", %{conn: conn} = ctx do
+    # TODO it is bug #234
     conn = get(conn, Routes.info_path(conn, :index, %{id: ctx.guild}))
 
     assert json_response(conn, 200) == success(ctx)

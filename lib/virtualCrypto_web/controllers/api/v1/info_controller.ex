@@ -4,7 +4,7 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
 
   defp get(%{"id" => id}) do
     case Integer.parse(id) do
-      #TODO it is bug #234
+      # TODO it is bug #234
       {int_id, ""} when int_id >= 1 -> {:ok, {:guild, int_id}}
       _ -> {:error, {:invalid_request, :id_must_be_positive_integer}}
     end

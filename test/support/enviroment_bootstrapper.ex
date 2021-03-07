@@ -1,5 +1,6 @@
 defmodule EnviromentBootstrapper do
   alias VirtualCrypto.Repo
+
   defp counter() do
     System.unique_integer([:positive])
   end
@@ -19,7 +20,9 @@ defmodule EnviromentBootstrapper do
         creator: user1,
         creator_amount: 1000 * 200
       )
-    currency = Repo.get_by(VirtualCrypto.Money.Info,unit: unit)
+
+    currency = Repo.get_by(VirtualCrypto.Money.Info, unit: unit)
+
     {:ok} =
       VirtualCrypto.Money.pay(VirtualCrypto.Money.DiscordService,
         sender: user1,
@@ -29,7 +32,15 @@ defmodule EnviromentBootstrapper do
       )
 
     {:ok, _} = VirtualCrypto.Money.give(receiver: user2, amount: 500, guild: guild)
-    Map.merge(ctx, %{user1: user1, guild: guild, user2: user2, unit: unit, name: name,currency: currency.id})
+
+    Map.merge(ctx, %{
+      user1: user1,
+      guild: guild,
+      user2: user2,
+      unit: unit,
+      name: name,
+      currency: currency.id
+    })
   end
 
   def setup_claim(ctx) do
