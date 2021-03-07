@@ -137,21 +137,43 @@ defmodule VirtualCrypto.Money do
       Keyword.get(kw, :retry_count, 5)
     )
   end
-
-  @spec balance(module(), user: non_neg_integer()) :: [
-          %{
-            asset: VirtualCrypto.Money.Asset,
-            currency: VirtualCrypto.Money.Info
-          }
-        ]
+  #TODO: separate this
+  @spec balance(module(), user: non_neg_integer(), currency: non_neg_integer()) ::
+          [
+            %{
+              asset: VirtualCrypto.Money.Asset,
+              currency: VirtualCrypto.Money.Info
+            }
+          ]
+          | %{
+              asset: VirtualCrypto.Money.Asset,
+              currency: VirtualCrypto.Money.Info
+            }
+          | nil
   def balance(service, kw) do
-    service.balance(Keyword.fetch!(kw, :user))
-    |> Enum.map(fn {asset, currency} ->
-      %{
-        asset: asset,
-        currency: currency
-      }
-    end)
+    case Keyword.fetch(kw, :currency) do
+      {:ok, currency} ->
+        case service.balance(Keyword.fetch!(kw, :user))
+             |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
+          {asset, currency} ->
+            %{
+              asset: asset,
+              currency: currency
+            }
+
+          nil ->
+            nil
+        end
+
+      :error ->
+        service.balance(Keyword.fetch!(kw, :user))
+        |> Enum.map(fn {asset, currency} ->
+          %{
+            asset: asset,
+            currency: currency
+          }
+        end)
+    end
   end
 
   @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
@@ -196,6 +218,7 @@ defmodule VirtualCrypto.Money do
     nil
   end
 
+  # FIXME: this is not useful return value!
   @spec get_claims(module(), Integer.t(), String.t()) ::
           [
             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
@@ -205,6 +228,7 @@ defmodule VirtualCrypto.Money do
     service.get_claims(user_id, status)
   end
 
+  # FIXME: this is not useful return value!
   @spec get_claims(module(), Integer.t()) ::
           [
             {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
@@ -214,6 +238,7 @@ defmodule VirtualCrypto.Money do
     service.get_claims(user_id)
   end
 
+  # FIXME: this is not useful return value!
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
           {:ok,
            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
@@ -249,6 +274,7 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  # FIXME: this is not useful return value!
   @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
           {:ok,
            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
@@ -272,6 +298,7 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  # FIXME: this is not useful return value!
   @spec deny_claim(module(), Integer.t(), Integer.t()) ::
           {:ok,
            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
@@ -294,6 +321,7 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  # FIXME: this is not useful input and return value!
   @doc """
   payer must be discord user
   """
@@ -307,6 +335,12 @@ defmodule VirtualCrypto.Money do
     service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
   end
 
+  # FIXME: this is not useful return value!
+  @spec get_claim_by_id(Integer.t()) ::
+          {:ok,
+           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+            VirtualCrypto.User.User}}
+          | {:error, :not_found}
   def get_claim_by_id(id) do
     Action.get_claim_by_id(id)
   end

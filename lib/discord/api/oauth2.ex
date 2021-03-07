@@ -1,4 +1,5 @@
 defmodule Discord.Api.V8.OAuth2 do
+  # TODO really v8?
   @client_data [
     strategy: OAuth2.Strategy.AuthCode,
     client_id: Application.get_env(:virtualCrypto, :client_id),

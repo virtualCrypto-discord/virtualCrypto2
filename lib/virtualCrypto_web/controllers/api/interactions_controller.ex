@@ -68,7 +68,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       |> parse_options
 
     render(conn, name <> ".json",
-      params: VirtualCryptoWeb.CommandHandler.handle(name, options, params)
+      params: VirtualCryptoWeb.CommandHandler.handle(name, options, params, conn)
     )
   end
 

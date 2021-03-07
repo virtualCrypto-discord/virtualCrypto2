@@ -20,7 +20,7 @@ defmodule VirtualCrypto.MixProject do
   def application do
     [
       mod: {VirtualCrypto.Application, []},
-      extra_applications: [:logger, :runtime_tools, :httpoison]
+      extra_applications: [:logger, :runtime_tools, :httpoison, :crypto]
     ]
   end
 
