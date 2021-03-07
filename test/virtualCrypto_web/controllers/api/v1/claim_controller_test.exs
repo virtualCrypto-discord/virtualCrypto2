@@ -96,7 +96,7 @@ defmodule ClaimControllerTest do
     })
 
     verify_claim(at(res, 1), %{
-      amount: 9999999,
+      amount: 9_999_999,
       claimant: user2,
       payer: user1,
       currency: currency,
@@ -132,7 +132,7 @@ defmodule ClaimControllerTest do
     })
 
     verify_claim(at(res, 1), %{
-      amount: 9999999,
+      amount: 9_999_999,
       claimant: user2,
       payer: user1,
       currency: currency,
@@ -168,7 +168,7 @@ defmodule ClaimControllerTest do
     currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
 
     verify_claim(res, %{
-      amount: 9999999,
+      amount: 9_999_999,
       claimant: user2,
       payer: user1,
       currency: currency,
@@ -276,7 +276,7 @@ defmodule ClaimControllerTest do
     currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
 
     verify_claim(res, %{
-      amount: 9999999,
+      amount: 9_999_999,
       claimant: user2,
       payer: user1,
       currency: currency,
@@ -461,10 +461,12 @@ defmodule ClaimControllerTest do
 
     assert after_payer == nil || before_payer.asset.amount - 500 == after_payer.asset.amount
   end
+
   test "approve claim by payer but not_enough_amount",
        %{conn: conn, claims: claims, user1: user1, user2: user2} = ctx do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
     currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+
     conn =
       patch(
         conn,
@@ -473,8 +475,9 @@ defmodule ClaimControllerTest do
       )
 
     res = json_response(conn, 400)
-    assert res ==  %{"error" => "not_enough_amount", "error_description" => "not_enough_amount"}
+    assert res == %{"error" => "not_enough_amount", "error_description" => "not_enough_amount"}
   end
+
   test "deny claim by claimant", %{conn: conn, claims: claims, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
 

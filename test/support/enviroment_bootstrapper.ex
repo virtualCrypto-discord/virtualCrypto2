@@ -61,7 +61,7 @@ defmodule EnviromentBootstrapper do
         d.user2,
         d.user1,
         d.unit,
-        9999999
+        9_999_999
       )
 
     {:ok, {c, _, _, _}} =
