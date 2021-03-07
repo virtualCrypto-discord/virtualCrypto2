@@ -113,7 +113,7 @@ defmodule InfoControllerTest do
   end
 
   test "supply match id parameter", %{conn: conn} = ctx do
-    # TODO it is bug #234
+    # TODO: it is bug #234
     conn = get(conn, Routes.info_path(conn, :index, %{id: ctx.guild}))
 
     assert json_response(conn, 200) == success(ctx)
