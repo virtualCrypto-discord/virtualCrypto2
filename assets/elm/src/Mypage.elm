@@ -12,9 +12,11 @@ import Mypage.Dashboard as Dashboard
 import Mypage.Error as Error
 import Mypage.Route exposing (Route(..))
 import Task
-import Types.User exposing (User, userDecoder)
+import Types.User exposing (User, userDecoder, avatarURL)
 import Url.Builder exposing (absolute)
 import Html
+import Svg
+import Svg.Attributes as SvgA
 
 
 type alias Model =
@@ -134,71 +136,28 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    div [ class "columns mx-5" ]
+    div [class "dashboard"]
         [ sidebar model
         , case model.route of
-            DashboardPage ->
-                Dashboard.view model.dashboard |> Html.map DashboardMsg
-
-            ClaimPage ->
-                Claim.view model.claim |> Html.map ClaimMsg
-
-            ApplicationsPage ->
-                Applications.view model.applications |> Html.map ApplicationsMsg
-
-            ErrorPage ->
-                Error.view 
+            DashboardPage -> Dashboard.view model.dashboard |> Html.map DashboardMsg
+            ClaimPage -> Claim.view model.claim |> Html.map ClaimMsg
+            ApplicationsPage -> Applications.view model.applications |> Html.map ApplicationsMsg
+            ErrorPage -> Error.view
         ]
 
 
 sidebar : Model -> Html Msg
 sidebar model =
-    div [ class "column is-one-fifth mt-5", style "border-right" "rgba(192, 192, 192, 0.7) solid 0.5px" ]
-        [ aside [ class "menu" ]
-            [ ul [ class "menu-list" ]
-                [ menuButton "Dashboard"
-                    DashboardPage
-                    (case model.route of
-                        DashboardPage ->
-                            True
-
-                        _ ->
-                            False
-                    )
-                , menuButton "請求"
-                    ClaimPage
-                    (case model.route of
-                        ClaimPage ->
-                            True
-
-                        _ ->
-                            False
-                    )
-                ]
-            , menuLabel "開発者向け"
-            , ul [ class "menu-list" ]
-                [ menuButton "アプリケーション" ApplicationsPage (model.route == ApplicationsPage)
-                ]
-            , menuLabel "操作"
-            , ul [ class "menu-list" ]
-                [ li [] [ a [ class "has-text-weight-bold py-3 mt-2 has-text-danger", href "/logout" ] [ text "ログアウト" ] ]
-                ]
+    div [class "sidebar"]
+        [ div [class "sidebar-content"]
+            [ userView model
+            , sidebarButton model "Dashboard" DashboardPage
+            , sidebarButton model "請求" ClaimPage
+            , sidebarButton model "通貨" ClaimPage
+            , sidebarButton model "アプリケーション" ClaimPage
+            , sidebarButton model "設定" ClaimPage
             ]
         ]
-
-
-menuButton : String -> Route -> Bool -> Html Msg
-menuButton text_ route is_active =
-    if is_active then
-        li [] [ a [ class "is-active has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
-
-    else
-        li [] [ a [ class "has-text-weight-bold py-3 mt-2", onClick (GoTo route) ] [ text text_ ] ]
-
-
-menuLabel : String -> Html msg
-menuLabel text_ =
-    p [ class "menu-label" ] [ text text_ ]
 
 
 getUserData : String -> Cmd Msg
@@ -208,3 +167,42 @@ getUserData token =
         , expect = Http.expectJson GotUserData userDecoder
         , token = token
         }
+
+
+userView : Model -> Html Msg
+userView model =
+    case model.userData of
+        Just data ->
+            div [style "width" "250px"]
+                [ figure [class "image is-128x128 sidebar-avatar"]
+                    [ img [class "is-rounded", src <| avatarURL data] []
+                    ]
+                , p [class "has-text-weight-bold normal-text has-text-centered is-size-4 mb-5"] [text <| data.discord.username ++ "#" ++ data.discord.discriminator]
+                ]
+        _ ->
+            div []
+                [ figure [class "image is-128x128 sidebar-avatar"]
+                    [ img [class "is-rounded", src "https://cdn.discordapp.com/embed/avatars/0.png?size=128"] []
+                    ]
+                , div []
+                    [ Svg.svg [SvgA.width "330", SvgA.height "50", SvgA.viewBox "0 0 330 50"]
+                        [ Svg.rect
+                            [ SvgA.x "35"
+                            , SvgA.y "0"
+                            , SvgA.width "200"
+                            , SvgA.height "30"
+                            , SvgA.rx "15"
+                            , SvgA.ry "15"
+                            , SvgA.fill "gray"
+                            ] []
+                        ]
+                    ]
+
+                ]
+
+
+sidebarButton : Model -> String -> Route -> Html Msg
+sidebarButton model text_ page =
+    button [class (if model.route == page then "sidebar-button" else "sidebar-button-not-selected"), onClick (GoTo page)]
+        [ span [class (if model.route == page then "sidebar-button-text" else "sidebar-button-text-not-selected")] [text text_]
+        ]

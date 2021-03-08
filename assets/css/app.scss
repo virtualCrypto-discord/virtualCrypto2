@@ -57,3 +57,81 @@ $menu-item-active-color: rgba(98, 33, 237, 0.8);
 .my-card {
   border: rgba(98, 33, 237, 0.6);
 }
+
+.header-button {
+  text-decoration: none;
+  color: #9063F0;
+}
+
+.sidebar-button-base {
+  width: 272px;
+  border-radius: 13px;
+  height: 48px;
+  margin-left: -8px;
+  margin-top: 2px;
+  outline: none;
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 17px;
+  border: none;
+}
+
+.sidebar-button {
+  @extend .sidebar-button-base;
+  background: #fff;
+}
+
+.sidebar-button-not-selected {
+  @extend .sidebar-button-base;
+  background: none;
+}
+
+.sidebar-button-text-base {
+  font-size: 16px;
+  margin-left: 40px;
+}
+
+.sidebar-button-text {
+  @extend .sidebar-button-text-base;
+  color: #6221ED;
+}
+
+.sidebar-button-text-not-selected {
+  @extend .sidebar-button-text-base;
+  color: #C6C6C6;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background: #F0F3F9;
+}
+
+.sidebar-avatar {
+  margin: 20px auto 20px auto;
+}
+
+.sidebar-username {
+  margin: auto auto 30px auto;
+}
+
+.normal-text {
+  color: #001959;
+}
+
+.dashboard {
+  display: -webkit-flex;
+  display: flex;
+}
+
+.sidebar {
+  width: 330px;
+}
+
+.sidebar-content {
+  margin-left: 50px;
+}
+
+.my-header {
+  background: #F0F3F9;
+}
