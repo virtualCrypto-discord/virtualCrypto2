@@ -8,6 +8,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defguard is_non_neg_integer(v) when is_integer(v) and v >= 0
   defguard is_positive_integer(v) when is_integer(v) and v > 0
 
+  # FIXME: order of parameters
   def pay(sender_id, receiver_discord_id, amount, money_unit)
       when is_positive_integer(amount) do
     # Get money info by unit.
@@ -48,6 +49,95 @@ defmodule VirtualCrypto.Money.InternalAction do
     {:error, :invalid_amount}
   end
 
+  def bulk_pay(sender_id, money_unit_reciver_id_and_amount) do
+    time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    with {:check_amount, true} <-
+           {:check_amount,
+            money_unit_reciver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
+         money_unit_reciver_id_and_amount_grouped <-
+           money_unit_reciver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
+         units <- Map.keys(money_unit_reciver_id_and_amount_grouped),
+         q <-
+           from(assets in Money.Asset,
+             join: currencies in Money.Info,
+             on: currencies.id == assets.money_id,
+             where: assets.user_id == ^sender_id and currencies.unit in ^units,
+             select: {assets.id, currencies.id, currencies.unit, assets.amount}
+           ),
+         aid_sender_currency_id_unit_amount <- Repo.all(q),
+         sender_currency_id_amount_pair <-
+           aid_sender_currency_id_unit_amount
+           |> Enum.map(fn {_aid, currency_id, _unit, amount} -> {currency_id, amount} end)
+           |> Map.new(),
+         sender_unit_currency_id_pair <-
+           aid_sender_currency_id_unit_amount
+           |> Enum.map(fn {_aid, currency_id, unit, _amount} -> {unit, currency_id} end)
+           |> Map.new(),
+         sender_currency_id_aid_pair <-
+           aid_sender_currency_id_unit_amount
+           |> Enum.map(fn {aid, currency_id, _unit, _amount} -> {currency_id, aid} end)
+           |> Map.new(),
+         sent_unit_amount_pair <-
+           money_unit_reciver_id_and_amount_grouped
+           |> Enum.map(fn {unit, money_unit_reciver_id_and_amount_grouped_entry} ->
+             {unit,
+              money_unit_reciver_id_and_amount_grouped_entry
+              |> Enum.map(fn {_unit, _receiver, amount} -> amount end)
+              |> Enum.sum()}
+           end),
+         {:sender_asset_amount, true} <-
+           {:sender_asset_amount,
+            sent_unit_amount_pair
+            |> Enum.all?(fn {unit, sent_amount} ->
+              case Map.fetch(sender_unit_currency_id_pair, unit) do
+                :error ->
+                  false
+
+                {:ok, currency_id} ->
+                  Map.get(sender_currency_id_amount_pair, currency_id, 0) >= sent_amount
+              end
+            end)},
+         {:ok, _} <-
+           upsert_asset_amounts(
+             money_unit_reciver_id_and_amount
+             |> Enum.map(fn {unit, receiver_id, amount} ->
+               {sender_unit_currency_id_pair[unit], receiver_id, amount}
+             end),
+             time
+           ),
+         {_, _} <-
+           update_asset_amounts(
+             sent_unit_amount_pair
+             |> Enum.map(fn {unit, sent_amount} ->
+               {sender_currency_id_aid_pair[sender_unit_currency_id_pair[unit]], -sent_amount}
+             end),
+             time
+           ),
+         {_, _} <-
+           Repo.insert_all(
+             VirtualCrypto.Money.PaymentHistory,
+             money_unit_reciver_id_and_amount
+             |> Enum.map(fn {unit, receiver_id, amount} ->
+               %{
+                 amount: amount,
+                 money_id: sender_unit_currency_id_pair[unit],
+                 receiver_id: receiver_id,
+                 sender_id: sender_id,
+                 time: time,
+                 inserted_at: time,
+                 updated_at: time
+               }
+             end)
+           ) do
+      {:ok, nil}
+    else
+      {:check_amount, _} -> {:error, :invalid_amount}
+      {:sender_asset_amount, _} -> {:error, :not_enough_amount}
+      err -> {:error, err}
+    end
+  end
+
   def get_money_by_unit(money_unit) do
     Money.Info
     |> where([m], m.unit == ^money_unit)
@@ -78,12 +168,62 @@ defmodule VirtualCrypto.Money.InternalAction do
     )
   end
 
+  def upsert_asset_amounts(assets, now) do
+    Repo.insert_all(
+      VirtualCrypto.Money.Asset,
+      assets
+      |> Enum.map(fn {money_id, user_id, amount} ->
+        [
+          amount: amount,
+          status: 0,
+          user_id: user_id,
+          money_id: money_id,
+          inserted_at: now,
+          updated_at: now
+        ]
+      end),
+      on_conflict:
+        from(assets in VirtualCrypto.Money.Asset,
+          update: [
+            inc: [amount: fragment("EXCLUDED.amount")]
+          ]
+        ),
+      conflict_target: [:money_id, :user_id]
+    )
+
+    {:ok, nil}
+  end
+
   def update_asset_amount(asset_id, amount) do
     {_, nil} =
       Money.Asset
       |> where([a], a.id == ^asset_id)
       |> update(inc: [amount: ^amount])
       |> Repo.update_all([])
+
+    {:ok, nil}
+  end
+
+  def update_asset_amounts([], _time) do
+    {:ok, nil}
+  end
+
+  def update_asset_amounts([{asset_id, amount}], _time) do
+    update_asset_amount(asset_id, amount)
+
+    {:ok, nil}
+  end
+
+  def update_asset_amounts(list, time) do
+    q = 2..length(list) |> Enum.map(&"($#{&1 * 2},$#{&1 * 2 + 1})") |> Enum.join(",")
+
+    Ecto.Adapters.SQL.query!(
+      Repo,
+      "UPDATE assets SET amount = assets.amount + tmp.amount, updated_at = $1 FROM (VALUES ($2::bigint,$3::integer),#{
+        q
+      }) as tmp (id, amount) WHERE assets.id=tmp.id;",
+      [time | list |> Enum.flat_map(fn {a, b} -> [a, b] end)]
+    )
 
     {:ok, nil}
   end
@@ -118,33 +258,36 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def info(:guild, guild_id) do
-    from asset in Money.Asset,
+    from(asset in Money.Asset,
       join: info in Money.Info,
       on: asset.money_id == info.id,
       where: info.guild_id == ^guild_id,
       group_by: info.id,
       select:
         {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+    )
   end
 
   def info(:name, name) do
-    from asset in Money.Asset,
+    from(asset in Money.Asset,
       join: info in Money.Info,
       on: asset.money_id == info.id,
       where: info.name == ^name,
       group_by: info.id,
       select:
         {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+    )
   end
 
   def info(:unit, unit) do
-    from asset in Money.Asset,
+    from(asset in Money.Asset,
       join: info in Money.Info,
       on: asset.money_id == info.id,
       where: info.unit == ^unit,
       group_by: info.id,
       select:
         {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+    )
   end
 
   @reset_pool_amount """
@@ -163,7 +306,7 @@ defmodule VirtualCrypto.Money.InternalAction do
 
   def get_claim_by_id(id) do
     query =
-      from claim in Money.Claim,
+      from(claim in Money.Claim,
         join: info in Money.Info,
         join: claimant in VirtualCrypto.User.User,
         join: payer in VirtualCrypto.User.User,
@@ -172,6 +315,7 @@ defmodule VirtualCrypto.Money.InternalAction do
             claim.claimant_user_id == claimant.id,
         where: claim.id == ^id,
         select: {claim, info, claimant, payer}
+      )
 
     query |> Repo.one()
   end
@@ -278,7 +422,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   defp claims_base_query do
-    from claim in Money.Claim,
+    from(claim in Money.Claim,
       join: info in Money.Info,
       join: claimant in VirtualCrypto.User.User,
       join: payer in VirtualCrypto.User.User,
@@ -286,6 +430,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         claim.payer_user_id == payer.id and claim.money_info_id == info.id and
           claim.claimant_user_id == claimant.id,
       select: {claim, info, claimant, payer}
+    )
   end
 
   def get_sent_claim(id, user_id) do

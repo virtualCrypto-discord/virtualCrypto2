@@ -31,8 +31,14 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
       end
 
     case params do
-      {:ok} -> conn |> send_resp(204, "")
-      {:error, err} -> conn |> put_status(400) |> render("error.json", error: err)
+      {:ok} ->
+        conn |> send_resp(204, "")
+
+      {:error, {:invalid_token, _} = err} ->
+        conn |> put_status(403) |> render("error.json", error: err)
+
+      {:error, err} ->
+        conn |> put_status(400) |> render("error.json", error: err)
     end
   end
 
@@ -46,9 +52,55 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
     |> render("error.json", error: {:invalid_request, :invalid_type_of_variable})
   end
 
+  def post(conn, %{"_json" => list}) when is_list(list) do
+    with {:param, param} when is_list(param) <- {:param, convert_list(list)},
+         {:token, %{"sub" => user_id, "vc.pay" => true}} <-
+           {:token, Guardian.Plug.current_resource(conn)},
+         {:ok, _} <- VirtualCrypto.Money.create_payments(user_id, param) do
+      conn |> send_resp(204, "")
+    else
+      {:param, {tag, idx}} ->
+        conn
+        |> put_status(400)
+        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+
+      {:token, _} ->
+        conn
+        |> put_status(403)
+        |> render("error.json", error: {:invalid_token, :token_verfication_failed})
+
+      {:error, err} ->
+        conn |> put_status(400) |> render("error.json", error: err)
+    end
+  end
+
   def post(conn, _) do
     conn
     |> put_status(400)
     |> render("error.json", error: {:invalid_request, :missing_parameter})
+  end
+
+  defp convert_list(list) do
+    list
+    |> Enum.with_index()
+    |> Enum.reduce_while([], fn {elem, idx}, acc ->
+      with %{} <- elem,
+           {:amount, {:ok, amount}} when is_binary(amount) <-
+             {:amount, Map.fetch(elem, "amount")},
+           {:amount, {int_amount, ""}} <- {:amount, Integer.parse(amount)},
+           {:unit, {:ok, unit}} <- {:unit, Map.fetch(elem, "unit")},
+           {:receiver_discord_id, {:ok, receiver_discord_id}} when is_binary(amount) <-
+             {:receiver_discord_id, Map.fetch(elem, "receiver_discord_id")},
+           {:receiver_discord_id, {int_receiver_discord_id, ""}} <-
+             {:receiver_discord_id, Integer.parse(receiver_discord_id)} do
+        {:cont,
+         [
+           %{amount: int_amount, unit: unit, receiver_discord_id: int_receiver_discord_id}
+           | acc
+         ]}
+      else
+        {tag, _} -> {:halt, {tag, idx}}
+      end
+    end)
   end
 end

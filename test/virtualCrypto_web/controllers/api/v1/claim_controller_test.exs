@@ -463,9 +463,8 @@ defmodule ClaimControllerTest do
   end
 
   test "approve claim by payer but not_enough_amount",
-       %{conn: conn, claims: claims, user1: user1, user2: user2} = ctx do
+       %{conn: conn, claims: claims, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
 
     conn =
       patch(
