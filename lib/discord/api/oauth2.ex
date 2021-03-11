@@ -11,7 +11,7 @@ defmodule Discord.Api.V8.OAuth2 do
   @spec authorize_url(String.t()) :: String.t()
   def authorize_url(state) do
     client = OAuth2.Client.new(@client_data)
-    OAuth2.Client.authorize_url!(client, state: state, scope: "identify")
+    OAuth2.Client.authorize_url!(client, state: state, scope: "identify", prompt: "none")
   end
 
   @spec exchange_code(String.t()) :: OAuth2.Client | :error
