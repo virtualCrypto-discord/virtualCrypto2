@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1V2.ClaimController do
+defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
@@ -47,7 +47,7 @@ defmodule VirtualCryptoWeb.Api.V1V2.ClaimController do
   defp permission_denied(conn) do
     conn
     |> put_status(403)
-    |> render("error.json", error: :invalid_token, error_description: :permission_denied)
+    |> render("error.json", error: :insufficient_scope, error_description: :permission_denied)
   end
 
   def me(conn, _) do
@@ -159,10 +159,11 @@ defmodule VirtualCryptoWeb.Api.V1V2.ClaimController do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
-          {:error, :not_found} ->
+          {:error, status} when status in [:not_found,:invalid_operator, :invalid_status] ->
             conn
             |> put_status(404)
             |> render("error.json", error: :not_found, error_description: :not_found)
+
 
           {:error, :not_found_money} ->
             conn

@@ -27,14 +27,14 @@ defmodule VirtualCryptoWeb.Api.V1V2.UserTransactionController do
           {:error, {:invalid_request, :invalid_format_of_convert_amount}}
 
         _ ->
-          {:error, {:invalid_token, :token_verfication_failed}}
+          {:error, {:insufficient_scope, :token_verfication_failed}}
       end
 
     case params do
       {:ok} ->
         conn |> send_resp(204, "")
 
-      {:error, {:invalid_token, _} = err} ->
+      {:error, {:insufficient_scope, _} = err} ->
         conn |> put_status(403) |> render("error.json", error: err)
 
       {:error, err} ->

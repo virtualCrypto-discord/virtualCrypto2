@@ -70,7 +70,7 @@ defmodule ClaimControllerTest.V1 do
     conn = get(conn, Routes.v1_claim_path(conn, :me))
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
            }
   end
@@ -353,7 +353,7 @@ defmodule ClaimControllerTest.V1 do
     conn = get(conn, Routes.v1_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
            }
   end
@@ -622,7 +622,7 @@ defmodule ClaimControllerTest.V1 do
       )
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
            }
   end
@@ -639,8 +639,25 @@ defmodule ClaimControllerTest.V1 do
       )
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
+           }
+  end
+
+  test "approve approved claim",
+       %{conn: conn, claims: claims, user2: user2} do
+    conn = set_user_auth(conn, :user, user2, ["vc.claim"])
+
+    conn =
+      patch(
+        conn,
+        Routes.v1_claim_path(conn, :patch, (claims |> at(2) |> elem(0)).id),
+        %{"status" => "approved"}
+      )
+
+    assert json_response(conn, 404) == %{
+             "error" => "not_found",
+             "error_description" => "not_found"
            }
   end
 
@@ -656,7 +673,7 @@ defmodule ClaimControllerTest.V1 do
       )
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
            }
   end
@@ -862,7 +879,7 @@ defmodule ClaimControllerTest.V1 do
       )
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "permission_denied"
            }
   end

@@ -1,12 +1,5 @@
-defmodule VirtualCryptoWeb.Api.V1V2.ClaimView do
+defmodule VirtualCryptoWeb.Api.V1V2.ClaimViewCommon do
   use VirtualCryptoWeb, :view
-
-  def render("error.json", %{error: error, error_description: error_description}) do
-    %{
-      error: error,
-      error_description: error_description
-    }
-  end
 
   def render("error.json", %{
         error: error,
@@ -16,6 +9,20 @@ defmodule VirtualCryptoWeb.Api.V1V2.ClaimView do
     %{
       error: error,
       error_description: error_description,
+      error_info: error_info
+    }
+  end
+
+  def render("error.json", %{error: error, error_description: error_description}) do
+    %{
+      error: error,
+      error_description: error_description
+    }
+  end
+
+  def render("error.json", %{error: error, error_info: error_info}) do
+    %{
+      error: error,
       error_info: error_info
     }
   end

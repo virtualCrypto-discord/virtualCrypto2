@@ -342,9 +342,9 @@ defmodule ClaimControllerTest.V2 do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
     conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "not_related_user"
            }
   end
 
@@ -362,9 +362,9 @@ defmodule ClaimControllerTest.V2 do
     conn = set_user_auth(conn, :user, -1, ["vc.claim"])
     conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "not_related_user"
            }
   end
 
@@ -402,10 +402,7 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "approved"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) == %{"error" => "forbidden", "error_description" => "invalid_operator"}
   end
 
   test "approve claim by payer",
@@ -474,7 +471,7 @@ defmodule ClaimControllerTest.V2 do
       )
 
     res = json_response(conn, 400)
-    assert res == %{"error" => "not_enough_amount", "error_description" => "not_enough_amount"}
+    assert res == %{"error" => "invalid_request", "error_info" => "not_enough_amount"}
   end
 
   test "deny claim by claimant", %{conn: conn, claims: claims, user1: user1} do
@@ -487,10 +484,7 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "denied"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
   end
 
   test "deny claim by payer", %{conn: conn, claims: claims, user1: user1, user2: user2} = ctx do
@@ -553,10 +547,7 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
   end
 
   test "approve claim by not related user",
@@ -570,10 +561,21 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
+  end
+
+  test "approve approved claim",
+       %{conn: conn, claims: claims, user2: user2} do
+    conn = set_user_auth(conn, :user, user2, ["vc.claim"])
+
+    conn =
+      patch(
+        conn,
+        Routes.v2_claim_path(conn, :patch, (claims |> at(2) |> elem(0)).id),
+        %{"status" => "approved"}
+      )
+
+    assert json_response(conn, 400) == %{"error" => "invalid_request", "error_info" => "invalid_status"}
   end
 
   test "deny claim by not related user",
@@ -587,10 +589,7 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) ==    %{"error" => "forbidden", "error_description" => "invalid_operator"}
   end
 
   test "cancel claim by not related user",
@@ -604,10 +603,7 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 404) == %{
-             "error" => "not_found",
-             "error_description" => "not_found"
-           }
+    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
   end
 
   test "approve claim with invalid token",
