@@ -29,17 +29,8 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
 
       {:error, {:invalid_token, more}} ->
         conn
-        |> put_resp_header(
-          "WWW-Authenticate",
-          [
-            "Bearer realm=\"oauth2.register\"",
-            "errror=\"invalid_token\"",
-            ~s/error_description="#{more}"/
-          ]
-          |> Enum.join(",")
-        )
-        |> send_resp(401, "\"Unauthorized\"")
-        |> halt()
+        |> put_status(403)
+        |> render("error.register.json", error: :invalid_token, error_description: more)
 
       {:error, {error, error_description}} ->
         conn
