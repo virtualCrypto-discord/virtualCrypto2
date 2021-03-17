@@ -59,7 +59,8 @@ defmodule VirtualCrypto.Money.VCService do
       amount
     )
   end
-  def equals?(user,user_id) do
-    user.id==user_id
+
+  def equals?(user, user_id) do
+    user.id == user_id
   end
 end

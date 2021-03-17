@@ -56,7 +56,8 @@ defmodule VirtualCrypto.Money.DiscordService do
       amount
     )
   end
-  def equals?(user,user_id) do
-    user.discord_id==user_id
+
+  def equals?(user, user_id) do
+    user.discord_id == user_id
   end
 end

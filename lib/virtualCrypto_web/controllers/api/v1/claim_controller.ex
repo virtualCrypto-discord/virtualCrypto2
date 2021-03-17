@@ -159,11 +159,10 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
-          {:error, status} when status in [:not_found,:invalid_operator, :invalid_status] ->
+          {:error, status} when status in [:not_found, :invalid_operator, :invalid_status] ->
             conn
             |> put_status(404)
             |> render("error.json", error: :not_found, error_description: :not_found)
-
 
           {:error, :not_found_money} ->
             conn

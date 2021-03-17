@@ -68,6 +68,7 @@ defmodule VirtualCryptoWeb.Api.V2.CurrenciesController do
         conn
         |> response_code(error)
         |> render("error.json", error: error, error_description: error_description)
+
       {:error, error} ->
         conn |> response_code(error) |> render("error.json", "error.json", error: error)
     end

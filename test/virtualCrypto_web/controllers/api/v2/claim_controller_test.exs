@@ -402,7 +402,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "approved"}
       )
 
-    assert json_response(conn, 403) == %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "approve claim by payer",
@@ -484,7 +487,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "denied"}
       )
 
-    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "deny claim by payer", %{conn: conn, claims: claims, user1: user1, user2: user2} = ctx do
@@ -547,7 +553,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "approve claim by not related user",
@@ -561,7 +570,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "approve approved claim",
@@ -575,7 +587,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "approved"}
       )
 
-    assert json_response(conn, 400) == %{"error" => "invalid_request", "error_info" => "invalid_status"}
+    assert json_response(conn, 400) == %{
+             "error" => "invalid_request",
+             "error_info" => "invalid_status"
+           }
   end
 
   test "deny claim by not related user",
@@ -589,7 +604,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 403) ==    %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "cancel claim by not related user",
@@ -603,7 +621,10 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "canceled"}
       )
 
-    assert json_response(conn, 403) ==  %{"error" => "forbidden", "error_description" => "invalid_operator"}
+    assert json_response(conn, 403) == %{
+             "error" => "forbidden",
+             "error_description" => "invalid_operator"
+           }
   end
 
   test "approve claim with invalid token",

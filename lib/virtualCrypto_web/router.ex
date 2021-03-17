@@ -107,6 +107,7 @@ defmodule VirtualCryptoWeb.Router do
 
       get "/currencies/:id", InfoController, :index
       get "/currencies", InfoController, :index
+
       scope "/" do
         pipe_through :api_auth
         get "/users/@me/claims", ClaimController, :me
@@ -131,6 +132,7 @@ defmodule VirtualCryptoWeb.Router do
     scope "/v2", V2, as: :v2 do
       get "/currencies/:id", CurrenciesController, :index
       get "/currencies", CurrenciesController, :index
+
       scope "/" do
         pipe_through :api_auth
         get "/users/@me/claims", ClaimController, :me

@@ -1,4 +1,4 @@
-defmodule InfoControllerTest.V1  do
+defmodule InfoControllerTest.V1 do
   use VirtualCryptoWeb.RestCase, async: true
   setup :setup_money
 

@@ -307,7 +307,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def approve_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: "pending",amount: amount}, info, claimant, payer}} <-
+           with {:get_claim, {%{status: "pending", amount: amount}, info, claimant, payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(payer, user_id)},
