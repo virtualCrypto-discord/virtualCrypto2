@@ -233,7 +233,7 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
+  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer(),id: non_neg_integer()) ::
           %{
             amount: non_neg_integer(),
             name: String.t(),
@@ -247,7 +247,8 @@ defmodule VirtualCrypto.Money do
     raw =
       with {:name, nil} <- {:name, Keyword.get(kw, :name)},
            {:unit, nil} <- {:unit, Keyword.get(kw, :unit)},
-           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)} do
+           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)},
+           {:id, nil} <- {:id, Keyword.get(kw, :id)} do
         raise "Invalid Argument. Must supply one or more arguments."
       else
         {atom, key} -> Repo.one(VirtualCrypto.Money.InternalAction.info(atom, key))

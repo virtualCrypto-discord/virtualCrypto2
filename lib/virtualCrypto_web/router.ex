@@ -101,8 +101,16 @@ defmodule VirtualCryptoWeb.Router do
   scope "/api", VirtualCryptoWeb.Api do
     pipe_through :api
     post "/integrations/discord/interactions", InteractionsController, :index
+    # deprecated
+    scope "/v1", V1, as: :v1 do
+      get "/moneys", InfoController, :index
 
-    scope "/v1", V1 do
+      get "/currencies/:id", InfoController, :index
+      get "/currencies", InfoController, :index
+    end
+
+    # deprecated
+    scope "/v1", V1V2, as: :v1 do
       scope "/" do
         pipe_through :api_auth
 
@@ -114,12 +122,25 @@ defmodule VirtualCryptoWeb.Router do
         patch "/users/@me/claims/:id", ClaimController, :patch
         post "/users/@me/transactions", UserTransactionController, :post
       end
+    end
 
-      # deprecated
-      get "/moneys", InfoController, :index
+    scope "/v2", V2, as: :v2 do
+      get "/currencies/:id", CurrenciesController, :index
+      get "/currencies", CurrenciesController, :index
+    end
 
-      get "/currencies/:id", InfoController, :index
-      get "/currencies", InfoController, :index
+    scope "/v2", V1V2, as: :v2 do
+      scope "/" do
+        pipe_through :api_auth
+
+        get "/users/@me", UserController, :me
+        get "/users/@me/balances", BalanceController, :balance
+        get "/users/@me/claims", ClaimController, :me
+        get "/users/@me/claims/:id", ClaimController, :get_by_id
+        post "/users/@me/claims", ClaimController, :post
+        patch "/users/@me/claims/:id", ClaimController, :patch
+        post "/users/@me/transactions", UserTransactionController, :post
+      end
     end
   end
 

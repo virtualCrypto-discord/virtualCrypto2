@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.InfoView do
+defmodule VirtualCryptoWeb.Api.V2.CurrenciesView do
   use VirtualCryptoWeb, :view
 
   def render(conn, d) do

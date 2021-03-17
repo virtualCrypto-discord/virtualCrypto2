@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
+defmodule VirtualCryptoWeb.Api.V1V2.UserTransactionController do
   use VirtualCryptoWeb, :controller
 
   def post(conn, %{

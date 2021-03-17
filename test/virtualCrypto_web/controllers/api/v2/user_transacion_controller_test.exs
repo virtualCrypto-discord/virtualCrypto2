@@ -1,4 +1,4 @@
-defmodule UserTransactionControllerTest.V1.Multi do
+defmodule UserTransactionControllerTest.V2.Multi do
   use VirtualCryptoWeb.RestCase, async: true
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Money.Asset
@@ -8,7 +8,7 @@ defmodule UserTransactionControllerTest.V1.Multi do
   defp exec(conn, json) do
     conn
     |> Plug.Conn.put_req_header("content-type", "application/json")
-    |> post(Routes.v1_user_transaction_path(conn, :post), Jason.encode!(json))
+    |> post(Routes.v2_user_transaction_path(conn, :post), Jason.encode!(json))
   end
 
   defp get_amount(user, currency) do

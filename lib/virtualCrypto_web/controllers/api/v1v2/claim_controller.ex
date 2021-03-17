@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.ClaimController do
+defmodule VirtualCryptoWeb.Api.V1V2.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering

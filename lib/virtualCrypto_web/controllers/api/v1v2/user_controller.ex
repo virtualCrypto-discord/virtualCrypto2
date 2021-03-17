@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.UserController do
+defmodule VirtualCryptoWeb.Api.V1V2.UserController do
   use VirtualCryptoWeb, :controller
   alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
 
