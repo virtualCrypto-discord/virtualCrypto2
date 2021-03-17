@@ -3,6 +3,7 @@ defmodule VirtualCrypto.Money do
   alias Ecto.Multi
   alias VirtualCrypto.Money.InternalAction, as: Action
 
+  # FIXME: rename to create_payment and take map
   @moduledoc """
   receiver must be discord user
   """
@@ -35,6 +36,64 @@ defmodule VirtualCrypto.Money do
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
       {:error, :pay, :invalid_amount, _} -> {:error, :invalid_amount}
     end
+  end
+
+  def create_payments(sender_id, partial_payments, _kw \\ []) do
+    Repo.transaction(fn ->
+      r =
+        with {:check_receiver_id_type, false} <-
+               {:check_receiver_id_type,
+                partial_payments
+                |> Enum.any?(
+                  &(Map.has_key?(&1, :receiver_discord_id) and Map.has_key?(&1, :receiver_id))
+                )},
+             m <-
+               partial_payments |> Enum.group_by(&Map.has_key?(&1, :receiver_discord_id)),
+             has_discord_id <- Map.get(m, true, []),
+             has_not_discord_id <- Map.get(m, false, []),
+             discord_ids <-
+               MapSet.new(
+                 has_discord_id
+                 |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} ->
+                   receiver_discord_id
+                 end)
+               ),
+             {:ok, returns} <-
+               discord_ids
+               |> MapSet.to_list()
+               |> VirtualCrypto.User.insert_users_if_not_exists(),
+             {:check_length, true} <-
+               {:check_length, length(returns) == MapSet.size(discord_ids)},
+             returns <-
+               returns
+               |> Enum.map(fn %{discord_id: discord_id, id: id} -> {discord_id, id} end)
+               |> Map.new(),
+             has_discord_id <-
+               has_discord_id
+               |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} = partial_payment ->
+                 partial_payment
+                 |> Map.delete(:receiver_discord_id)
+                 |> Map.put(:receiver_id, Map.get(returns, receiver_discord_id))
+               end),
+             partial_payments <- Enum.concat(has_discord_id, has_not_discord_id) do
+          Action.bulk_pay(
+            sender_id,
+            partial_payments
+            |> Enum.map(fn %{
+                             receiver_id: receiver,
+                             unit: unit,
+                             amount: amount
+                           } ->
+              {unit, receiver, amount}
+            end)
+          )
+        end
+
+      case r do
+        {:ok, _} -> nil
+        {:error, err} -> Repo.rollback(err)
+      end
+    end)
   end
 
   @doc """
