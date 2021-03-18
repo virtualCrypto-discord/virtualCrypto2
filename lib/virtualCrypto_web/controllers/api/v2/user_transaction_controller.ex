@@ -66,16 +66,20 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
         conn
         |> put_status(400)
         |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
-        {:param, {tag, idx}} ->
-          conn
-          |> put_status(409)
-          |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+
+      {:param, {tag, idx}} ->
+        conn
+        |> put_status(409)
+        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+
       {:token, _} ->
         conn
         |> put_status(403)
         |> render("error.json", error: {:insufficient_scope, :token_verfication_failed})
-        {:error, :not_enough_amount} ->
-          conn |> put_status(409) |> render("error.json", error: :not_enough_amount)
+
+      {:error, :not_enough_amount} ->
+        conn |> put_status(409) |> render("error.json", error: :not_enough_amount)
+
       {:error, err} ->
         conn |> put_status(400) |> render("error.json", error: err)
     end

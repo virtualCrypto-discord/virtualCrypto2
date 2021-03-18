@@ -1,24 +1,11 @@
-defmodule UserTransactionControllerTest.V1.Multi do
+defmodule UserTransactionControllerTest.V2.Multi do
   use VirtualCryptoWeb.RestCase, async: true
-  alias VirtualCrypto.Repo
-  alias VirtualCrypto.Money.Asset
-  alias VirtualCrypto.User.User
   setup :setup_money
 
   defp exec(conn, json) do
     conn
     |> Plug.Conn.put_req_header("content-type", "application/json")
-    |> post(Routes.v1_user_transaction_path(conn, :post), Jason.encode!(json))
-  end
-
-  defp get_amount(user, currency) do
-    case Repo.get_by(Asset,
-           user_id: Repo.get_by(User, discord_id: user).id,
-           money_id: currency
-         ) do
-      nil -> 0
-      %{amount: amount} -> amount
-    end
+    |> post(Routes.v2_user_transaction_path(conn, :post), Jason.encode!(json))
   end
 
   test "invalid token", %{conn: conn} = ctx do
@@ -235,8 +222,8 @@ defmodule UserTransactionControllerTest.V1.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end
@@ -260,8 +247,8 @@ defmodule UserTransactionControllerTest.V1.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end
@@ -302,8 +289,8 @@ defmodule UserTransactionControllerTest.V1.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end

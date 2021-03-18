@@ -148,7 +148,6 @@ defmodule VirtualCryptoWeb.Router do
 
         get "/users/@me", UserController, :me
         get "/users/@me/balances", BalanceController, :balance
-
       end
     end
   end

@@ -1,4 +1,4 @@
-defmodule EnviromentBootstrapper do
+defmodule VirtualCryptoWeb.EnviromentBootstrapper do
   alias VirtualCrypto.Repo
 
   def counter() do
