@@ -26,7 +26,7 @@ defmodule UserTransactionControllerTest.V1.Multi do
     conn = exec(conn, [])
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "token_verfication_failed"
            }
   end

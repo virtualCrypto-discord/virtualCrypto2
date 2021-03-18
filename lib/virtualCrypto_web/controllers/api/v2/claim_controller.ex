@@ -166,8 +166,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
           {:error, :invalid_status} ->
             conn
-            |> put_status(400)
-            |> render("error.json", error: :invalid_request, error_info: :invalid_status)
+            |> put_status(409)
+            |> render("error.json", error: :conflict, error_info: :invalid_status)
 
           {:error, :invalid_operator} ->
             conn
@@ -181,17 +181,17 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
           {:error, :not_found_sender_asset} ->
             conn
-            |> put_status(400)
+            |> put_status(409)
             |> render("error.json",
-              error: :invalid_request,
+              error: :conflict,
               error_info: :not_enough_amount
             )
 
           {:error, :not_enough_amount} ->
             conn
-            |> put_status(400)
+            |> put_status(409)
             |> render("error.json",
-              error: :invalid_request,
+              error: :conflict,
               error_info: :not_enough_amount
             )
         end

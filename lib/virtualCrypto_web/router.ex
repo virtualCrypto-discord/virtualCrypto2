@@ -114,6 +114,7 @@ defmodule VirtualCryptoWeb.Router do
         get "/users/@me/claims/:id", ClaimController, :get_by_id
         post "/users/@me/claims", ClaimController, :post
         patch "/users/@me/claims/:id", ClaimController, :patch
+        post "/users/@me/transactions", UserTransactionController, :post
       end
     end
 
@@ -124,8 +125,6 @@ defmodule VirtualCryptoWeb.Router do
 
         get "/users/@me", UserController, :me
         get "/users/@me/balances", BalanceController, :balance
-
-        post "/users/@me/transactions", UserTransactionController, :post
       end
     end
 
@@ -139,6 +138,7 @@ defmodule VirtualCryptoWeb.Router do
         get "/users/@me/claims/:id", ClaimController, :get_by_id
         post "/users/@me/claims", ClaimController, :post
         patch "/users/@me/claims/:id", ClaimController, :patch
+        post "/users/@me/transactions", UserTransactionController, :post
       end
     end
 
@@ -148,7 +148,7 @@ defmodule VirtualCryptoWeb.Router do
 
         get "/users/@me", UserController, :me
         get "/users/@me/balances", BalanceController, :balance
-        post "/users/@me/transactions", UserTransactionController, :post
+
       end
     end
   end

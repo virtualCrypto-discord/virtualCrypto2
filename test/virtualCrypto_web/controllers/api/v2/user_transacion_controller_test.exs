@@ -26,7 +26,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
     conn = exec(conn, [])
 
     assert json_response(conn, 403) == %{
-             "error" => "invalid_token",
+             "error" => "insufficient_scope",
              "error_description" => "token_verfication_failed"
            }
   end
@@ -235,8 +235,8 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end
@@ -260,8 +260,8 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end
@@ -302,8 +302,8 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "not_enough_amount"
            }
   end

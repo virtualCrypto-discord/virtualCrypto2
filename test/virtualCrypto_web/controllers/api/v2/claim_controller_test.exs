@@ -473,8 +473,8 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "approved"}
       )
 
-    res = json_response(conn, 400)
-    assert res == %{"error" => "invalid_request", "error_info" => "not_enough_amount"}
+    res = json_response(conn, 409)
+    assert res == %{"error" => "conflict", "error_info" => "not_enough_amount"}
   end
 
   test "deny claim by claimant", %{conn: conn, claims: claims, user1: user1} do
@@ -587,8 +587,8 @@ defmodule ClaimControllerTest.V2 do
         %{"status" => "approved"}
       )
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
              "error_info" => "invalid_status"
            }
   end

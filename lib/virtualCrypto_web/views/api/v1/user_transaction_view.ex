@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1V2.UserTransactionView do
+defmodule VirtualCryptoWeb.Api.V1.UserTransactionView do
   use VirtualCryptoWeb, :view
 
   defp render_error(:not_found_money) do
