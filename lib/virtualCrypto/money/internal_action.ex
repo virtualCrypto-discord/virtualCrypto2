@@ -309,8 +309,8 @@ defmodule VirtualCrypto.Money.InternalAction do
         ) AS increasing_pool_amount,
         (
           CASE
-            WHEN (supplied_amounts.supplied_amount*7+19)/20<35 THEN 35
-            ELSE (supplied_amounts.supplied_amount*7+19)/20
+            WHEN (supplied_amounts.supplied_amount*7+199)/200<35 THEN 35
+            ELSE (supplied_amounts.supplied_amount*7+199)/200
           END
         ) AS pool_amount_limit
       FROM supplied_amounts
