@@ -291,13 +291,38 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   @reset_pool_amount """
+  WITH
+    supplied_amounts AS (
+      SELECT
+        money_id,
+        SUM(amount) as supplied_amount
+      FROM assets GROUP BY money_id
+    ),
+    schedules AS (
+      SELECT
+        money_id,
+        (
+          CASE
+            WHEN (supplied_amounts.supplied_amount+199)/200<5 THEN 5
+            ELSE (supplied_amounts.supplied_amount+199)/200
+          END
+        ) AS increasing_pool_amount,
+        (
+          CASE
+            WHEN (supplied_amounts.supplied_amount*7+199)/200<35 THEN 35
+            ELSE (supplied_amounts.supplied_amount*7+199)/200
+          END
+        ) AS pool_amount_limit
+      FROM supplied_amounts
+    )
   UPDATE info
-  SET pool_amount = (CASE
-    WHEN temp.pool_amount<5 THEN 5
-    ELSE temp.pool_amount
-  END)
-  FROM (SELECT money_id,(SUM(amount)+199)/200 AS pool_amount FROM assets GROUP BY money_id) AS temp
-  WHERE temp.money_id = info.id
+  SET pool_amount =
+    CASE
+      WHEN schedules.increasing_pool_amount+pool_amount>schedules.pool_amount_limit THEN schedules.pool_amount_limit
+      ELSE schedules.increasing_pool_amount+pool_amount
+    END
+  FROM schedules
+  WHERE schedules.money_id = info.id
   ;
   """
   def reset_pool_amount() do
