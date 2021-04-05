@@ -12,7 +12,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
   end
 
   def render_pool_amount(data) do
-    ~s/発行枠: #{data.pool_amount} #{data.unit}(一日一回総発行量の0.5%にリセット)\n/
+    ~s/発行枠: #{data.pool_amount} #{data.unit}(一日一回総発行量の0.5%増加。最大で総発行量の3.5%)\n/
   end
 
   def render_guild(guild) do
