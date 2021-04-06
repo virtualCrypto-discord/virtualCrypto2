@@ -19,19 +19,19 @@ defmodule Command do
   def give do
     %{
       "name" => "give",
-      "description" => "未配布分の通貨を送信します。管理者権限が必要です。",
+      "description" => "発行枠から通過を発行します。管理者権限が必要です。amountを省略した場合は全額が指定されたuserに発行されます。",
       "options" => [
         %{
           "name" => "user",
-          "description" => "送信先のユーザーです。",
+          "description" => "発行先のユーザーです。",
           "type" => 6,
           "required" => true
         },
         %{
           "name" => "amount",
-          "description" => "送信する通貨の量です。",
+          "description" => "発行する通貨の量です。",
           "type" => 4,
-          "required" => true
+          "required" => false
         }
       ]
     }

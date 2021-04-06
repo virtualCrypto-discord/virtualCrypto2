@@ -78,6 +78,15 @@ defmodule VirtualCryptoWeb.CommandHandler do
   end
 
   def handle(
+        "give",
+        %{"user" => _receiver} = m,
+        ctx,
+        conn
+      ) do
+    handle("give", Map.merge(%{"amount" => :all}, m), ctx, conn)
+  end
+
+  def handle(
         "create",
         options,
         %{"guild_id" => guild_id, "member" => %{"user" => user}} = params,
