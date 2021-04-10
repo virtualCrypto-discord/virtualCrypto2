@@ -1,4 +1,4 @@
-defmodule InteractionsControllerTest.Claim.Common do
+defmodule InteractionsControllerTest.Common do
   use VirtualCryptoWeb.InteractionsCase, async: true
 
   test "nothing body nor header", %{conn: conn} do
