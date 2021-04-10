@@ -1,4 +1,6 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
+  import VirtualCryptoWeb.Api.InteractionsView.Util
+
   def render_error() do
     "エラー: 通貨が見つかりませんでした。"
   end
@@ -28,12 +30,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
 
   def render(:error, _, _, _) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
-        tts: false,
         flags: 64,
         content: render_error(),
-        embeds: [],
         allowed_mentions: %{
           parse: []
         }
@@ -43,7 +43,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
 
   def render(:ok, data, user_amount, guild) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content:

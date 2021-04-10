@@ -23,9 +23,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
 
   def render(:ok, {receiver, amount, unit, pool_amount}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
-        tts: false,
         embeds: [
           %{
             "description" =>
@@ -43,7 +42,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
 
   def render(:error, v) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         tts: false,
         flags: 64,
