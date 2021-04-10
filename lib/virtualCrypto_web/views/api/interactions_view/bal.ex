@@ -1,4 +1,6 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Bal do
+  import VirtualCryptoWeb.Api.InteractionsView.Util
+
   def render_line(%{
         asset: %VirtualCrypto.Money.Asset{amount: amount},
         currency: %VirtualCrypto.Money.Info{unit: unit, name: name}
@@ -15,7 +17,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Bal do
 
   def render(params) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: render_content(params)

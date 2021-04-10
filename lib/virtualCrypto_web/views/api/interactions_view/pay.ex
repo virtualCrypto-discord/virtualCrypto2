@@ -19,7 +19,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
 
   def render(:ok, %{unit: unit, receiver: receiver, sender: sender, amount: amount}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         embeds: [
           %{
@@ -37,12 +37,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
 
   def render(:error, err) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
-        tts: false,
         flags: 64,
         content: render_error(err),
-        embeds: [],
         allowed_mentions: %{
           parse: []
         }

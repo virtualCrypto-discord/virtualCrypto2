@@ -43,7 +43,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:ok, "list", sent_claims, received_claims}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content:
@@ -56,7 +56,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:ok, "make", claim}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: ~s/請求id: #{claim.id} で請求を受け付けました。`\/claim list`でご確認ください。/
@@ -66,7 +66,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:ok, "approve", claim}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: ~s/id: #{claim.id}の請求を承諾し、支払いました。/
@@ -76,7 +76,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:ok, "deny", claim}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: ~s/id: #{claim.id}の請求を拒否しました。/
@@ -86,7 +86,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:ok, "cancel", claim}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: ~s/id: #{claim.id}の請求をキャンセルしました。/
@@ -96,7 +96,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   def render({:error, _, error}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content: ~s/エラー: #{render_error(error)}/

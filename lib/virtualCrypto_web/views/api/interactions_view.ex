@@ -1,10 +1,11 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView do
   use VirtualCryptoWeb, :view
   alias VirtualCryptoWeb.Api.InteractionsView, as: InteractionsView
+  import VirtualCryptoWeb.Api.InteractionsView.Util
 
   def render("pong.json", _) do
     %{
-      type: 1
+      type: pong()
     }
   end
 
@@ -32,7 +33,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
 
   def render("help.json", %{params: {bot_invite_url, guild_invite_url, site_url}}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content:
@@ -48,7 +49,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
 
   def render("invite.json", %{params: {bot_invite_url, guild_invite_url}}) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         flags: 64,
         content:

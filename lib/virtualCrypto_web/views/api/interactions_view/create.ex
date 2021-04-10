@@ -1,4 +1,6 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
+  import VirtualCryptoWeb.Api.InteractionsView.Util
+
   defp render_error(:guild, _) do
     "このギルドではすでに通貨が作成されています。"
   end
@@ -29,7 +31,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
 
   def render(:ok, :ok, options) do
     %{
-      type: 4,
+      type: channel_message_with_source(),
       data: %{
         embeds: [
           %{
@@ -47,7 +49,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
 
   def render(:error, reason, options) do
     %{
-      type: 3,
+      type: channel_message_with_source(),
       data: %{
         tts: false,
         flags: 64,
