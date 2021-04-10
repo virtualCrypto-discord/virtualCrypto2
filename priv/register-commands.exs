@@ -197,7 +197,17 @@ defmodule Command do
       ]
     }
   end
+  def post_command(url,command,headers) do
+    {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
+    IO.inspect({command["name"],r.status_code})
+    if r.status_code == 429 do
+      {_,retry_after} = r.headers|>Enum.find(fn {k,_v}->k=="retry-after" end)
+      IO.inspect("retrying after #{retry_after} sec")
+      Process.sleep(String.to_integer(retry_after)*1000)
 
+      post_command(url,command,headers)
+    end
+  end
   def post_all(url) do
     HTTPoison.start()
 
@@ -210,10 +220,7 @@ defmodule Command do
     commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
 
     commands
-    |> Enum.each(fn command ->
-      {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
-      IO.inspect({Jason.decode!(r.body)["name"],r.status_code})
-    end)
+    |> Enum.each(fn command -> post_command(url,command,headers) end)
   end
 end
 url = case System.argv() do
