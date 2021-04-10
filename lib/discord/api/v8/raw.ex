@@ -21,14 +21,6 @@ defmodule Discord.Api.V8.Raw do
   end
 
   @impl Behavior
-  def get_guild_members(guild_id, limit \\ 1000) do
-    {:ok, response} =
-      get(["guilds", to_string(guild_id), "members"], [{"limit", to_string(limit)}])
-
-    Jason.decode!(response.body)
-  end
-
-  @impl Behavior
   def get_guild_member_with_status_code(guild_id, user_id) do
     {:ok, response} = get(["guilds", to_string(guild_id), "members", to_string(user_id)], [])
     {response.status_code, Jason.decode!(response.body)}
