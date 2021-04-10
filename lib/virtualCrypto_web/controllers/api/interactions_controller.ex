@@ -59,9 +59,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       _ ->
         case encoded_signature |> Base.decode16(case: :lower) do
           {:ok, signature} ->
-
             body = hd(conn.assigns.raw_body)
             message = timestamp <> body
+
             :public_key.verify(
               message,
               :none,
@@ -70,7 +70,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
             )
 
           :error ->
-
             false
         end
     end

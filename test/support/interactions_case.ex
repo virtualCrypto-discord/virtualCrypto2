@@ -33,6 +33,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
 
       def post_command(conn, body) do
         body = Jason.encode!(body)
+
         conn
         |> Plug.Conn.put_req_header("content-type", "application/json")
         |> sign_request(body)
