@@ -119,11 +119,8 @@ defmodule VirtualCrypto.Money do
              guild
            )
          end)
-         |> Multi.run(:info, fn _, _ ->
-           {:ok, Action.get_money_by_guild_id(guild)}
-         end)
          |> Repo.transaction() do
-      {:ok, %{info: info}} -> {:ok, info}
+      {:ok, %{give: m}} -> {:ok, m}
       {:error, :give, :not_found_money, _} -> {:error, :not_found_money}
       {:error, :give, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
       {:error, :give, :not_enough_amount, _} -> {:error, :not_enough_amount}

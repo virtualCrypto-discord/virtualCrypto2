@@ -418,7 +418,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     with money <- get_money_by_guild_id_with_lock(guild_id),
          # Is money exits?
          {:money, true} <- {:money, money != nil},
-         amount <- money.pool_amount,
+         {:pool_amount, amount} when amount > 0 <- {:pool_amount, money.pool_amount},
          # Insert reciver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Update reciver amount.
@@ -432,9 +432,10 @@ defmodule VirtualCrypto.Money.InternalAction do
              time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
              receiver_id: receiver_id
            }) do
-      {:ok, %{amount: amount, currency: money}}
+      {:ok, %{amount: amount, currency: %{money | pool_amount: money.pool_amount - amount}}}
     else
       {:money, false} -> {:error, :not_found_money}
+      {:pool_amount, _} -> {:error, :not_enough_amount}
       err -> {:error, err}
     end
   end
