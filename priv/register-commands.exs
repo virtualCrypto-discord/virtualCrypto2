@@ -197,6 +197,7 @@ defmodule Command do
       ]
     }
   end
+
   def post_command(url,command,headers) do
     {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
     IO.inspect({command["name"],r.status_code})
@@ -208,6 +209,7 @@ defmodule Command do
       post_command(url,command,headers)
     end
   end
+
   def post_all(url) do
     HTTPoison.start()
 
@@ -223,6 +225,7 @@ defmodule Command do
     |> Enum.each(fn command -> post_command(url,command,headers) end)
   end
 end
+
 url = case System.argv() do
   [] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/commands"
   [guild] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
