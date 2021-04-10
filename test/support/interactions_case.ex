@@ -23,13 +23,24 @@ defmodule VirtualCryptoWeb.InteractionsCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import VirtualCryptoWeb.InteractionsCase
-      import VirtualCryptoWeb.EnviromentBootstrapper
+      import VirtualCryptoWeb.EnvironmentBootstrapper
       import VirtualCryptoWeb.ConditionChecker
 
       alias VirtualCryptoWeb.Router.Helpers, as: Routes
       alias VirtualCrypto.Repo
       # The default endpoint for testing
       @endpoint VirtualCryptoWeb.Endpoint
+
+      def post_command(conn, body) do
+        body = Jason.encode!(body)
+        conn
+        |> Plug.Conn.put_req_header("content-type", "application/json")
+        |> sign_request(body)
+        |> Phoenix.ConnTest.post(
+          "/api/integrations/discord/interactions",
+          body
+        )
+      end
     end
   end
 

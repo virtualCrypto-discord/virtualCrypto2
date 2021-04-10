@@ -23,7 +23,7 @@ defmodule VirtualCryptoWeb.RestCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import VirtualCryptoWeb.RestCase
-      import VirtualCryptoWeb.EnviromentBootstrapper
+      import VirtualCryptoWeb.EnvironmentBootstrapper
       import VirtualCryptoWeb.ConditionChecker
 
       alias VirtualCryptoWeb.Router.Helpers, as: Routes
