@@ -70,4 +70,4 @@ header_buttons model =
 
 header_button : String -> String -> Html msg
 header_button url text_ =
-    a [ href url, class "button is-info mx-3 is-light" ] [ text text_ ]
+    a [ href url, class "button is-info mx-3 is-light mb-2" ] [ text text_ ]
