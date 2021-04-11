@@ -27,17 +27,15 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
 
   defp parse_options(options) do
     options
-    |> Enum.map(fn option ->
-      case option do
-        %{"name" => name, "options" => options_} ->
-          [{"subcommand", name}, {"sub_options", parse_options(options_)}]
+    |> Enum.map(fn
+      %{"name" => name, "options" => options} ->
+        [{"subcommand", name}, {"sub_options", parse_options(options)}]
 
-        %{"name" => name, "value" => value} ->
-          {name, value}
+      %{"name" => name, "value" => value} ->
+        {name, value}
 
-        %{"name" => name} ->
-          {"subcommand", name}
-      end
+      %{"name" => name} ->
+        {"subcommand", name}
     end)
     |> List.flatten()
     |> Map.new()
