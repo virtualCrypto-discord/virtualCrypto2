@@ -173,14 +173,14 @@ userView : Model -> Html Msg
 userView model =
     case model.userData of
         Just data ->
-            div [style "width" "250px"]
+            div [class "sidebar-userinfo"]
                 [ figure [class "image is-128x128 sidebar-avatar"]
                     [ img [class "is-rounded", src <| avatarURL data] []
                     ]
                 , p [class "has-text-weight-bold normal-text has-text-centered is-size-4 mb-5"] [text <| data.discord.username ++ "#" ++ data.discord.discriminator]
                 ]
         _ ->
-            div []
+            div [class "sidebar-userinfo"]
                 [ figure [class "image is-128x128 sidebar-avatar"]
                     [ img [class "is-rounded", src "https://cdn.discordapp.com/embed/avatars/0.png?size=128"] []
                     ]
