@@ -26,12 +26,12 @@ defmodule ClaimControllerTest.V2 do
        }) do
     assert to_integer(claim["amount"]) == amount
     assert claim["status"] == status
-    verfiy_user(claim["claimant"], claimant)
-    verfiy_user(claim["payer"], payer)
+    verify_user(claim["claimant"], claimant)
+    verify_user(claim["payer"], payer)
     verify_currency(claim["currency"], currency)
   end
 
-  defp verfiy_user(user, user_) do
+  defp verify_user(user, user_) do
     if Map.get(user_, :id) != nil do
       assert user["id"] == user_.id
     else
