@@ -307,10 +307,11 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def approve_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: "pending", amount: amount}, info, claimant, payer}} <-
+           with {:get_claim, {%{status: status, amount: amount}, info, claimant, payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(payer, user_id)},
+                {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
                     payer.id,
@@ -325,12 +326,11 @@ defmodule VirtualCrypto.Money do
              {:get_claim, {:error, :not_found}} ->
                Repo.rollback(:not_found)
 
-             {:get_claim, {%{status: status}, _info, _claimant, _payer}}
-             when status != "pending" ->
-               Repo.rollback(:invalid_status)
-
              {:validate_operator, _} ->
                Repo.rollback(:invalid_operator)
+
+             {:status, _} ->
+               Repo.rollback(:invalid_status)
 
              {:error, :not_found} ->
                Repo.rollback(:not_found)
@@ -352,8 +352,9 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def cancel_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: "pending"}, info, claimant, payer}} <-
+           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
+                {:status, "pending"} <- {:status, status},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(claimant, user_id)},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
@@ -362,8 +363,7 @@ defmodule VirtualCrypto.Money do
              {:get_claim, {:error, :not_found}} ->
                Repo.rollback(:not_found)
 
-             {:get_claim, {%{status: status}, _info, _claimant, _payer}}
-             when status != "pending" ->
+             {:status, _} ->
                Repo.rollback(:invalid_status)
 
              {:validate_operator, _} ->
@@ -386,18 +386,18 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def deny_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: "pending"}, info, claimant, payer}} <-
+           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(payer, user_id)},
+                {:status, "pending"} <- {:status, status},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
              {claim, info, claimant, payer}
            else
              {:get_claim, {:error, :not_found}} ->
                Repo.rollback(:not_found)
 
-             {:get_claim, {%{status: status}, _info, _claimant, _payer}}
-             when status != "pending" ->
+             {:status, _} ->
                Repo.rollback(:invalid_status)
 
              {:validate_operator, _} ->
