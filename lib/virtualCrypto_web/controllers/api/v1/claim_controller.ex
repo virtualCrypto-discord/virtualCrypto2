@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
-  alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
+  alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
   defp get_discord_user(discord_user_id, service) do

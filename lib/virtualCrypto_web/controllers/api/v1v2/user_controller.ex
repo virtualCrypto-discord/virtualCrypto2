@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.Api.V1V2.UserController do
   use VirtualCryptoWeb, :controller
-  alias VirtualCryptoWeb.Filtering.Disocrd, as: Filtering
+  alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
 
   def me(conn, _params) do
     case Guardian.Plug.current_token(conn) do

@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Filtering.Disocrd do
+defmodule VirtualCryptoWeb.Filtering.Discord do
   def user(user) do
     Map.take(user, [
       "id",
