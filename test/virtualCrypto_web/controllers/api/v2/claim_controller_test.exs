@@ -3,7 +3,7 @@ defmodule ClaimControllerTest.V2 do
   import Enum, only: [at: 2]
   import String, only: [to_integer: 1]
 
-  defmodule TestDiscordAPi do
+  defmodule TestDiscordAPI do
     # @behaviour Discord.Api.Behavior
 
     def get_user(user_id) do
@@ -14,7 +14,7 @@ defmodule ClaimControllerTest.V2 do
   setup :setup_claim
 
   setup %{conn: conn} = d do
-    Map.put(d, :conn, VirtualCryptoWeb.Plug.DiscordApiService.set_service(conn, TestDiscordAPi))
+    Map.put(d, :conn, VirtualCryptoWeb.Plug.DiscordApiService.set_service(conn, TestDiscordAPI))
   end
 
   defp verify_claim(claim, %{
