@@ -243,6 +243,4 @@ defmodule VirtualCryptoWeb.CommandHandler do
     end
   end
 
-  def handle(_, _, _, _conn) do
-  end
 end
