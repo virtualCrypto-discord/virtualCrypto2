@@ -129,6 +129,10 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     Map.put(d, :claims, [c1, c2, c3, c4, c5, c6])
   end
 
+  def approved_claim(claims), do: claims |> Enum.at(2)
+  def denied_claim(claims), do: claims |> Enum.at(3)
+  def canceled_claim(claims), do: claims |> Enum.at(4)
+
   def set_user_auth(conn, kind, uid, scopes) do
     {:ok, conn} =
       case {kind, uid, scopes} do

@@ -118,7 +118,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(2) |> elem(0)).id, user2)
+        patch_from_guild("approve", (claims |> approved_claim() |> elem(0)).id, user2)
       )
 
     assert %{
@@ -135,7 +135,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(2) |> elem(0)).id, -1)
+        patch_from_guild("approve", (claims |> approved_claim() |> elem(0)).id, -1)
       )
 
     assert %{
@@ -152,7 +152,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(3) |> elem(0)).id, user2)
+        patch_from_guild("approve", (claims |> denied_claim() |> elem(0)).id, user2)
       )
 
     assert %{
@@ -169,7 +169,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(3) |> elem(0)).id, -1)
+        patch_from_guild("approve", (claims |> denied_claim() |> elem(0)).id, -1)
       )
 
     assert %{
@@ -186,7 +186,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(4) |> elem(0)).id, user2)
+        patch_from_guild("approve", (claims |> canceled_claim() |> elem(0)).id, user2)
       )
 
     assert %{
@@ -203,7 +203,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(4) |> elem(0)).id, -1)
+        patch_from_guild("approve", (claims |> canceled_claim() |> elem(0)).id, -1)
       )
 
     assert %{

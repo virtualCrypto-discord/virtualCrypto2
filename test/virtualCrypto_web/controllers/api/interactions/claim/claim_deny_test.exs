@@ -54,7 +54,7 @@ defmodule InteractionsControllerTest.Claim.Deny do
     conn =
       post_command(
         conn,
-        patch_from_guild("deny", (claims |> at(2) |> elem(0)).id, user2)
+        patch_from_guild("deny", (claims |> approved_claim() |> elem(0)).id, user2)
       )
 
     assert %{
@@ -71,7 +71,7 @@ defmodule InteractionsControllerTest.Claim.Deny do
     conn =
       post_command(
         conn,
-        patch_from_guild("deny", (claims |> at(3) |> elem(0)).id, user2)
+        patch_from_guild("deny", (claims |> denied_claim() |> elem(0)).id, user2)
       )
 
     assert %{
@@ -88,7 +88,7 @@ defmodule InteractionsControllerTest.Claim.Deny do
     conn =
       post_command(
         conn,
-        patch_from_guild("deny", (claims |> at(4) |> elem(0)).id, user2)
+        patch_from_guild("deny", (claims |> canceled_claim() |> elem(0)).id, user2)
       )
 
     assert %{
