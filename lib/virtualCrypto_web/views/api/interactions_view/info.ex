@@ -19,7 +19,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
 
   def render_guild(guild) do
     case guild do
-      nil -> "不明\n"
+      nil -> "発行元サーバーの情報の取得に失敗しました。\n"
       guild -> ~s/発行元サーバー: #{guild["name"]}\n/
     end
   end
