@@ -42,9 +42,11 @@ defmodule Discord.Api.V8.Raw do
 
   @impl Behavior
   def get_guild(guild_id, with_counts \\ false) do
-    {200, body} = get_guild_with_status_code(guild_id, with_counts)
-
-    body
+    # FIXME: First aid
+    case get_guild_with_status_code(guild_id, with_counts) do
+      {200, body} -> body
+      _ -> nil
+    end
   end
 
   @impl Behavior
