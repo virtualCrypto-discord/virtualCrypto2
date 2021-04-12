@@ -64,7 +64,7 @@ defmodule VirtualCrypto.Money.InternalAction do
              on: currencies.id == assets.money_id,
              where: assets.user_id == ^sender_id and currencies.unit in ^units,
              select: {assets.id, currencies.id, currencies.unit, assets.amount},
-             lock: fragment("FOR UPDATE OF ?",assets)
+             lock: fragment("FOR UPDATE OF ?", assets)
            ),
          aid_sender_currency_id_unit_amount <- Repo.all(q),
          sender_currency_id_amount_pair <-
