@@ -27,10 +27,4 @@ defmodule InteractionsControllerTest.Claim.Patch do
       }
     }
   end
-
-
-
-
-
-
 end
