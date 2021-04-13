@@ -62,6 +62,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
 
         assert_discord_message(conn, "エラー: この請求に対してこの操作を行う権限がありません。")
       end
+
       def test_invalid_status(conn, action, claim, user) do
         conn =
           post_command(
@@ -82,13 +83,6 @@ defmodule VirtualCryptoWeb.InteractionsCase do
     end
 
     conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("accept", "application/json")
-
-    conn =
-      if tags[:ctype] == :json do
-        conn |> Plug.Conn.put_req_header("content-type", "application/json")
-      else
-        conn
-      end
 
     {:ok,
      %{
