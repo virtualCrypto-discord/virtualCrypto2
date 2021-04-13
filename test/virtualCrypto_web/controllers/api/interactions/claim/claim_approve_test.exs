@@ -4,19 +4,6 @@ defmodule InteractionsControllerTest.Claim.Approve do
   import InteractionsControllerTest.Claim.Patch
   setup :setup_claim
 
-  test "approve pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> at(0) |> elem(0)).id, user1)
-      )
-
-    assert %{
-             "data" => %{"content" => "エラー: この請求に対してこの操作を行う権限がありません。", "flags" => 64},
-             "type" => 4
-           } = json_response(conn, 200)
-  end
-
   test "approve pending claim by payer", %{
     conn: conn,
     claims: claims,
@@ -72,17 +59,12 @@ defmodule InteractionsControllerTest.Claim.Approve do
     assert after_payer == nil || before_payer.asset.amount - 500 == after_payer.asset.amount
   end
 
-  test "approve pending claim by not related user", %{conn: conn, claims: claims} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> at(0) |> elem(0)).id, -1)
-      )
+  test "approve pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
+    test_invalid_operator(conn, "approve", claims |> at(0) |> elem(0), user1)
+  end
 
-    assert %{
-             "data" => %{"content" => "エラー: この請求に対してこの操作を行う権限がありません。", "flags" => 64},
-             "type" => 4
-           } = json_response(conn, 200)
+  test "approve pending claim by not related user", %{conn: conn, claims: claims} do
+    test_invalid_operator(conn, "approve", claims |> at(0) |> elem(0), -1)
   end
 
   test "approve claim by payer but not_enough_amount",
@@ -93,125 +75,66 @@ defmodule InteractionsControllerTest.Claim.Approve do
         patch_from_guild("approve", (claims |> at(1) |> elem(0)).id, user1)
       )
 
-    assert %{"data" => %{"content" => "エラー: お金が足りません。", "flags" => 64}, "type" => 4} =
-             json_response(conn, 200)
+    assert_discord_message(conn, "エラー: お金が足りません。")
+  end
+
+  test "approve pending claim by claimant not_enough_amount", %{
+    conn: conn,
+    claims: claims,
+    user2: user2
+  } do
+    test_invalid_operator(conn, "approve", claims |> at(1) |> elem(0), user2)
   end
 
   test "approve pending claim by not related user not_enough_amount", %{
     conn: conn,
     claims: claims
   } do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> at(1) |> elem(0)).id, -1)
-      )
-
-    assert %{
-             "data" => %{"content" => "エラー: この請求に対してこの操作を行う権限がありません。", "flags" => 64},
-             "type" => 4
-           } = json_response(conn, 200)
+    test_invalid_operator(conn, "approve", claims |> at(1) |> elem(0), -1)
   end
 
-  test "approve approved claim",
+  test "approve approved claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> approved_claim() |> elem(0)).id, user2)
-      )
+    test_invalid_status(conn, "approve", claims |> approved_claim() |> elem(0), user2)
+  end
 
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行うことは出来ません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+  test "approve approved claim by claimant",
+       %{conn: conn, claims: claims, user1: user1} do
+    test_invalid_operator(conn, "approve", claims |> approved_claim() |> elem(0), user1)
   end
 
   test "approve approved claim by not related user",
        %{conn: conn, claims: claims} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> approved_claim() |> elem(0)).id, -1)
-      )
-
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行う権限がありません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+    test_invalid_operator(conn, "approve", claims |> approved_claim() |> elem(0), -1)
   end
 
-  test "approve denied claim",
+  test "approve denied claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> denied_claim() |> elem(0)).id, user2)
-      )
+    test_invalid_status(conn, "approve", claims |> denied_claim() |> elem(0), user2)
+  end
 
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行うことは出来ません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+  test "approve denied claim by claimant",
+       %{conn: conn, claims: claims, user1: user1} do
+    test_invalid_operator(conn, "approve", claims |> denied_claim() |> elem(0), user1)
   end
 
   test "approve denied claim by not related user",
        %{conn: conn, claims: claims} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> denied_claim() |> elem(0)).id, -1)
-      )
-
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行う権限がありません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+    test_invalid_operator(conn, "approve", claims |> denied_claim() |> elem(0), -1)
   end
 
-  test "approve canceled claim",
+  test "approve canceled claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> canceled_claim() |> elem(0)).id, user2)
-      )
+    test_invalid_status(conn, "approve", claims |> canceled_claim() |> elem(0), user2)
+  end
 
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行うことは出来ません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+  test "approve canceled claim by claimant",
+       %{conn: conn, claims: claims, user1: user1} do
+    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> elem(0), user1)
   end
 
   test "approve canceled claim by not related user",
        %{conn: conn, claims: claims} do
-    conn =
-      post_command(
-        conn,
-        patch_from_guild("approve", (claims |> canceled_claim() |> elem(0)).id, -1)
-      )
-
-    assert %{
-             "data" => %{
-               "content" => "エラー: この請求に対してこの操作を行う権限がありません。",
-               "flags" => 64
-             },
-             "type" => 4
-           } = json_response(conn, 200)
+    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> elem(0), -1)
   end
 end
