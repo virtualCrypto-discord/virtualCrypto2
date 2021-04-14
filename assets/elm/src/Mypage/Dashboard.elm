@@ -100,77 +100,87 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "column" ]
-        [ userInfo model
-        , div [ class "columns" ]
-            [ div [ class "column is-two-fifths" ]
-                (case model.balances of
-                    Value balances ->
-                        [ div [ class "has-text-weight-bold is-size-3 ml-2 my-3" ] [ text "所持通貨" ]
-                        , balances |> filterDataWithPage model.page |> List.map balanceView |> div []
-                        , nav [ class "pagination" ]
-                            [ if model.page /= 0 then
-                                a [ onClick Previous, class "pagination-previous" ] [ text "前ページ" ]
-
-                              else
-                                text ""
-                            , if model.page /= getMaxPage balances then
-                                a [ onClick Next, class "pagination-next" ] [ text "次ページ" ]
-
-                              else
-                                text ""
-                            ]
-                        ]
-
-                    Pending ->
-                        [ div [ class "is-size-2 mx-5" ] [ text "Loading..." ] ]
-
-                    Failed ->
-                        [ div [ class "is-size-2 mx-5" ] [ text "Failed..." ] ]
-                )
-            ]
-        , UserOperation.view model.user_operation_model |> Html.map UserOperationMsg
+    div [class "items"]
+        [ topItem model
+        , centerItem model
+        , bottomItem model
         ]
 
 
-userInfo : Model -> Html Msg
-userInfo model =
-    div [ class "columns" ]
-        [ div [ class "column is-2" ]
-            [ img
-                [ class "circle"
-                , src
-                    (Maybe.withDefault "https://cdn.discordapp.com/embed/avatars/0.png?size=128"
-                        (Maybe.map avatarURL
-                            (case model.userData of
-                                Value d ->
-                                    Just d
-
-                                _ ->
-                                    Nothing
-                            )
-                        )
-                    )
-                , height 100
-                , width 100
+topItem : Model -> Html Msg
+topItem model =
+    div [class "top-item"]
+        [ div [class "coin-info-list"]
+            [ div [class "coin-info"]
+                [ div [class "coin-info-title"] [text "VCoin"]
+                , div [class "coin-info-value"] [text "12003v"]
                 ]
-                []
-            ]
-        , div [ class "column" ]
-            [ div [ class "has-text-weight-bold is-size-3 mt-5" ]
-                (Maybe.withDefault []
-                    (Maybe.map
-                        (\discordUserData -> [ text ("こんにちは、" ++ discordUserData.username ++ "#" ++ discordUserData.discriminator ++ " さん") ])
-                        (case model.userData of
-                            Value d ->
-                                Just d.discord
+            , div [class "coin-info"]
+                [ div [class "coin-info-title"] [text "VCoin"]
+                , div [class "coin-info-value"] [text "12003v"]
+                ]
+            , div [class "coin-info"]
+                [ div [class "coin-info-title"] [text "VCoin"]
+                , div [class "coin-info-value"] [text "12003v"]
+                ]
+            , div [class "coin-info"]
+                [ div [class "coin-info-title"] [text "VCoin"]
+                , div [class "coin-info-value"] [text "12003v"]
+                ]
 
-                            _ ->
-                                Nothing
-                        )
-                    )
-                )
             ]
+        , button [] [text "さらに見る"]
+        ]
+
+centerItem : Model -> Html Msg
+centerItem model =
+    div [class "center-item"]
+        [ div [class "left-item"]
+            [ header []
+                [ div [class "my-tabs"]
+                    [ ul []
+                        [ li [class "is-selected"] [a [class "is-selected"] [text "もらった請求"]]
+                        , li [] [a [] [text "自分の請求"]]
+                        ]
+                    ]
+                , button [] [text "さらに見る"]
+                ]
+            , div [class "scroll-table"]
+                [ table []
+                    [ tr []
+                        [ th [] [text "ID"]
+                        , th [] [text "ユーザー"]
+                        , th [] [text "通貨の種類"]
+                        , th [] [text "数量"]
+                        , th [] [text "日時"]
+                        ]
+                    , demodata
+                    , demodata
+                    , demodata
+                    , demodata
+                    , demodata
+                    , demodata
+                    ]
+                ]
+            ]
+        , div [class "right-item"] []
+        ]
+
+demodata : Html Msg
+demodata =
+    tr []
+        [ td [] [text "value1"]
+        , td [] [text "value2"]
+        , td [] [text "value3"]
+        , td [] [text "value4"]
+        , td [] [text "value5"]
+        ]
+
+bottomItem : Model ->  Html Msg
+bottomItem model =
+    div [class "bottom-item"]
+        [ div [class "left-item"] []
+        , div [class "right-item"] []
         ]
 
 
@@ -181,19 +191,7 @@ filterDataWithPage page data =
 
 balanceView : Balance -> Html Msg
 balanceView balance =
-    div [ class "card my-3" ]
-        [ div [ class "card-content" ]
-            [ div [ class "media" ]
-                [ div [ class "media-left has-text-weight-bold" ] [ text balance.currency.name ]
-                , div [ class "media-content mr-2" ] [ boldText balance.amount, unitText balance.currency.unit ]
-                ]
-            ]
-        , footer [ class "card-footer" ]
-            [ div [ class "card-footer-item" ] [ text "詳細" ]
-            , div [ class "card-footer-item" ] [ text "取引履歴" ]
-            , UserOperation.pay_card_footer "送金" "" "" balance.currency.unit |> Html.map UserOperationMsg
-            ]
-        ]
+    text "abc"
 
 
 boldText : String -> Html Msg

@@ -1,5 +1,9 @@
 /* This file is for your main application css. */
 //@import "./phoenix.css";
+
+@import "./mypage/mypage";
+@import "./mypage/dashboard";
+
 $info: rgba(98, 33, 237, 1);
 
 $menu-item-radius: 20px;
@@ -56,4 +60,19 @@ $menu-item-active-color: rgba(98, 33, 237, 0.8);
 
 .my-card {
   border: rgba(98, 33, 237, 0.6);
+}
+
+.header-button {
+  text-decoration: none;
+  color: #9063F0;
+}
+
+body {
+  width: 100vw;
+  min-height: 100vh;
+  background: #F0F3F9;
+}
+
+.my-header {
+  background: #F0F3F9;
 }

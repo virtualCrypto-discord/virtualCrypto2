@@ -40,10 +40,10 @@ subscriptions _ =
 
 view : Model -> Html msg
 view model =
-    div [ class "navbar mt-1 mx-2" ]
+    div [ class "navbar mx-2 my-header" ]
         [ div [ class "navbar-bland" ]
             [ span [ class "navbar-item" ]
-                [ a [ href "/", class "has-text-info is-size-3" ] [ text "VirtualCrypto" ]
+                [ a [ href "/", class "has-text-info is-size-4" ] [ text "VirtualCrypto" ]
                 ]
             ]
         , div [ class "navbar-end" ]
@@ -54,7 +54,7 @@ view model =
 
 header_buttons : Model -> Html msg
 header_buttons model =
-    div [ class "navbar-item" ]
+    div [ class "navbar-item mr-6" ]
         [ header_button "/invite" "Botの招待"
         , header_button "/support" "サポートサーバー"
         , header_button "/document" "ドキュメント"

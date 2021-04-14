@@ -1,0 +1,208 @@
+$table-cell-heading-color: #8C8C8C;
+
+.view-more-button {
+  width: 106px;
+  height: 36px;
+  border-radius: 5px;
+  background: #E1E7F8;
+  outline: none;
+  cursor: pointer;
+  border: none;
+  color: #9063F0;
+  margin-top: 5px;
+  margin-right: 3px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+
+.items {
+  margin-bottom: 50px;
+}
+
+.top-item {
+  border-radius: 13px;
+  width: calc(100vw - 330px - 85px);
+  min-height: 202px;
+  background: white;
+  margin-top: 12px;
+  padding-top: 30px;
+  padding-left: 22px;
+  padding-right: 14px;
+  text-align: right;
+}
+
+.top-item button {
+  @extend .view-more-button
+}
+
+
+.top-item .coin-info-list {
+  display: grid;
+  grid-gap: 19px;
+  overflow: hidden;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.coin-info-list .coin-info {
+  width: 230px;
+  height: 120px;
+  border-radius: 5px;
+  background: #F0F3F9;
+}
+
+.coin-info-title {
+  margin-left: 20px;
+  margin-top: 13px;
+  color: #8C8C8C;
+  font-size: 16px;
+  text-align: left;
+}
+
+.coin-info-value {
+  color: #001959;
+  font-size: 36px;
+  margin-left: 20px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.center-item {
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100vw - 330px - 84px);
+}
+
+.center-item .left-item {
+  width: 661px;
+  min-height: 361px;
+  background: white;
+  margin-right: 25px;
+  margin-top: 26px;
+  border-radius: 13px;
+  padding-top: 15px;
+  padding-left: 15px;
+  padding-right: 20px;
+}
+
+.center-item .left-item header {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.center-item .left-item header button {
+  @extend .view-more-button;
+  margin: 0 0 0 auto;
+}
+
+.my-tabs {
+  -webkit-overflow-scrolling: touch;
+  align-items: stretch;
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.my-tabs ul {
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  border: none;
+}
+
+.my-tabs li {
+  display: block;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+.my-tabs li.is-selected {
+  border-bottom-color: #1BC922;
+  border-bottom-width: 2px;
+}
+
+.my-tabs a {
+  align-items: center;
+  color: #001959;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  margin-bottom: -1px;
+  padding: 0.5em 1em;
+}
+
+.center-item .right-item {
+  width: 337px;
+  min-height: 361px;
+  background: white;
+  margin-top: 26px;
+  border-radius: 13px;
+}
+
+.bottom-item {
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100vw - 330px - 84px);
+}
+
+.bottom-item .left-item {
+  width: 661px;
+  min-height: 297px;
+  background: white;
+  margin-right: 25px;
+  margin-top: 26px;
+  border-radius: 13px;
+}
+
+.bottom-item .right-item {
+  width: 337px;
+  min-height: 297px;
+  background: white;
+  margin-top: 26px;
+  border-radius: 13px;
+}
+
+table {
+  margin-top: 20px;
+  margin-left: 2px;
+}
+
+table tr th {
+  color: $table-cell-heading-color;
+  font-size: 10px;
+  padding-right: 10em;
+}
+
+table tr {
+  margin-top: 4px;
+}
+
+table td {
+  font-size: 13px;
+  font-weight: 500;
+  color: #001959;
+  padding-top: 1.7em;
+}
+
+.scroll-table {
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100vw - 330px - 84px);
+}
+
+.scroll-table table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 50, .5);
+  border-radius: 10px;
+  box-shadow:0 0 0 1px rgba(255, 255, 255, .3);
+}
