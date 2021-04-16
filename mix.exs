@@ -10,7 +10,9 @@ defmodule VirtualCrypto.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: ["coveralls.html": :test]
     ]
   end
 
@@ -49,13 +51,13 @@ defmodule VirtualCrypto.MixProject do
       {:ecto_psql_extras, "~> 0.2"},
       {:oauth2, "~> 2.0"},
       {:guardian, "~> 2.0"},
-      {:earmark, "~> 1.4.13"},
       {:quantum, "~> 3.0"},
       {:ex_url, "~> 1.3"},
       {:cachex, "~> 3.3"},
       {:phoenix_live_view, "~> 0.15.4"},
       {:elixir_uuid, "~> 1.2"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:excoveralls, "~> 0.3", only: :test}
     ]
   end
 
