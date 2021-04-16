@@ -354,9 +354,9 @@ defmodule VirtualCrypto.Money do
     case Repo.transaction(fn ->
            with {:get_claim, {%{status: status}, info, claimant, payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
-                {:status, "pending"} <- {:status, status},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(claimant, user_id)},
+                {:status, "pending"} <- {:status, status},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
              {claim, info, claimant, payer}
            else
