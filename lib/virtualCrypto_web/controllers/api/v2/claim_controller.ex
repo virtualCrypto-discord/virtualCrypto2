@@ -33,8 +33,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
         "discord" =>
           if(payer.discord_id != nil, do: get_discord_user(payer.discord_id, service), else: nil)
       },
-      "created_at" => claim.inserted_at,
-      "updated_at" => claim.updated_at,
+      "created_at" => DateTime.from_naive!(claim.inserted_at, "Etc/UTC"),
+      "updated_at" => DateTime.from_naive!(claim.updated_at, "Etc/UTC"),
       "status" => claim.status
     }
   end
