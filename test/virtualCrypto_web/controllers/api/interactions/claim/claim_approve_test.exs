@@ -137,4 +137,15 @@ defmodule InteractionsControllerTest.Claim.Approve do
        %{conn: conn, claims: claims} do
     test_invalid_operator(conn, "approve", claims |> canceled_claim() |> elem(0), -1)
   end
+
+  test "approve invalid id claim",
+       %{conn: conn, claims: claims, user1: user1} do
+    conn =
+      post_command(
+        conn,
+        patch_from_guild("approve", -1, user1)
+      )
+
+    assert_discord_message(conn, "エラー: そのidの請求は見つかりませんでした。")
+  end
 end

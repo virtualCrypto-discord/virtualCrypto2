@@ -75,4 +75,15 @@ defmodule InteractionsControllerTest.Claim.Deny do
        %{conn: conn, claims: claims} do
     test_invalid_operator(conn, "deny", claims |> canceled_claim() |> elem(0), -1)
   end
+
+  test "deny invalid id claim",
+       %{conn: conn, claims: claims, user1: user1} do
+    conn =
+      post_command(
+        conn,
+        patch_from_guild("deny", -1, user1)
+      )
+
+    assert_discord_message(conn, "エラー: そのidの請求は見つかりませんでした。")
+  end
 end

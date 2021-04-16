@@ -323,7 +323,7 @@ defmodule VirtualCrypto.Money do
                   VirtualCrypto.Money.InternalAction.approve_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_claim, {:error, :not_found}} ->
+             {:get_claim, _} ->
                Repo.rollback(:not_found)
 
              {:validate_operator, _} ->
@@ -360,7 +360,7 @@ defmodule VirtualCrypto.Money do
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_claim, {:error, :not_found}} ->
+             {:get_claim, _} ->
                Repo.rollback(:not_found)
 
              {:status, _} ->
@@ -394,7 +394,7 @@ defmodule VirtualCrypto.Money do
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_claim, {:error, :not_found}} ->
+             {:get_claim, _} ->
                Repo.rollback(:not_found)
 
              {:status, _} ->

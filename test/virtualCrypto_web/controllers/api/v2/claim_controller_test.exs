@@ -501,6 +501,20 @@ defmodule ClaimControllerTest.V2 do
     assert res == %{"error" => "conflict", "error_info" => "not_enough_amount"}
   end
 
+  test "approve invalid claim id claim", %{conn: conn, user1: user1} do
+    conn = set_user_auth(conn, :user, user1, ["vc.claim"])
+
+    conn =
+      patch(
+        conn,
+        Routes.v2_claim_path(conn, :patch, -1),
+        %{"status" => "approved"}
+      )
+
+    res = json_response(conn, 404)
+    assert res == %{"error" => "not_found", "error_description" => "not_found"}
+  end
+
   test "deny claim by claimant", %{conn: conn, claims: claims, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
 
@@ -539,6 +553,20 @@ defmodule ClaimControllerTest.V2 do
       currency: currency,
       status: "denied"
     })
+  end
+
+  test "deny invalid claim id claim", %{conn: conn, user1: user1} do
+    conn = set_user_auth(conn, :user, user1, ["vc.claim"])
+
+    conn =
+      patch(
+        conn,
+        Routes.v2_claim_path(conn, :patch, -1),
+        %{"status" => "denied"}
+      )
+
+    res = json_response(conn, 404)
+    assert res == %{"error" => "not_found", "error_description" => "not_found"}
   end
 
   test "cancel claim by claimant",
@@ -581,6 +609,20 @@ defmodule ClaimControllerTest.V2 do
              "error" => "forbidden",
              "error_description" => "invalid_operator"
            }
+  end
+
+  test "cancel invalid claim id claim", %{conn: conn, user1: user1} do
+    conn = set_user_auth(conn, :user, user1, ["vc.claim"])
+
+    conn =
+      patch(
+        conn,
+        Routes.v2_claim_path(conn, :patch, -1),
+        %{"status" => "canceled"}
+      )
+
+    res = json_response(conn, 404)
+    assert res == %{"error" => "not_found", "error_description" => "not_found"}
   end
 
   test "approve claim by not related user",
