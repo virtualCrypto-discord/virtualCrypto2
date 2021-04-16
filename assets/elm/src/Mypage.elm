@@ -204,7 +204,7 @@ menuLabel text_ =
 getUserData : String -> Cmd Msg
 getUserData token =
     Api.get
-        { url = absolute [ "api", "v1", "users", "@me" ] []
+        { url = absolute [ "api", "v2", "users", "@me" ] []
         , expect = Http.expectJson GotUserData userDecoder
         , token = token
         }

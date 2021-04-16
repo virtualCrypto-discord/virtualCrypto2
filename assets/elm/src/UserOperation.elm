@@ -41,7 +41,7 @@ type ModalType
 createTransaction : Model -> Cmd Msg
 createTransaction model =
     Api.post
-        { url = absolute ["api", "v1", "users", "@me", "transactions"] []
+        { url = absolute ["api", "v2", "users", "@me", "transactions"] []
         , token = model.access_token
         , expect = Http.expectWhatever GotTransaction
         , body = Http.jsonBody (transactionsEncoder model.unit model.user_id model.amount)

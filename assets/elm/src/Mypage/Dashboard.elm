@@ -209,7 +209,7 @@ unitText s =
 getBalances : String -> Cmd Msg
 getBalances token =
     Api.get
-        { url = absolute [ "api", "v1", "users", "@me", "balances" ] []
+        { url = absolute [ "api", "v2", "users", "@me", "balances" ] []
         , expect = Http.expectJson GotBalances balancesDecoder
         , token = token
         }
