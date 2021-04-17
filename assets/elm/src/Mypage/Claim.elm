@@ -51,7 +51,7 @@ getClaims : String -> String -> Task Http.Error GroupedClaims
 getClaims id token =
     Task.map (gropingClaims id)
         (Api.getTask
-            { url = absolute [ "api", "v1", "users", "@me", "claims" ] []
+            { url = absolute [ "api", "v2", "users", "@me", "claims" ] []
             , decoder = claimsDecoder
             , token = token
             }

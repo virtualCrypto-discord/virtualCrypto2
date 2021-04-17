@@ -242,7 +242,4 @@ defmodule VirtualCryptoWeb.CommandHandler do
       {:error, err} -> {:error, "cancel", err}
     end
   end
-
-  def handle(_, _, _, _conn) do
-  end
 end

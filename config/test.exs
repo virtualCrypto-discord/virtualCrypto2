@@ -73,3 +73,13 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
 
 config :logger, backends: []
+
+{pubkey, privkey} = :crypto.generate_key(:eddsa, :ed25519)
+
+config :virtualCrypto,
+       :public_key,
+       Base.encode16(pubkey, case: :lower)
+
+config :virtualCrypto,
+       :private_key,
+       privkey

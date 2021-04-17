@@ -1,4 +1,4 @@
-defmodule EnviromentBootstrapper do
+defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
   alias VirtualCrypto.Repo
 
   def counter() do
@@ -129,6 +129,10 @@ defmodule EnviromentBootstrapper do
     Map.put(d, :claims, [c1, c2, c3, c4, c5, c6])
   end
 
+  def approved_claim(claims), do: claims |> Enum.at(2)
+  def denied_claim(claims), do: claims |> Enum.at(3)
+  def canceled_claim(claims), do: claims |> Enum.at(4)
+
   def set_user_auth(conn, kind, uid, scopes) do
     {:ok, conn} =
       case {kind, uid, scopes} do
@@ -159,5 +163,21 @@ defmodule EnviromentBootstrapper do
       end
 
     conn
+  end
+
+  @spec sign_request(Plug.Conn.t(), binary()) :: Plug.Conn.t()
+  def sign_request(conn, body) do
+    public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+    private_key = Application.get_env(:virtualCrypto, :private_key)
+
+    timestamp = to_string(System.system_time(:second))
+
+    conn
+    |> Plug.Conn.put_req_header("x-signature-timestamp", timestamp)
+    |> Plug.Conn.put_req_header(
+      "x-signature-ed25519",
+      :public_key.sign(timestamp <> body, :none, {:ed_pri, :ed25519, public_key, private_key})
+      |> Base.encode16(case: :lower)
+    )
   end
 end

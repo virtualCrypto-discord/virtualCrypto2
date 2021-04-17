@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.ClaimController do
+defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
@@ -33,8 +33,8 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
         "discord" =>
           if(payer.discord_id != nil, do: get_discord_user(payer.discord_id, service), else: nil)
       },
-      "created_at" => claim.inserted_at,
-      "updated_at" => claim.updated_at,
+      "created_at" => DateTime.from_naive!(claim.inserted_at, "Etc/UTC"),
+      "updated_at" => DateTime.from_naive!(claim.updated_at, "Etc/UTC"),
       "status" => claim.status
     }
   end
@@ -47,7 +47,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   defp permission_denied(conn) do
     conn
     |> put_status(403)
-    |> render("error.json", error: :insufficient_scope, error_description: :permission_denied)
+    |> render("error.json", error: :invalid_token, error_description: :permission_denied)
   end
 
   def me(conn, _) do
@@ -159,10 +159,20 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
-          {:error, status} when status in [:not_found, :invalid_operator, :invalid_status] ->
+          {:error, :not_found} ->
             conn
             |> put_status(404)
             |> render("error.json", error: :not_found, error_description: :not_found)
+
+          {:error, :invalid_status} ->
+            conn
+            |> put_status(409)
+            |> render("error.json", error: :conflict, error_info: :invalid_status)
+
+          {:error, :invalid_operator} ->
+            conn
+            |> put_status(403)
+            |> render("error.json", error: :forbidden, error_description: :invalid_operator)
 
           {:error, :not_found_money} ->
             conn
@@ -171,18 +181,18 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
 
           {:error, :not_found_sender_asset} ->
             conn
-            |> put_status(400)
+            |> put_status(409)
             |> render("error.json",
-              error: :not_enough_amount,
-              error_description: :not_enough_amount
+              error: :conflict,
+              error_info: :not_enough_amount
             )
 
           {:error, :not_enough_amount} ->
             conn
-            |> put_status(400)
+            |> put_status(409)
             |> render("error.json",
-              error: :not_enough_amount,
-              error_description: :not_enough_amount
+              error: :conflict,
+              error_info: :not_enough_amount
             )
         end
 
@@ -232,7 +242,12 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
           {_, _, _, %VirtualCrypto.User.User{id: ^user_id}} = d ->
             render(conn, "data.json", params: format_claim(d, get_service(conn)))
 
-          _ ->
+          {_, _, _, _} ->
+            conn
+            |> put_status(403)
+            |> render("error.json", error: :forbidden, error_description: :not_related_user)
+
+          {:error, :not_found} ->
             conn
             |> put_status(404)
             |> render("error.json", error: :not_found, error_description: :not_found)

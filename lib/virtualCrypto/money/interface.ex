@@ -233,7 +233,7 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer()) ::
+  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer(), id: non_neg_integer()) ::
           %{
             amount: non_neg_integer(),
             name: String.t(),
@@ -247,7 +247,8 @@ defmodule VirtualCrypto.Money do
     raw =
       with {:name, nil} <- {:name, Keyword.get(kw, :name)},
            {:unit, nil} <- {:unit, Keyword.get(kw, :unit)},
-           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)} do
+           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)},
+           {:id, nil} <- {:id, Keyword.get(kw, :id)} do
         raise "Invalid Argument. Must supply one or more arguments."
       else
         {atom, key} -> Repo.one(VirtualCrypto.Money.InternalAction.info(atom, key))
@@ -306,10 +307,11 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_enough_amount}
   def approve_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_received_claim,
-                 {%VirtualCrypto.Money.Claim{status: "pending", amount: amount}, info, claimant,
-                  payer}} <-
-                  {:get_received_claim, service.get_received_claim(id, user_id)},
+           with {:get_claim, {%{status: status, amount: amount}, info, claimant, payer}} <-
+                  {:get_claim, Action.get_claim_by_id(id)},
+                {:validate_operator, true} <-
+                  {:validate_operator, service.equals?(payer, user_id)},
+                {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
                     payer.id,
@@ -321,9 +323,20 @@ defmodule VirtualCrypto.Money do
                   VirtualCrypto.Money.InternalAction.approve_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_received_claim, _} -> Repo.rollback(:not_found)
-             {:error, :not_found} -> Repo.rollback(:not_found)
-             {:error, v} -> Repo.rollback(v)
+             {:get_claim, _} ->
+               Repo.rollback(:not_found)
+
+             {:validate_operator, _} ->
+               Repo.rollback(:invalid_operator)
+
+             {:status, _} ->
+               Repo.rollback(:invalid_status)
+
+             {:error, :not_found} ->
+               Repo.rollback(:not_found)
+
+             {:error, v} ->
+               Repo.rollback(v)
            end
          end) do
       {:ok, v} -> {:ok, v}
@@ -339,15 +352,25 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def cancel_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_sent_claim,
-                 {%VirtualCrypto.Money.Claim{status: "pending"}, info, claimant, payer}} <-
-                  {:get_sent_claim, service.get_sent_claim(id, user_id)},
-                {:ok, claim} <-
-                  VirtualCrypto.Money.InternalAction.cancel_claim(id) do
+           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
+                  {:get_claim, Action.get_claim_by_id(id)},
+                {:validate_operator, true} <-
+                  {:validate_operator, service.equals?(claimant, user_id)},
+                {:status, "pending"} <- {:status, status},
+                {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_sent_claim, _} -> Repo.rollback(:not_found)
-             {:error, :not_found} -> Repo.rollback(:not_found)
+             {:get_claim, _} ->
+               Repo.rollback(:not_found)
+
+             {:status, _} ->
+               Repo.rollback(:invalid_status)
+
+             {:validate_operator, _} ->
+               Repo.rollback(:invalid_operator)
+
+             {:error, :not_found} ->
+               Repo.rollback(:not_found)
            end
          end) do
       {:ok, v} -> {:ok, v}
@@ -363,14 +386,25 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found}
   def deny_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_received_claim,
-                 {%VirtualCrypto.Money.Claim{status: "pending"}, info, claimant, payer}} <-
-                  {:get_received_claim, service.get_received_claim(id, user_id)},
+           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
+                  {:get_claim, Action.get_claim_by_id(id)},
+                {:validate_operator, true} <-
+                  {:validate_operator, service.equals?(payer, user_id)},
+                {:status, "pending"} <- {:status, status},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
              {claim, info, claimant, payer}
            else
-             {:get_received_claim, _} -> Repo.rollback(:not_found)
-             {:error, :not_found} -> Repo.rollback(:not_found)
+             {:get_claim, _} ->
+               Repo.rollback(:not_found)
+
+             {:status, _} ->
+               Repo.rollback(:invalid_status)
+
+             {:validate_operator, _} ->
+               Repo.rollback(:invalid_operator)
+
+             {:error, :not_found} ->
+               Repo.rollback(:not_found)
            end
          end) do
       {:ok, v} -> {:ok, v}
@@ -394,9 +428,8 @@ defmodule VirtualCrypto.Money do
 
   # FIXME: this is not useful return value!
   @spec get_claim_by_id(Integer.t()) ::
-          {:ok,
-           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-            VirtualCrypto.User.User}}
+          {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
+           VirtualCrypto.User.User}
           | {:error, :not_found}
   def get_claim_by_id(id) do
     Action.get_claim_by_id(id)

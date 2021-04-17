@@ -21,6 +21,14 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     render_error(:not_enough_amount)
   end
 
+  defp render_error(:invalid_operator) do
+    "この請求に対してこの操作を行う権限がありません。"
+  end
+
+  defp render_error(:invalid_status) do
+    "この請求に対してこの操作を行うことは出来ません。"
+  end
+
   defp render_sent_claim(sent_claims) do
     sent_claims
     |> Enum.map(fn {claim, money, _claimant, payer} ->

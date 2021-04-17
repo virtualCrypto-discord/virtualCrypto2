@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.ClaimView do
+defmodule VirtualCryptoWeb.Api.V2.ClaimView do
   use VirtualCryptoWeb, :view
 
   def render(conn, d) do

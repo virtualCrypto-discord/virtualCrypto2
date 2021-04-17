@@ -27,17 +27,15 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
 
   defp parse_options(options) do
     options
-    |> Enum.map(fn option ->
-      case option do
-        %{"name" => name, "options" => options_} ->
-          [{"subcommand", name}, {"sub_options", parse_options(options_)}]
+    |> Enum.map(fn
+      %{"name" => name, "options" => options} ->
+        [{"subcommand", name}, {"sub_options", parse_options(options)}]
 
-        %{"name" => name, "value" => value} ->
-          {name, value}
+      %{"name" => name, "value" => value} ->
+        {name, value}
 
-        %{"name" => name} ->
-          {"subcommand", name}
-      end
+      %{"name" => name} ->
+        {"subcommand", name}
     end)
     |> List.flatten()
     |> Map.new()
@@ -45,17 +43,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
 
   def verify(conn) do
     public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
-    signature = conn.req_headers |> get_signature |> Base.decode16!(case: :lower)
-    timestamp = get_timestamp(conn.req_headers)
-    body = hd(conn.assigns.raw_body)
-    message = timestamp <> body
+    encoded_signature = conn.req_headers |> get_signature
 
-    :public_key.verify(
-      message,
-      :none,
-      signature,
-      {:ed_pub, :ed25519, public_key}
-    )
+    timestamp = get_timestamp(conn.req_headers)
+
+    case {encoded_signature, timestamp} do
+      {nil, _} ->
+        false
+
+      {_, nil} ->
+        false
+
+      _ ->
+        case encoded_signature |> Base.decode16(case: :lower) do
+          {:ok, signature} ->
+            body = hd(conn.assigns.raw_body)
+            message = timestamp <> body
+
+            :public_key.verify(
+              message,
+              :none,
+              signature,
+              {:ed_pub, :ed25519, public_key}
+            )
+
+          :error ->
+            false
+        end
+    end
   end
 
   def verified(conn, %{"type" => 1}) do
@@ -75,7 +90,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
   def verified(conn, _) do
     conn
     |> put_resp_content_type("text/plain")
-    |> send_resp(400, 'Type Not Found')
+    |> send_resp(400, "Type Not Found")
   end
 
   def index(conn, params) do
@@ -84,6 +99,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       else:
         conn
         |> put_resp_content_type("text/plain")
-        |> send_resp(401, 'invalid request signature')
+        |> send_resp(401, "invalid request signature")
   end
 end

@@ -291,6 +291,17 @@ defmodule VirtualCrypto.Money.InternalAction do
     )
   end
 
+  def info(:id, id) do
+    from(asset in Money.Asset,
+      join: info in Money.Info,
+      on: asset.money_id == info.id,
+      where: info.id == ^id,
+      group_by: info.id,
+      select:
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+    )
+  end
+
   @reset_pool_amount """
   WITH
     supplied_amounts AS (

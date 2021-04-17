@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
+defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
   use VirtualCryptoWeb, :controller
 
   def post(conn, %{
@@ -37,6 +37,9 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
       {:error, {:insufficient_scope, _} = err} ->
         conn |> put_status(403) |> render("error.json", error: err)
 
+      {:error, err} when err in [:not_enough_amount, :not_found_sender_asset] ->
+        conn |> put_status(409) |> render("error.json", error: err)
+
       {:error, err} ->
         conn |> put_status(400) |> render("error.json", error: err)
     end
@@ -64,10 +67,18 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
         |> put_status(400)
         |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
 
+      {:param, {tag, idx}} ->
+        conn
+        |> put_status(409)
+        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+
       {:token, _} ->
         conn
         |> put_status(403)
         |> render("error.json", error: {:insufficient_scope, :token_verfication_failed})
+
+      {:error, :not_enough_amount} ->
+        conn |> put_status(409) |> render("error.json", error: :not_enough_amount)
 
       {:error, err} ->
         conn |> put_status(400) |> render("error.json", error: err)

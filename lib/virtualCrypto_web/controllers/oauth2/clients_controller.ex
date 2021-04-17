@@ -28,17 +28,27 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   end
 
   def get(conn, %{"user" => "@me"}) do
-    with {{:validate_token, :token_verification_failed},
-          %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
-           {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)} do
+    with cr <- Guardian.Plug.current_resource(conn),
+         {{:validate_token, :invalid_token}, %{"sub" => user_id, "kind" => "user"}} <-
+           {{:validate_token, :invalid_token}, cr},
+         {{:validate_token, :insufficient_scope}, %{"oauth2.register" => true}} <-
+           {{:validate_token, :insufficient_scope}, cr} do
       conn |> render("clients.register.json", applications: Auth.get_user_applications(user_id))
     else
-      {{:validate_token, more}, _} ->
+      {{:validate_token, :invalid_token}, _} ->
         conn
-        |> put_status(400)
+        |> put_status(401)
         |> render("error.register.json",
           error: :invalid_token,
-          error_description: more
+          error_description: :invalid_kind
+        )
+
+      {{:validate_token, :insufficient_scope}, _} ->
+        conn
+        |> put_status(403)
+        |> render("error.register.json",
+          error: :insufficient_scope,
+          error_description: :required_oauth2_register
         )
     end
   end
@@ -56,9 +66,11 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
     f = get_and_compute(req)
 
     params =
-      with {{:validate_token, :token_verification_failed},
-            %{"sub" => user_id, "oauth2.register" => true, "kind" => "user"}} <-
-             {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
+      with cr <- Guardian.Plug.current_resource(conn),
+           {{:validate_token, :token_verification_failed}, %{"sub" => user_id, "kind" => "user"}} <-
+             {{:validate_token, :token_verification_failed}, cr},
+           {{:validate_scope, :required_oauth2_register_scope}, %{"oauth2.register" => true}} <-
+             {{:validate_scope, :required_oauth2_register_scope}, cr},
            {{:validate_token, :invalid_user}, %User.User{discord_id: owner_discord_id}} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)},
            {{:validate_token, :getting_discord_access_token_failed_while_user_verification},
@@ -102,6 +114,9 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
         {{:validate_token, more}, _} ->
           {:error, {:invalid_token, more}}
 
+        {{:validate_scope, more}, _} ->
+          {:error, {:insufficient_scope, more}}
+
         {:validate_redirect_uris, _} ->
           {:error, {:invalid_redirect_uri, :redirect_uri_scheme_must_be_http_or_https}}
 
@@ -130,17 +145,13 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
 
       {:error, {:invalid_token, more}} ->
         conn
-        |> put_resp_header(
-          "WWW-Authenticate",
-          [
-            "Bearer realm=\"oauth2.register\"",
-            "errror=\"invalid_token\"",
-            ~s/error_description="#{more}"/
-          ]
-          |> Enum.join(",")
-        )
-        |> send_resp(401, "\"Unauthorized\"")
-        |> halt()
+        |> put_status(401)
+        |> render("error.register.json", error: :invalid_token, error_description: more)
+
+      {:error, {:insufficient_scope, more}} ->
+        conn
+        |> put_status(403)
+        |> render("error.register.json", error: :insufficient_scope, error_description: more)
 
       {:error, {error, error_description}} ->
         conn
