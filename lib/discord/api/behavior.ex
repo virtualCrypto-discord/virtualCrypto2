@@ -10,7 +10,6 @@ defmodule Discord.Api.Behavior do
   @type guild_member :: map()
   @type role :: map()
   @type with_counts :: boolean()
-  @callback get_guild_members(guild_id, limit) :: [guild_member]
   @callback get_guild_member_with_status_code(guild_id, user_id) ::
               {status_code, guild_member}
   @callback get_roles(guild_id) :: [role]
