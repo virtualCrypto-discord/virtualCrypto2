@@ -77,7 +77,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
   end
 
   test "cancel invalid id claim",
-       %{conn: conn, claims: claims, user1: user1} do
+       %{conn: conn, user1: user1} do
     conn =
       post_command(
         conn,
