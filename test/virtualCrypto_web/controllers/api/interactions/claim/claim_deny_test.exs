@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Deny do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Patch
+  import InteractionsControllerTest.Claim.Helper
   setup :setup_claim
 
   test "deny pending claim by payer", %{conn: conn, claims: claims, user2: user2} do

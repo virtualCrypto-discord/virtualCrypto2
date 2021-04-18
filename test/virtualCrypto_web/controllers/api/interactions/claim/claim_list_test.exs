@@ -1,6 +1,6 @@
 defmodule InteractionsControllerTest.Claim.List do
   use VirtualCryptoWeb.InteractionsCase, async: true
-  import InteractionsControllerTest.Claim.Patch
+  import InteractionsControllerTest.Claim.Helper
   import VirtualCryptoWeb.Api.InteractionsView.Util, only: [format_date_time: 1]
   setup :setup_claim
 

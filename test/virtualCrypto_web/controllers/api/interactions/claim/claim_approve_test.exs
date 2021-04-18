@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Patch
+  import InteractionsControllerTest.Claim.Helper
   setup :setup_claim
 
   test "approve pending claim by payer", %{

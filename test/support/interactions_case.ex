@@ -57,7 +57,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
         conn =
           post_command(
             conn,
-            InteractionsControllerTest.Claim.Patch.patch_from_guild(action, claim.id, user)
+            InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )
 
         assert_discord_message(conn, "エラー: この請求に対してこの操作を行う権限がありません。")
@@ -67,7 +67,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
         conn =
           post_command(
             conn,
-            InteractionsControllerTest.Claim.Patch.patch_from_guild(action, claim.id, user)
+            InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )
 
         assert_discord_message(conn, "エラー: この請求に対してこの操作を行うことは出来ません。")
