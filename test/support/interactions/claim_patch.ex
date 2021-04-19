@@ -1,5 +1,7 @@
-defmodule InteractionsControllerTest.Claim.Patch do
-  def claim_data_id(action, id) do
+defmodule InteractionsControllerTest.Claim.Helper do
+  import InteractionsControllerTest.Helper.Common
+
+  defp claim_data(action, id) do
     %{
       name: "claim",
       options: [
@@ -16,20 +18,8 @@ defmodule InteractionsControllerTest.Claim.Patch do
     }
   end
 
-  def execute_from_guild(data, user) do
-    %{
-      type: 2,
-      data: data,
-      member: %{
-        user: %{
-          id: to_string(user)
-        }
-      }
-    }
-  end
-
   def patch_from_guild(action, id, user) do
-    execute_from_guild(claim_data_id(action, id), user)
+    execute_from_guild(claim_data(action, id), user)
   end
 
   def list_from_guild(user) do
