@@ -4,8 +4,7 @@ defmodule InteractionsControllerTest.Bal.Helper do
   defp data() do
     %{
       name: "bal",
-      options: [
-      ]
+      options: []
     }
   end
 

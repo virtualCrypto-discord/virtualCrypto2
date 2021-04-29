@@ -51,7 +51,6 @@ defmodule InteractionsControllerTest.Bal do
   end
 
   test "bal nothing user", %{conn: conn} do
-
     conn =
       post_command(
         conn,
