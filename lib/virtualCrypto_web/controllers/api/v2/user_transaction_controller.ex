@@ -1,6 +1,21 @@
 defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
   use VirtualCryptoWeb, :controller
 
+  plug(VirtualCryptoWeb.IdempotencyLayer.Plug,
+  behavior: VirtualCryptoWeb.IdempotencyLayer.Payments
+  )
+
+  defp _render(conn, template, params) do
+    json =
+      VirtualCryptoWeb.Api.V2.UserTransactionView.Pure.render(template, params |> Enum.into(%{}))
+
+    if Map.has_key?(conn.assigns, :idempotency) do
+      VirtualCryptoWeb.IdempotencyLayer.Payments.register_response(conn, json)
+    end
+
+    render(conn, "pass.json", %{_json: json})
+  end
+
   def post(conn, %{
         "unit" => unit,
         "receiver_discord_id" => receiver_discord_id,
@@ -35,13 +50,13 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
         conn |> send_resp(204, "")
 
       {:error, {:insufficient_scope, _} = err} ->
-        conn |> put_status(403) |> render("error.json", error: err)
+        conn |> put_status(403) |> _render("error.json", error: err)
 
       {:error, err} when err in [:not_enough_amount, :not_found_sender_asset] ->
-        conn |> put_status(409) |> render("error.json", error: err)
+        conn |> put_status(409) |> _render("error.json", error: err)
 
       {:error, err} ->
-        conn |> put_status(400) |> render("error.json", error: err)
+        conn |> put_status(400) |> _render("error.json", error: err)
     end
   end
 
@@ -52,7 +67,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
       }) do
     conn
     |> put_status(400)
-    |> render("error.json", error: {:invalid_request, :invalid_type_of_variable})
+    |> _render("error.json", error: {:invalid_request, :invalid_type_of_variable})
   end
 
   def post(conn, %{"_json" => list}) when is_list(list) do
@@ -65,25 +80,25 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
       {:param, {tag, idx}} ->
         conn
         |> put_status(400)
-        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+        |> _render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
 
       {:token, _} ->
         conn
         |> put_status(403)
-        |> render("error.json", error: {:insufficient_scope, :token_verification_failed})
+        |> _render("error.json", error: {:insufficient_scope, :token_verification_failed})
 
       {:error, :not_enough_amount} ->
-        conn |> put_status(409) |> render("error.json", error: :not_enough_amount)
+        conn |> put_status(409) |> _render("error.json", error: :not_enough_amount)
 
       {:error, err} ->
-        conn |> put_status(400) |> render("error.json", error: err)
+        conn |> put_status(400) |> _render("error.json", error: err)
     end
   end
 
   def post(conn, _) do
     conn
     |> put_status(400)
-    |> render("error.json", error: {:invalid_request, :missing_parameter})
+    |> _render("error.json", error: {:invalid_request, :missing_parameter})
   end
 
   defp convert_list(list) do
