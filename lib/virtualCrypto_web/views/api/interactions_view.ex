@@ -51,7 +51,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
     %{
       type: channel_message_with_source(),
       data: %{
-        flags: 64,
+        flags: ephemeral(),
         embeds: [
           %{
             fields: [

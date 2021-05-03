@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
   def channel_message_with_source, do: 4
   def pong, do: 1
+  def ephemeral,do: 64
   @spec mention(String.t() | non_neg_integer()) :: String.t()
   def mention(id) do
     ~s/<@#{id}>/
