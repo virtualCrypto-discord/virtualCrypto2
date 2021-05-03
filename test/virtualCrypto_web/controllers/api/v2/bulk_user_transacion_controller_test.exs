@@ -14,7 +14,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
 
     assert json_response(conn, 403) == %{
              "error" => "insufficient_scope",
-             "error_description" => "token_verfication_failed"
+             "error_description" => "token_verification_failed"
            }
   end
 
