@@ -46,4 +46,8 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionView.Pure do
       }) do
     render_error(error)
   end
+
+  def render("ok.json", %{}) do
+    %{}
+  end
 end
