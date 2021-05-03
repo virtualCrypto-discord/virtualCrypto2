@@ -8,6 +8,8 @@ defmodule VirtualCrypto.Idempotency.Payments do
     field :expires, :naive_datetime
     field :http_status, :integer
     field :body, :map
+
+    timestamps()
   end
 
   @doc false

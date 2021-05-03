@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.IdempotencyLayer.Plug do
   import Plug.Conn
 
-  def init([behavior: behavior] = options) do
+  def init([behavior: _behavior] = options) do
     options
   end
 
@@ -14,9 +14,6 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Plug do
          {:interrupt, %Plug.Conn{} = conn} <-
            {:interrupt, behavior.interrupt(conn, idempotency_key)} do
       conn
-      |> put_private(:virtualCrypto_web_idempotency_layer, %{
-        behavior: behavior
-      })
     else
       {:idempotency_key, 0} ->
         conn
@@ -33,9 +30,5 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Plug do
         )
         |> halt()
     end
-  end
-
-  def get_identity(conn) do
-    conn.private.virtualCrypto_web_idempotency_layer
   end
 end

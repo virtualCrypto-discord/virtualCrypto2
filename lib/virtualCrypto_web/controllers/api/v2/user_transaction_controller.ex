@@ -5,6 +5,33 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
     behavior: VirtualCryptoWeb.IdempotencyLayer.Payments
   )
 
+  plug(:reject_duplicate_request)
+
+  def reject_duplicate_request(conn, _) do
+    idempotency = Map.get(conn.assigns, :idempotency, %{state: :nothing})
+    entry = Map.get(idempotency, :entry, %{http_status: nil})
+
+    case {idempotency.state, entry.http_status} do
+      {:exist, nil} ->
+        conn
+        |> put_status(202)
+        |> render("pass.json", _json: %{})
+        |> Plug.Conn.halt()
+
+      {:exist, http_status} ->
+        conn
+        |> put_status(http_status)
+        |> render("pass.json", _json: entry.body)
+        |> Plug.Conn.halt()
+
+      {:create, nil} ->
+        conn
+
+      {:nothing, nil} ->
+        conn
+    end
+  end
+
   defp _render(conn, template, params \\ []) do
     json =
       VirtualCryptoWeb.Api.V2.UserTransactionView.Pure.render(template, params |> Enum.into(%{}))

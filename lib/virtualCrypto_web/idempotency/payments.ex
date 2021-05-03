@@ -4,17 +4,20 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
   import Ecto.Query
 
   defp insert_idempotency_entry(idempotency_key, user_id) do
-    VirtualCrypto.Repo.insert(
-      %VirtualCrypto.Idempotency.Payments{
-        idempotency_key: idempotency_key,
-        user_id: user_id,
-        expires:
-          NaiveDateTime.utc_now()
-          |> NaiveDateTime.add(7 * 60 * 60 * 24)
-          |> NaiveDateTime.truncate(:second)
-      },
-      on_conflict: :nothing
-    )
+    {:ok, entry} =
+      VirtualCrypto.Repo.insert(
+        VirtualCrypto.Idempotency.Payments.changeset(%VirtualCrypto.Idempotency.Payments{}, %{
+          idempotency_key: idempotency_key,
+          user_id: user_id,
+          expires:
+            NaiveDateTime.utc_now()
+            |> NaiveDateTime.add(7 * 60 * 60 * 24)
+            |> NaiveDateTime.truncate(:second)
+        }),
+        on_conflict: :nothing
+      )
+
+    entry
   end
 
   defp get_idempotency_entry_q(idempotency_key, user_id) do
@@ -24,16 +27,18 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
         select: t
       )
 
-    VirtualCrypto.Repo.one(q)
+    q
   end
 
   defp get_or_insert_idempotency_entry(idempotency_key, user_id) do
-    with nil <- VirtualCrypto.Repo.one(get_idempotency_entry_q(idempotency_key, user_id)),
-         {:ok, schema} when schema.id == nil <- insert_idempotency_entry(idempotency_key, user_id) do
+    with {:get, nil} <-
+           {:get, VirtualCrypto.Repo.one(get_idempotency_entry_q(idempotency_key, user_id))},
+         {:insert, schema} when schema.id == nil <-
+           {:insert, insert_idempotency_entry(idempotency_key, user_id)} do
       {:exist, VirtualCrypto.Repo.one!(get_idempotency_entry_q(idempotency_key, user_id))}
     else
-      entry -> {:exist, entry}
-      {:ok, schema} -> {:create, schema}
+      {:insert, entry} -> {:create, entry}
+      {:get, entry} -> {:exist, entry}
     end
   end
 
@@ -60,6 +65,7 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
 
       {:token, _} ->
         conn
+        |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(
           403,
           Jason.encode!(%{
@@ -76,7 +82,14 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
 
   def register_response(conn, body) do
     idempotency_entry = conn.assigns.idempotency.entry
-    VirtualCrypto.Repo.update!(%{idempotency_entry | body: body, http_status: conn.status})
+
+    VirtualCrypto.Repo.update!(
+      VirtualCrypto.Idempotency.Payments.changeset(idempotency_entry, %{
+        body: body,
+        http_status: conn.status
+      })
+    )
+
     conn
   end
 end
