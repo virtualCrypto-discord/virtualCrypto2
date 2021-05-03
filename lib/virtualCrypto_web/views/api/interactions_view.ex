@@ -54,9 +54,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
         flags: ephemeral(),
         embeds: [
           %{
+            color: color_brand(),
             fields: [
               %{
-                name: "Bot",
+                name: "ボット",
                 value: "#{bot_invite_url}"
               },
               %{
