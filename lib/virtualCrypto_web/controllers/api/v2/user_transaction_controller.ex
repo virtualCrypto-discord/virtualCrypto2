@@ -2,10 +2,10 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
   use VirtualCryptoWeb, :controller
 
   plug(VirtualCryptoWeb.IdempotencyLayer.Plug,
-  behavior: VirtualCryptoWeb.IdempotencyLayer.Payments
+    behavior: VirtualCryptoWeb.IdempotencyLayer.Payments
   )
 
-  defp _render(conn, template, params) do
+  defp _render(conn, template, params \\ []) do
     json =
       VirtualCryptoWeb.Api.V2.UserTransactionView.Pure.render(template, params |> Enum.into(%{}))
 
@@ -47,7 +47,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
 
     case params do
       {:ok} ->
-        conn |> send_resp(204, "")
+        conn |> put_status(204) |> _render("ok.json")
 
       {:error, {:insufficient_scope, _} = err} ->
         conn |> put_status(403) |> _render("error.json", error: err)
@@ -75,7 +75,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
          {:token, %{"sub" => user_id, "vc.pay" => true}} <-
            {:token, Guardian.Plug.current_resource(conn)},
          {:ok, _} <- VirtualCrypto.Money.create_payments(user_id, param) do
-      conn |> send_resp(204, "")
+      conn |> put_status(204) |> _render("ok.json")
     else
       {:param, {tag, idx}} ->
         conn

@@ -44,7 +44,7 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
          {:token, %{"sub" => user_id, "vc.pay" => true}} <-
            {:token, Guardian.Plug.current_resource(conn)},
          {:exist, idempotency_entry} <- get_or_insert_idempotency_entry(idempotency_key, user_id) do
-      Plug.Conn.assign(conn, :idempotency, %{entry: idempotency_entry})
+      Plug.Conn.assign(conn, :idempotency, %{state: :exist, entry: idempotency_entry})
     else
       {:validate_idempotency_key, _} ->
         conn
@@ -69,8 +69,8 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
         )
         |> Plug.Conn.halt()
 
-      {:create, _} ->
-        nil
+      {:create, idempotency_entry} ->
+        Plug.Conn.assign(conn, :idempotency, %{state: :create, entry: idempotency_entry})
     end
   end
 
