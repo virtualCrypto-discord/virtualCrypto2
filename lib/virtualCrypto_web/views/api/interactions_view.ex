@@ -52,8 +52,20 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content:
-          ~s/VirtualCryptoの招待: #{bot_invite_url}\nVirtualCryptoのサポートサーバー: #{guild_invite_url}/
+        embeds: [
+          %{
+            fields: [
+              %{
+                name: "Bot",
+                value: "#{bot_invite_url}"
+              },
+              %{
+                name: "サポートサーバー",
+                value: "#{guild_invite_url}"
+              }
+            ]
+          }
+        ]
       }
     }
   end
