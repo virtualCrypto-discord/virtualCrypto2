@@ -16,20 +16,13 @@ defmodule InteractionsControllerTest.Invite do
     color = color_brand()
     bot_invite_url = Application.get_env(:virtualCrypto, :invite_url)
     support_guild_invite_url = Application.get_env(:virtualCrypto, :support_guild_invite_url)
+    description = "[Botの招待](#{bot_invite_url})\n[サポートサーバーの招待](#{support_guild_invite_url})"
     assert %{
              "data" => %{
                "embeds" => [%{
+                 "title" => "VirtualCrypto",
                  "color" => ^color,
-                 "fields" => [
-                   %{
-                     "name" => "ボット",
-                     "value" => ^bot_invite_url
-                   },
-                   %{
-                    "name" => "サポートサーバー",
-                    "value" => ^support_guild_invite_url
-                  }
-                 ]
+                 "description" => ^description
                }],
                "flags" => 64
              },

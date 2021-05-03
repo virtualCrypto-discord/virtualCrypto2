@@ -55,16 +55,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
         embeds: [
           %{
             color: color_brand(),
-            fields: [
-              %{
-                name: "ボット",
-                value: "#{bot_invite_url}"
-              },
-              %{
-                name: "サポートサーバー",
-                value: "#{guild_invite_url}"
-              }
-            ]
+            title: "VirtualCrypto",
+            description: "[Botの招待](#{bot_invite_url})\n[サポートサーバーの招待](#{guild_invite_url})"
           }
         ]
       }
