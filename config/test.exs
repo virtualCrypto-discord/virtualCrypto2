@@ -65,7 +65,7 @@ config :virtualCrypto, VirtualCrypto.Guardian,
   issuer: "virtualCrypto",
   secret_key: "a188rolUOVnGqP7wseWeTW0qkFCfsDMNvbo2Bz6O3dmO9TEyKPD8+Yf1bfiUFRBI"
 
-config :virtualCrypto, :site_url, "https://localhost:4000"
+config :virtualCrypto, :site_url, "https://vcrypto.sumidora.com"
 
 config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/callback/discord"
 

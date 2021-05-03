@@ -145,7 +145,10 @@ defmodule VirtualCryptoWeb.CommandHandler do
   end
 
   def handle("invite", _, _, _conn) do
-    {@bot_invite_url, @guild_invite_url}
+    {@site_url <>
+       "/static" <>
+       VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg"), @bot_invite_url,
+     @guild_invite_url}
   end
 
   def handle(
