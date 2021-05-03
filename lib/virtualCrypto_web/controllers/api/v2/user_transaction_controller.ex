@@ -67,11 +67,6 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
         |> put_status(400)
         |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
 
-      {:param, {tag, idx}} ->
-        conn
-        |> put_status(409)
-        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
-
       {:token, _} ->
         conn
         |> put_status(403)
