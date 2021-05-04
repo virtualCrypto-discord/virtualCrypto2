@@ -1,12 +1,13 @@
 defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
   @behaviour VirtualCryptoWeb.IdempotencyLayer
   alias VirtualCryptoWeb.IdempotencyLayer.Validator
+  alias VirtualCrypto.Idempotency.Payments, as: IdempotencyEntry
   import Ecto.Query
 
   defp insert_idempotency_entry(idempotency_key, user_id) do
     {:ok, entry} =
       VirtualCrypto.Repo.insert(
-        VirtualCrypto.Idempotency.Payments.changeset(%VirtualCrypto.Idempotency.Payments{}, %{
+        IdempotencyEntry.changeset(%IdempotencyEntry{}, %{
           idempotency_key: idempotency_key,
           user_id: user_id,
           expires:
@@ -22,7 +23,7 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
 
   defp get_idempotency_entry_q(idempotency_key, user_id) do
     q =
-      from(t in VirtualCrypto.Idempotency.Payments,
+      from(t in IdempotencyEntry,
         where: t.idempotency_key == ^idempotency_key and t.user_id == ^user_id,
         select: t
       )
@@ -84,12 +85,22 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
     idempotency_entry = conn.assigns.idempotency.entry
 
     VirtualCrypto.Repo.update!(
-      VirtualCrypto.Idempotency.Payments.changeset(idempotency_entry, %{
+      IdempotencyEntry.changeset(idempotency_entry, %{
         body: body,
         http_status: conn.status
       })
     )
 
     conn
+  end
+
+  def purge_idempotency_keys(time) do
+    time = NaiveDateTime.add(time, -60 * 60)
+    q = from(entries in IdempotencyEntry, where: entries.expires <= ^time)
+    VirtualCrypto.Repo.delete_all(q)
+  end
+
+  def purge_idempotency_keys() do
+    purge_idempotency_keys(NaiveDateTime.utc_now())
   end
 end
