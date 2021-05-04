@@ -174,6 +174,4 @@ defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
 
     assert get_amount(ctx.user2, ctx.currency) == b2 + 60
   end
-
-
 end
