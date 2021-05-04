@@ -47,13 +47,21 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
     }
   end
 
-  def render("invite.json", %{params: {bot_invite_url, guild_invite_url}}) do
+  def render("invite.json", %{params: {logo_url, bot_invite_url, guild_invite_url}}) do
     %{
       type: channel_message_with_source(),
       data: %{
-        flags: 64,
-        content:
-          ~s/VirtualCryptoの招待: #{bot_invite_url}\nVirtualCryptoのサポートサーバー: #{guild_invite_url}/
+        flags: ephemeral(),
+        embeds: [
+          %{
+            color: color_brand(),
+            title: "VirtualCrypto",
+            thumbnail: %{
+              url: logo_url
+            },
+            description: "[Botの招待](#{bot_invite_url})\n[サポートサーバーの招待](#{guild_invite_url})"
+          }
+        ]
       }
     }
   end
