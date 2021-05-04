@@ -45,8 +45,8 @@ defmodule UserTransactionControllerTest.Idempotency.Single do
         }
       )
 
-    assert response(conn, 204)
-    assert response(conn2, 204)
+    assert response(conn, 201)
+    assert response(conn2, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 

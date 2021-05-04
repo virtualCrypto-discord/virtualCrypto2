@@ -74,7 +74,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
 
     case params do
       {:ok} ->
-        conn |> put_status(204) |> _render("ok.json")
+        conn |> put_status(201) |> _render("ok.json")
 
       {:error, {:insufficient_scope, _} = err} ->
         conn |> put_status(403) |> _render("error.json", error: err)
@@ -102,7 +102,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
          {:token, %{"sub" => user_id, "vc.pay" => true}} <-
            {:token, Guardian.Plug.current_resource(conn)},
          {:ok, _} <- VirtualCrypto.Money.create_payments(user_id, param) do
-      conn |> put_status(204) |> _render("ok.json")
+      conn |> put_status(201) |> _render("ok.json")
     else
       {:param, {tag, idx}} ->
         conn
