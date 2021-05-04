@@ -11,7 +11,7 @@ defmodule UserTransactionControllerTest.V2.Pay.Bulk.Idempotency do
     |> post(Routes.v2_user_transaction_path(conn, :post), Jason.encode!(json))
   end
 
-  test "also useable bulk request", %{conn: conn} = ctx do
+  test "useable in bulk request", %{conn: conn} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.pay"])
     conn2 = set_user_auth(build_rest_conn(), :user, ctx.user2, ["vc.pay"])
 
