@@ -5,9 +5,9 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Plug do
     options
   end
 
-  @spec call(conn :: %Plug.Conn{}, m :: %{behavior: VirtualCryptoWeb.IdempotencyLayer}) ::
+  @spec call(conn :: %Plug.Conn{}, m :: [behavior: VirtualCryptoWeb.IdempotencyLayer]) ::
           %Plug.Conn{}
-  def call(conn, [behavior: behavior]) do
+  def call(conn, behavior: behavior) do
     with idempotency_keys <- get_req_header(conn, "idempotency-key"),
          {:idempotency_key, 1} <- {:idempotency_key, length(idempotency_keys)},
          idempotency_key <- hd(idempotency_keys),
