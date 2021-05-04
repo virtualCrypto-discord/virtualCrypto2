@@ -14,13 +14,17 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
     case {idempotency.state, entry.http_status} do
       {:exist, nil} ->
         conn
-        |> put_status(202)
-        |> render("pass.json", _json: %{})
+        |> put_status(409)
+        |> put_resp_header("idempotency-status", "Duplicate")
+        |> render("pass.json",
+          _json: %{error: "processing", error_description: "should_retry_after_in_seconds"}
+        )
         |> Plug.Conn.halt()
 
       {:exist, http_status} ->
         conn
         |> put_status(http_status)
+        |> put_resp_header("idempotency-status", "Duplicate")
         |> render("pass.json", _json: entry.body)
         |> Plug.Conn.halt()
 
@@ -36,9 +40,13 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
     json =
       VirtualCryptoWeb.Api.V2.UserTransactionView.Pure.render(template, params |> Enum.into(%{}))
 
-    if Map.has_key?(conn.assigns, :idempotency) do
-      VirtualCryptoWeb.IdempotencyLayer.Payments.register_response(conn, json)
-    end
+    conn =
+      if Map.has_key?(conn.assigns, :idempotency) do
+        VirtualCryptoWeb.IdempotencyLayer.Payments.register_response(conn, json)
+        conn |> put_resp_header("idempotency-status", "OK")
+      else
+        conn |> put_resp_header("idempotency-status", "Not Requested")
+      end
 
     render(conn, "pass.json", %{_json: json})
   end

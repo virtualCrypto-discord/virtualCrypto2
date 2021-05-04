@@ -1,5 +1,7 @@
-defmodule UserTransactionControllerTest.Idempotency.Single do
+defmodule UserTransactionControllerTest.Pay.Idempotency.Single do
   use VirtualCryptoWeb.RestCase, async: true
+  import Plug.Conn
+  import InteractionsControllerTest.Pay.Helper
   setup :setup_money
 
   defp exec(conn, json, idempotency_key \\ "1dEmP0104Ke1") do
@@ -19,7 +21,7 @@ defmodule UserTransactionControllerTest.Idempotency.Single do
            }
   end
 
-  test "valid request", %{conn: conn} = ctx do
+  test "duplicate valid request", %{conn: conn} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.pay"])
     conn2 = set_user_auth(build_rest_conn(), :user, ctx.user1, ["vc.pay"])
     b1 = get_amount(ctx.user1, ctx.currency)
@@ -47,6 +49,9 @@ defmodule UserTransactionControllerTest.Idempotency.Single do
 
     assert response(conn, 201)
     assert response(conn2, 201)
+
+    assert idempotency_ok?(conn) != idempotency_ok?(conn2)
+    assert idempotency_duplicate?(conn2) != idempotency_duplicate?(conn)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
