@@ -1,4 +1,4 @@
-defmodule UserTransactionControllerTest.Pay.Idempotency.Single do
+defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
   use VirtualCryptoWeb.RestCase, async: true
   import InteractionsControllerTest.Pay.Helper
 
@@ -95,4 +95,85 @@ defmodule UserTransactionControllerTest.Pay.Idempotency.Single do
 
     assert get_amount(ctx.user2, ctx.currency) == b2 + 20
   end
+
+  test "error response is also cached", ctx do
+    conn = set_user_auth(ctx.conn, :user, ctx.user1, ["vc.pay"])
+    conn2 = set_user_auth(build_rest_conn(), :user, ctx.user1, ["vc.pay"])
+
+    user2 = ctx.user2
+
+    conn =
+      exec(
+        conn,
+        %{
+          unit: ctx.unit,
+          receiver_discord_id: to_string(user2),
+          amount: to_string(1_000_000)
+        }
+      )
+
+    conn2 =
+      exec(
+        conn2,
+        %{
+          unit: ctx.unit,
+          receiver_discord_id: to_string(user2),
+          amount: to_string(1_000_000)
+        }
+      )
+
+    assert json_response(conn, 409) == %{
+             "error" => "conflict",
+             "error_info" => "not_enough_amount"
+           }
+
+    assert json_response(conn2, 409) == %{
+             "error" => "conflict",
+             "error_info" => "not_enough_amount"
+           }
+
+    assert idempotency_ok?(conn) != idempotency_ok?(conn2)
+    assert idempotency_duplicate?(conn2) != idempotency_duplicate?(conn)
+  end
+
+  test "requests with different Idempotency-Key will succeed", ctx do
+    conn = set_user_auth(ctx.conn, :user, ctx.user1, ["vc.pay"])
+    conn2 = set_user_auth(build_rest_conn(), :user, ctx.user1, ["vc.pay"])
+
+    b1 = get_amount(ctx.user1, ctx.currency)
+    b2 = get_amount(ctx.user2, ctx.currency)
+
+    conn =
+      exec(
+        conn,
+        %{
+          unit: ctx.unit,
+          receiver_discord_id: to_string(ctx.user2),
+          amount: to_string(40)
+        }
+      )
+
+    conn2 =
+      exec(
+        conn2,
+        %{
+          unit: ctx.unit,
+          receiver_discord_id: to_string(ctx.user2),
+          amount: to_string(20)
+        },
+        "nyan"
+      )
+
+    assert response(conn, 201)
+    assert response(conn2, 201)
+
+    assert idempotency_ok?(conn)
+    assert idempotency_ok?(conn2)
+
+    assert get_amount(ctx.user1, ctx.currency) == b1 - 60
+
+    assert get_amount(ctx.user2, ctx.currency) == b2 + 60
+  end
+
+
 end

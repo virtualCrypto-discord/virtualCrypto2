@@ -1,4 +1,4 @@
-defmodule UserTransactionControllerTest.V2.Multi do
+defmodule UserTransactionControllerTest.V2.Pay.Bulk do
   use VirtualCryptoWeb.RestCase, async: true
   setup :setup_money
 
