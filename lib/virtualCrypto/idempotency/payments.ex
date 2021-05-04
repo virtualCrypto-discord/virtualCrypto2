@@ -4,7 +4,7 @@ defmodule VirtualCrypto.Idempotency.Payments do
 
   schema "payments_idempotency" do
     field :user_id, :id
-    field :idempotency_key, :string
+    field :idempotency_key, :binary
     field :expires, :naive_datetime
     field :http_status, :integer
     field :body, :map

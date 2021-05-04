@@ -44,8 +44,8 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Payments do
 
   @impl VirtualCryptoWeb.IdempotencyLayer
   def interrupt(conn, idempotency_key) do
-    with {_, true} <-
-           {:validate_idempotency_key, Validator.valid_idempotency_key?(idempotency_key)},
+    with {_, idempotency_key} when idempotency_key != nil <-
+           {:validate_idempotency_key, Validator.extract_idempotency_key(idempotency_key)},
          {:token, %{"sub" => user_id, "vc.pay" => true}} <-
            {:token, Guardian.Plug.current_resource(conn)},
          {:exist, idempotency_entry} <- get_or_insert_idempotency_entry(idempotency_key, user_id) do

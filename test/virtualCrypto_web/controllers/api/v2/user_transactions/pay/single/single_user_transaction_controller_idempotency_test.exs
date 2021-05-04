@@ -4,10 +4,10 @@ defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
 
   setup :setup_money
 
-  defp exec(conn, json, idempotency_key \\ "1dEmP0104Ke1") do
+  defp exec(conn, json, idempotency_key \\ "1dEmP0104Ke1\xFF") do
     conn
     |> Plug.Conn.put_req_header("content-type", "application/json")
-    |> Plug.Conn.put_req_header("idempotency-key", idempotency_key)
+    |> Plug.Conn.put_req_header("idempotency-key", "\"#{idempotency_key}\"")
     |> post(Routes.v2_user_transaction_path(conn, :post), Jason.encode!(json))
   end
 
@@ -47,8 +47,8 @@ defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
         }
       )
 
-    assert response(conn, 201)
-    assert response(conn2, 201)
+    assert json_response(conn, 201)
+    assert json_response(conn2, 201)
 
     assert idempotency_ok?(conn) != idempotency_ok?(conn2)
     assert idempotency_duplicate?(conn2) != idempotency_duplicate?(conn)
@@ -85,8 +85,8 @@ defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
         }
       )
 
-    assert response(conn, 201)
-    assert response(conn2, 201)
+    assert json_response(conn, 201)
+    assert json_response(conn2, 201)
 
     assert idempotency_ok?(conn)
     assert idempotency_ok?(conn2)
@@ -164,8 +164,8 @@ defmodule UserTransactionControllerTest.V2.Pay.Single.Idempotency do
         "nyan"
       )
 
-    assert response(conn, 201)
-    assert response(conn2, 201)
+    assert json_response(conn, 201)
+    assert json_response(conn2, 201)
 
     assert idempotency_ok?(conn)
     assert idempotency_ok?(conn2)

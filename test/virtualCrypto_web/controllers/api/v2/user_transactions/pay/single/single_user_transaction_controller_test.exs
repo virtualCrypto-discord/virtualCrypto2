@@ -49,7 +49,7 @@ defmodule UserTransactionControllerTest.V2.Pay.Single do
         }
       )
 
-    assert response(conn, 201)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -72,7 +72,7 @@ defmodule UserTransactionControllerTest.V2.Pay.Single do
         }
       )
 
-    assert response(conn, 201)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -115,7 +115,7 @@ defmodule UserTransactionControllerTest.V2.Pay.Single do
         }
       )
 
-    assert response(conn, 201)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == 0
 

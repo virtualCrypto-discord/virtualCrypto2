@@ -4,7 +4,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreatePaymentIdempotency do
   def change do
     create table(:payments_idempotency) do
       add(:user_id, references(:users), null: false)
-      add(:idempotency_key, :string, null: false)
+      add(:idempotency_key, :binary, null: false)
       add(:expires, :naive_datetime, null: false)
       add(:http_status, :integer)
       add(:body, :map)

@@ -7,7 +7,7 @@ defmodule UserTransactionControllerTest.V2.Pay.Bulk.Idempotency do
   defp exec(conn, json, idempotency_key \\ "1dEmP0104Ke1") do
     conn
     |> Plug.Conn.put_req_header("content-type", "application/json")
-    |> Plug.Conn.put_req_header("idempotency-key", idempotency_key)
+    |> Plug.Conn.put_req_header("idempotency-key", "\"#{idempotency_key}\"")
     |> post(Routes.v2_user_transaction_path(conn, :post), Jason.encode!(json))
   end
 
@@ -46,8 +46,8 @@ defmodule UserTransactionControllerTest.V2.Pay.Bulk.Idempotency do
 
     conn = exec(conn, req)
     conn2 = exec(conn2, req)
-    assert response(conn, 201)
-    assert response(conn2, 201)
+    assert json_response(conn, 201)
+    assert json_response(conn2, 201)
 
     assert idempotency_ok?(conn) != idempotency_ok?(conn2)
     assert idempotency_duplicate?(conn2) != idempotency_duplicate?(conn)
