@@ -31,18 +31,25 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
     InteractionsView.Info.render(response, data, user_amount, guild)
   end
 
-  def render("help.json", %{params: {bot_invite_url, guild_invite_url, site_url}}) do
+  def render("help.json", %{params: {logo_url, bot_invite_url, guild_invite_url, site_url}}) do
     %{
       type: channel_message_with_source(),
       data: %{
-        flags: 64,
-        content:
-          ~s/**VirtualCrypto**\n/ <>
-            ~s/VirtualCryptoはDiscord上でサーバーに独自の通貨を作成できるBotです。\n/ <>
-            ~s/公式サイト: #{site_url}\n/ <>
-            ~s/コマンドの使い方の詳細: #{site_url}\/document\/commands\n/ <>
-            ~s/サポートサーバー: #{guild_invite_url}\n/ <>
-            ~s/Botの招待: #{bot_invite_url}/
+        flags: ephemeral(),
+        embeds: [
+          %{
+            color: color_brand(),
+            title: "VirtualCrypto",
+            thumbnail: %{
+              url: logo_url
+            },
+            description: ~s/VirtualCryptoはDiscord上でサーバーに独自の通貨を作成できるBotです。
+[コマンドの使い方の詳細](#{site_url}\/document\/commands)
+[公式サイト](#{site_url})
+[Botの招待](#{bot_invite_url})
+[サポートサーバーの招待](#{guild_invite_url})/
+          }
+        ]
       }
     }
   end

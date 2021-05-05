@@ -5,6 +5,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
   @site_url Application.get_env(:virtualCrypto, :site_url)
+  defp logo_url,
+    do: @site_url <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
 
   def name_unit_check(name, unit) do
     with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
@@ -141,14 +143,11 @@ defmodule VirtualCryptoWeb.CommandHandler do
   end
 
   def handle("help", _options, _params, _conn) do
-    {@bot_invite_url, @guild_invite_url, @site_url}
+    {logo_url(), @bot_invite_url, @guild_invite_url, @site_url}
   end
 
   def handle("invite", _, _, _conn) do
-    {@site_url <>
-       "/static" <>
-       VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg"), @bot_invite_url,
-     @guild_invite_url}
+    {logo_url(), @bot_invite_url, @guild_invite_url}
   end
 
   def handle(
