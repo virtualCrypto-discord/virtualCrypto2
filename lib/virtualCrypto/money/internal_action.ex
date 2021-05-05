@@ -401,11 +401,14 @@ defmodule VirtualCrypto.Money.InternalAction do
 
       # Insert creator asset.
       # Always success.
-      Repo.insert!(%Money.Asset{
-        amount: creator_amount,
-        user_id: creator_id,
-        money_id: info.id
-      })
+      creator_asset =
+        Repo.insert!(%Money.Asset{
+          amount: creator_amount,
+          user_id: creator_id,
+          money_id: info.id
+        })
+
+      {:ok, creator_asset}
     else
       {:guild, _} -> {:error, :guild}
       {:unit, _} -> {:error, :unit}
