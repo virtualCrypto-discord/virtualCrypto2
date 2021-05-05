@@ -262,8 +262,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.guild_id == ^guild_id,
       group_by: info.id,
-      select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -273,8 +272,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.name == ^name,
       group_by: info.id,
-      select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -284,8 +282,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.unit == ^unit,
       group_by: info.id,
-      select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -295,8 +292,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.money_id == info.id,
       where: info.id == ^id,
       group_by: info.id,
-      select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
+      select: {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -381,7 +377,8 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
-      when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) do
+      when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) and
+             creator_amount <= 4_294_967_295 do
     # Check duplicate guild.
     with {:guild, nil} <- {:guild, get_money_by_guild_id(guild)},
          # Check duplicate unit.
@@ -404,7 +401,7 @@ defmodule VirtualCrypto.Money.InternalAction do
 
       # Insert creator asset.
       # Always success.
-      Repo.insert(%Money.Asset{
+      Repo.insert!(%Money.Asset{
         amount: creator_amount,
         user_id: creator_id,
         money_id: info.id

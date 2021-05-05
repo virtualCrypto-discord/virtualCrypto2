@@ -22,7 +22,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
   end
 
   defp render_error(:invalid_amount, _) do
-    "不正な金額です。"
+    "不正な金額です。1以上4294967295以下である必要があります。"
   end
 
   defp render_error(_, _) do
