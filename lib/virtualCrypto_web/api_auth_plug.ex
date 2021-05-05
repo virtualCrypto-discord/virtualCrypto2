@@ -10,6 +10,7 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
           "error": "invalid_request"
         }
         """)
+        |> Plug.Conn.halt()
 
       x when x in [:unauthorized, :invalid_token] ->
         conn
@@ -18,6 +19,7 @@ defmodule VirtualCryptoWeb.AuthErrorHandler do
           "error": "invalid_token"
         }
         """)
+        |> Plug.Conn.halt()
     end
   end
 end
@@ -30,7 +32,7 @@ defmodule VirtualCryptoWeb.ApiAuthPlug do
 
   @claims %{iss: "virtualCrypto"}
 
-  plug Guardian.Plug.VerifyHeader, claims: @claims, realm: "Bearer"
-  plug Guardian.Plug.EnsureAuthenticated
-  plug Guardian.Plug.LoadResource, allow_blank: true
+  plug(Guardian.Plug.VerifyHeader, claims: @claims, realm: "Bearer")
+  plug(Guardian.Plug.EnsureAuthenticated)
+  plug(Guardian.Plug.LoadResource, allow_blank: true)
 end

@@ -91,6 +91,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
     conn
     |> put_resp_content_type("text/plain")
     |> send_resp(400, "Type Not Found")
+    |> halt()
   end
 
   def index(conn, params) do
@@ -100,5 +101,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
         |> put_resp_content_type("text/plain")
         |> send_resp(401, "invalid request signature")
+        |> halt()
   end
 end

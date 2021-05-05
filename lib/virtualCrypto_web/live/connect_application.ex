@@ -110,11 +110,11 @@ defmodule VirtualCryptoWeb.ConnectApplication do
       {:validate_description, _} ->
         failed(
           socket,
-          "取得したIntegrationのDescriptionにトークンが含まれていません。(BotのユーザーIDならびにDescirption、Discoed Developer Portalにおいて設定が保存されていることを確認してください。)",
+          "取得したIntegrationのDescriptionにトークンが含まれていません。(BotのユーザーIDならびにDescription、Discoed Developer Portalにおいて設定が保存されていることを確認してください。)",
           edit: true
         )
 
-      {:update_discord_user_id, {:error, :confilicted_user_id}} ->
+      {:update_discord_user_id, {:error, :conflicted_user_id}} ->
         failed(socket, "すでにそのBotは別のApplicationに紐付けられています。")
 
       {:update_discord_user_id, {:error, _}} ->

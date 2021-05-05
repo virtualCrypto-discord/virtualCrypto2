@@ -33,13 +33,7 @@ defmodule VirtualCryptoWeb.RestCase do
     end
   end
 
-  setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(VirtualCrypto.Repo)
-
-    unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(VirtualCrypto.Repo, {:shared, self()})
-    end
-
+  def build_rest_conn(tags \\ %{}) do
     conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("accept", "application/json")
 
     conn =
@@ -48,10 +42,18 @@ defmodule VirtualCryptoWeb.RestCase do
       else
         conn
       end
+  end
+
+  setup tags do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(VirtualCrypto.Repo)
+
+    unless tags[:async] do
+      Ecto.Adapters.SQL.Sandbox.mode(VirtualCrypto.Repo, {:shared, self()})
+    end
 
     {:ok,
      %{
-       conn: conn
+       conn: build_rest_conn(tags)
      }}
   end
 end

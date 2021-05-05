@@ -1,4 +1,4 @@
-defmodule UserTransactionControllerTest.V2.Multi do
+defmodule UserTransactionControllerTest.V2.Pay.Bulk do
   use VirtualCryptoWeb.RestCase, async: true
   setup :setup_money
 
@@ -14,7 +14,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
 
     assert json_response(conn, 403) == %{
              "error" => "insufficient_scope",
-             "error_description" => "token_verfication_failed"
+             "error_description" => "token_verification_failed"
            }
   end
 
@@ -22,7 +22,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.pay"])
     conn = exec(conn, [])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
   end
 
   test "one element", %{conn: conn} = ctx do
@@ -39,7 +39,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -61,7 +61,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -90,7 +90,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 50
 
@@ -120,7 +120,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 50
 
@@ -151,7 +151,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user2, ctx.currency) == b1_c1 - 20
     assert get_amount(ctx.user2, ctx.currency2) == b1_c2 - 30
@@ -192,7 +192,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user2, ctx.currency) == b1_c1 - 40
     assert get_amount(ctx.user2, ctx.currency2) == b1_c2 - 40
@@ -268,7 +268,7 @@ defmodule UserTransactionControllerTest.V2.Multi do
         }
       ])
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == 0
 

@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.ApplicationController do
 
         case app do
           nil ->
-            conn |> resp(404, "Not found") |> send_resp()
+            conn |> resp(404, "Not found") |> send_resp() |> halt()
 
           app ->
             {application, app_user, redirect_uris} = app
@@ -42,7 +42,7 @@ defmodule VirtualCryptoWeb.ApplicationController do
         end
 
       {:error, _} ->
-        conn |> resp(404, "Not found") |> send_resp()
+        conn |> resp(404, "Not found") |> send_resp() |> halt()
     end
   end
 

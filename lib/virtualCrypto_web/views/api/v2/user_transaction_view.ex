@@ -1,6 +1,12 @@
 defmodule VirtualCryptoWeb.Api.V2.UserTransactionView do
   use VirtualCryptoWeb, :view
 
+  def render("pass.json", %{_json: json}) do
+    json
+  end
+end
+
+defmodule VirtualCryptoWeb.Api.V2.UserTransactionView.Pure do
   defp render_error(:not_found_money) do
     %{
       error: "invalid_request",
@@ -39,5 +45,9 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionView do
         error: error
       }) do
     render_error(error)
+  end
+
+  def render("ok.json", %{}) do
+    %{}
   end
 end

@@ -12,7 +12,7 @@ defmodule VirtualCrypto.ConnectUser do
           _merge(application_user_id, source_user_id)
 
         _ ->
-          Repo.rollback(:confilicted_user_id)
+          Repo.rollback(:conflicted_user_id)
       end
 
       case VirtualCrypto.User.User
@@ -100,6 +100,12 @@ defmodule VirtualCrypto.ConnectUser do
         update: [set: [payer_user_id: ^base_user_id]]
       ),
       []
+    )
+
+    Repo.delete_all(
+      from(idempotency_entries in VirtualCrypto.Idempotency.Payments,
+        where: idempotency_entries.user_id == ^source_user_id
+      )
     )
 
     Repo.delete_all(from(users in VirtualCrypto.User.User, where: users.id == ^source_user_id))

@@ -1,4 +1,4 @@
-defmodule UserTransactionControllerTest.V2.Single do
+defmodule UserTransactionControllerTest.V2.Pay.Single do
   use VirtualCryptoWeb.RestCase, async: true
   setup :setup_money
 
@@ -20,7 +20,7 @@ defmodule UserTransactionControllerTest.V2.Single do
 
     assert json_response(conn, 403) == %{
              "error" => "insufficient_scope",
-             "error_description" => "token_verfication_failed"
+             "error_description" => "token_verification_failed"
            }
   end
 
@@ -49,7 +49,7 @@ defmodule UserTransactionControllerTest.V2.Single do
         }
       )
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -72,7 +72,7 @@ defmodule UserTransactionControllerTest.V2.Single do
         }
       )
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == b1 - 20
 
@@ -115,7 +115,7 @@ defmodule UserTransactionControllerTest.V2.Single do
         }
       )
 
-    assert response(conn, 204)
+    assert json_response(conn, 201)
 
     assert get_amount(ctx.user1, ctx.currency) == 0
 
