@@ -2,7 +2,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
 
-  #NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
+  # NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
   defp cast_int(v) when is_binary(v) do
     String.to_integer(v)
   end
