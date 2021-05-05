@@ -352,7 +352,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def create_claim(claimant_user_id, payer_user_id, unit, amount)
-      when is_positive_integer(amount) do
+      when is_positive_integer(amount) and amount <= 9_223_372_036_854_775_807 do
     case Money.Info |> where([i], i.unit == ^unit) |> Repo.one() do
       nil ->
         {:error, :money_not_found}
