@@ -70,7 +70,7 @@ defmodule InteractionsControllerTest.Claim.Make do
     assert %{"data" => %{"content" => content, "flags" => 64}, "type" => 4} =
              json_response(conn, 200)
 
-    assert content == "エラー: 不正な金額です。"
+    assert content == "エラー: 不正な金額です。1以上9223372036854775807以下である必要があります。"
   end
 
   test "invalid unit", %{conn: conn, user1: user1, user2: user2} do

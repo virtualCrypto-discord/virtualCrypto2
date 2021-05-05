@@ -14,7 +14,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   end
 
   defp render_error(:invalid_amount) do
-    "不正な金額です。1以上9223372036854775807以下である必要があります・"
+    "不正な金額です。1以上9223372036854775807以下である必要があります。"
   end
 
   defp render_error(:not_found_sender_asset) do
