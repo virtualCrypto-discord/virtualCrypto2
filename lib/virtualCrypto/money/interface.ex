@@ -154,6 +154,9 @@ defmodule VirtualCrypto.Money do
       {:error, :create, :unit, _} ->
         {:error, :unit}
 
+      {:error, :create, :name, _} ->
+        {:error, :name}
+
       {:error, _, _, _} ->
         _create(guild, name, unit, creator, creator_amount, pool_amount, retry - 1)
     end

@@ -36,12 +36,11 @@ defmodule VirtualCryptoWeb.RestCase do
   def build_rest_conn(tags \\ %{}) do
     conn = Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("accept", "application/json")
 
-    conn =
-      if tags[:ctype] == :json do
-        conn |> Plug.Conn.put_req_header("content-type", "application/json")
-      else
-        conn
-      end
+    if tags[:ctype] == :json do
+      conn |> Plug.Conn.put_req_header("content-type", "application/json")
+    else
+      conn
+    end
   end
 
   setup tags do

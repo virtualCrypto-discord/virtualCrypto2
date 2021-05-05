@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
   def pong, do: 1
   def ephemeral, do: 64
   def color_ok, do: 0x38EA42
+  def color_error, do: 0xEA3875
   def color_brand, do: 0x6221ED
   @spec mention(String.t() | non_neg_integer()) :: String.t()
   def mention(id) do

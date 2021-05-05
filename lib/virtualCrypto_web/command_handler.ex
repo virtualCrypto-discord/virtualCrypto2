@@ -116,6 +116,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_guild_id = String.to_integer(guild_id)
     int_user_id = String.to_integer(user["id"])
     int_permissions = String.to_integer(params["member"]["permissions"])
+    options = %{options | "amount" => cast_int(options["amount"])}
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       if name_unit_check(options["name"], options["unit"]) do

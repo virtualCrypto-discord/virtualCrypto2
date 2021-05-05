@@ -57,7 +57,9 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       name: name,
       name2: name2,
       currency: currency.id,
-      currency2: currency2.id
+      currency_guild: guild,
+      currency2: currency2.id,
+      currency2_guild: guild2
     })
   end
 
