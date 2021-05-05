@@ -9,7 +9,6 @@ defmodule InteractionsControllerTest.Pay do
 
     sender = ctx.user1
     amount = get_amount(sender, ctx.currency)
-
     conn =
       post_command(
         conn,

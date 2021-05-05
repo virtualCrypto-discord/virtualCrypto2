@@ -239,7 +239,6 @@ defmodule VirtualCrypto.Money do
             name: String.t(),
             unit: String.t(),
             guild: non_neg_integer(),
-            money_status: non_neg_integer(),
             pool_amount: non_neg_integer()
           }
           | nil
@@ -255,13 +254,12 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, info_name, info_unit, info_guild_id, info_status, pool_amount} ->
+      {amount, info_name, info_unit, info_guild_id, pool_amount} ->
         %{
-          amount: amount,
+          amount: Decimal.to_integer(amount),
           name: info_name,
           unit: info_unit,
           guild: info_guild_id,
-          money_status: info_status,
           pool_amount: pool_amount
         }
 

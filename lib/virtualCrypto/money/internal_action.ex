@@ -161,8 +161,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       %Money.Asset{
         user_id: user_id,
         money_id: money_id,
-        amount: amount,
-        status: 0
+        amount: amount
       },
       on_conflict: [inc: [amount: amount]],
       conflict_target: [:user_id, :money_id]
@@ -176,7 +175,6 @@ defmodule VirtualCrypto.Money.InternalAction do
       |> Enum.map(fn {money_id, user_id, amount} ->
         [
           amount: amount,
-          status: 0,
           user_id: user_id,
           money_id: money_id,
           inserted_at: now,
@@ -265,7 +263,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       where: info.guild_id == ^guild_id,
       group_by: info.id,
       select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -276,7 +274,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       where: info.name == ^name,
       group_by: info.id,
       select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -287,7 +285,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       where: info.unit == ^unit,
       group_by: info.id,
       select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -298,7 +296,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       where: info.id == ^id,
       group_by: info.id,
       select:
-        {sum(asset.amount), info.name, info.unit, info.guild_id, info.status, info.pool_amount}
+        {sum(asset.amount), info.name, info.unit, info.guild_id, info.pool_amount}
     )
   end
 
@@ -399,7 +397,6 @@ defmodule VirtualCrypto.Money.InternalAction do
             guild_id: guild,
             pool_amount: pool_amount,
             name: name,
-            status: 0,
             unit: unit
           },
           returning: true
@@ -409,7 +406,6 @@ defmodule VirtualCrypto.Money.InternalAction do
       # Always success.
       Repo.insert(%Money.Asset{
         amount: creator_amount,
-        status: 0,
         user_id: creator_id,
         money_id: info.id
       })
