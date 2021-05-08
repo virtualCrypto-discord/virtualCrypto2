@@ -206,4 +206,24 @@ defmodule InteractionsControllerTest.Pay do
              "type" => 4
            } = json_response(conn, 200)
   end
+
+  test "amount by string", %{conn: conn} = ctx do
+    receiver = ctx.user2
+
+    sender = ctx.user1
+
+    conn =
+      post_command(
+        conn,
+        from_guild(%{receiver: receiver, amount: "9007199254740992", unit: ctx.unit}, sender)
+      )
+
+    assert %{
+             "data" => %{
+               "content" => "エラー: 通貨が不足しています。",
+               "flags" => 64
+             },
+             "type" => 4
+           } = json_response(conn, 200)
+  end
 end

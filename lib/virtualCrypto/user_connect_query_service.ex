@@ -43,7 +43,6 @@ defmodule VirtualCrypto.ConnectUser do
       |> Enum.map(fn {money_id, amount} ->
         [
           amount: amount,
-          status: 0,
           user_id: base_user_id,
           money_id: money_id,
           inserted_at: now,

@@ -1,6 +1,20 @@
 defmodule VirtualCryptoWeb.CommandHandler do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
+
+  # NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
+  defp cast_int(v) when is_binary(v) do
+    String.to_integer(v)
+  end
+
+  defp cast_int(v) when is_integer(v) do
+    v
+  end
+
+  defp cast_int(v) do
+    v
+  end
+
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -44,7 +58,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
            DiscordService,
            sender: int_sender,
            receiver: int_receiver,
-           amount: amount,
+           amount: cast_int(amount),
            unit: unit
          ) do
       {:ok} -> {:ok, %{unit: unit, receiver: receiver, sender: sender, amount: amount}}
@@ -66,14 +80,15 @@ defmodule VirtualCryptoWeb.CommandHandler do
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       int_receiver = String.to_integer(receiver)
       int_guild = String.to_integer(guild)
+      int_amount = cast_int(amount)
 
-      case VirtualCrypto.Money.give(receiver: int_receiver, amount: amount, guild: int_guild) do
+      case VirtualCrypto.Money.give(receiver: int_receiver, amount: int_amount, guild: int_guild) do
         {:ok,
          %{
            currency: %VirtualCrypto.Money.Info{unit: unit, pool_amount: pool_amount},
-           amount: amount
+           amount: int_amount
          }} ->
-          {:ok, {receiver, amount, unit, pool_amount}}
+          {:ok, {receiver, int_amount, unit, pool_amount}}
 
         {:error, v} ->
           {:error, v}
@@ -101,6 +116,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_guild_id = String.to_integer(guild_id)
     int_user_id = String.to_integer(user["id"])
     int_permissions = String.to_integer(params["member"]["permissions"])
+    options = %{options | "amount" => cast_int(options["amount"])}
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
       if name_unit_check(options["name"], options["unit"]) do
@@ -192,7 +208,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
            int_user_id,
            int_payer_id,
            options["sub_options"]["unit"],
-           options["sub_options"]["amount"]
+           cast_int(options["sub_options"]["amount"])
          ) do
       {:ok, {claim, _, _, _}} -> {:ok, "make", claim}
       {:error, :money_not_found} -> {:error, "make", :money_not_found}

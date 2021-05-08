@@ -22,6 +22,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
+      import VirtualCryptoWeb.RestCase
       import VirtualCryptoWeb.InteractionsCase
       import VirtualCryptoWeb.EnvironmentBootstrapper
       import VirtualCryptoWeb.ConditionChecker

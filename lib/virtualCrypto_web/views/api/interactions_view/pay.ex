@@ -25,7 +25,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
           %{
             "description" =>
               ~s/#{mention(sender)}から#{mention(receiver)}へ**#{amount}** `#{unit}`送金されました。/,
-            color: 0x38EA42
+            color: color_ok()
           }
         ],
         allowed_mentions: %{

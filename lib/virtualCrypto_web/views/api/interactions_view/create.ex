@@ -6,11 +6,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
   end
 
   defp render_error(:name, options) do
-    options["name"] <> "という単位の通貨は存在しています。別の名前を使用してください。"
+    ~s/`#{options["name"]}`という名前の通貨は存在しています。別の名前を使用してください。/
   end
 
   defp render_error(:unit, options) do
-    options["unit"] <> "という単位の通貨は存在しています。別の名前を使用してください。"
+    ~s/`#{options["unit"]}`という単位の通貨は存在しています。別の単位を使用してください。/
   end
 
   defp render_error(:invalid, _) do
@@ -22,7 +22,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
   end
 
   defp render_error(:invalid_amount, _) do
-    "不正な金額です。"
+    "不正な金額です。1以上4294967295以下である必要があります。"
   end
 
   defp render_error(_, _) do
@@ -37,7 +37,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
           %{
             description:
               ~s"\u2705 通貨の作成に成功しました！ `/info unit: #{options["unit"]}`コマンドで通貨の情報をご覧ください。",
-            color: 0x38EA42
+            color: color_ok()
           }
         ],
         allowed_mentions: %{
@@ -51,10 +51,14 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
     %{
       type: channel_message_with_source(),
       data: %{
-        tts: false,
         flags: 64,
-        content: "エラー: " <> render_error(reason, options),
-        embeds: [],
+        embeds: [
+          %{
+            title: "エラー",
+            description: render_error(reason, options),
+            color: color_error()
+          }
+        ],
         allowed_mentions: %{
           parse: []
         }
