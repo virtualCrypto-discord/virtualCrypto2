@@ -4,7 +4,11 @@ defmodule Discord.Api.V8.Raw do
   @base_url "https://discord.com/api/v8/"
   def base_headers,
     do: [
-      {"Authorization", "Bot " <> Application.get_env(:virtualCrypto, :bot_token)},
+      {"Authorization", "Bot #{Application.get_env(:virtualCrypto, :bot_token)}"},
+      {"User-Agent",
+       "DiscordBot (#{Application.get_env(:virtualCrypto, :discord_ua_website)}, #{
+         Application.get_env(:virtualCrypto, :discord_ua_version)
+       })"},
       {"Content-Type", "application/json"}
     ]
 
