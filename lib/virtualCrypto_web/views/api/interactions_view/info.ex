@@ -15,8 +15,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
 
   def render_guild(guild) do
     case guild do
-      nil -> "`情報の取得に失敗しました。`"
-      guild -> ~s/#{guild["name"]}/
+      nil ->
+        nil
+
+      guild ->
+        %{
+          name: ~s/#{guild["name"]}/
+        }
+        |> Map.merge(
+          case Map.fetch(guild, "icon") do
+            {:ok, hash} ->
+              format =
+                if String.starts_with?(hash, "a_") do
+                  "gif"
+                else
+                  "webp"
+                end
+
+              %{
+                icon_url:
+                  IO.inspect(
+                    ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
+                  )
+              }
+
+            :error ->
+              %{}
+          end
+        )
     end
   end
 
@@ -51,31 +77,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
         embeds: [
           %{
             title: render_title(data),
-            author:
-              %{
-                name: render_guild(guild)
-              }
-              |> Map.merge(
-                case Map.fetch(guild, "icon") do
-                  {:ok, hash} ->
-                    format =
-                      if String.starts_with?(hash, "a_") do
-                        "gif"
-                      else
-                        "webp"
-                      end
-
-                    %{
-                      icon_url:
-                        IO.inspect(
-                          ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
-                        )
-                    }
-
-                  :error ->
-                    %{}
-                end
-              ),
+            author: render_guild(guild),
             color: color_brand(),
             fields: [
               %{
