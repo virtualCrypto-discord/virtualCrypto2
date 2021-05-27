@@ -41,4 +41,7 @@ config :virtualCrypto, VirtualCrypto.Scheduler,
     {"* * * * *", fn -> VirtualCryptoWeb.IdempotencyLayer.Payments.purge_idempotency_keys() end}
   ]
 
+config :virtualCrypto, :discord_ua_website, "https://vcrypto.sumidora.com"
+config :virtualCrypto, :discord_ua_version, "1"
+
 config :phoenix, :template_engines, leex: Phoenix.LiveView.Engine
