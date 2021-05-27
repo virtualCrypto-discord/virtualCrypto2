@@ -1,7 +1,7 @@
-defmodule Discord.Api.V8.Raw do
+defmodule Discord.Api.Raw do
   alias Discord.Api.Behavior
   @behaviour Behavior
-  @base_url "https://discord.com/api/v8/"
+  @base_url "https://discord.com/api/v9/"
   def base_headers,
     do: [
       {"Authorization", "Bot #{Application.get_env(:virtualCrypto, :bot_token)}"},
@@ -12,16 +12,20 @@ defmodule Discord.Api.V8.Raw do
       {"Content-Type", "application/json"}
     ]
 
+  defp make_params([]) do
+    ""
+  end
+
   defp make_params(params) do
     "?" <> (params |> Enum.map(fn {name, value} -> name <> "=" <> value end) |> Enum.join("&"))
   end
 
-  defp get(paths, []) do
-    HTTPoison.get(@base_url <> Enum.join(paths, "/"), base_headers())
-  end
-
   defp get(paths, params) do
     HTTPoison.get(@base_url <> Enum.join(paths, "/") <> make_params(params), base_headers())
+  end
+
+  defp patch(paths, body) do
+    HTTPoison.patch(@base_url <> Enum.join(paths, "/"), Jason.encode!(body), base_headers())
   end
 
   @impl Behavior
@@ -70,6 +74,26 @@ defmodule Discord.Api.V8.Raw do
   @impl Behavior
   def get_guild_integrations_with_status_code(guild_id) do
     {:ok, response} = get(["guilds", to_string(guild_id), "integrations"], [])
+    {response.status_code, Jason.decode!(response.body)}
+  end
+
+  @impl Behavior
+  def patch_webhook_message(application_id, interaction_token, webhook_message_id, body) do
+    {:ok, response} =
+      patch(
+        [
+          "webhooks",
+          to_string(application_id),
+          interaction_token,
+          "messages",
+          case webhook_message_id do
+            :original -> "@original"
+            id -> to_string(id)
+          end
+        ],
+        body
+      )
+
     {response.status_code, Jason.decode!(response.body)}
   end
 end

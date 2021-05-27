@@ -1,7 +1,7 @@
-defmodule Discord.Api.V8.Cached do
+defmodule Discord.Api.Cached do
   @spec get_user(Discord.Api.Behavior.user_id(), Discord.Api.Behavior.service()) ::
           Discord.Api.Behavior.user()
-  def get_user(user_id, service \\ Discord.Api.V8.Raw) do
+  def get_user(user_id, service \\ Discord.Api.Raw) do
     case Cachex.get!(:discord_users, user_id) do
       nil ->
         user = service.get_user(user_id)

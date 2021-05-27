@@ -8,12 +8,12 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
     user_id = conn.private.plug_session["user"].id
 
     with {200, member} <-
-           Discord.Api.V8.Raw.get_guild_member_with_status_code(
+           Discord.Api.Raw.get_guild_member_with_status_code(
              guild_id,
              user_id
            ),
          roles <-
-           Discord.Api.V8.Raw.get_roles(guild_id)
+           Discord.Api.Raw.get_roles(guild_id)
            |> Enum.map(fn %{"id" => id} = m -> {id, m} end)
            |> Map.new(),
          {:perms, true} <-
@@ -44,10 +44,10 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
                client_id: client_id
              }),
            {:guild_id, %{"guild_id" => guild_id}} <- {:guild_id, params},
-           {:guild_id, guild} <- {:guild_id, Discord.Api.V8.Raw.get_guild(guild_id)},
+           {:guild_id, guild} <- {:guild_id, Discord.Api.Raw.get_guild(guild_id)},
            {:guild_id, {200, _bot}} <-
              {:guild_id,
-              Discord.Api.V8.Raw.get_guild_member_with_status_code(
+              Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
                 Application.get_env(:virtualCrypto, :client_id)
               )},
@@ -117,10 +117,10 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
            {:redirect_uri, %{"redirect_uri" => redirect_uri}} <- {:redirect_uri, params},
            {:scope, %{"scope" => scope}} <- {:scope, params},
            {:guild_id, %{"guild_id" => guild_id}} <- {:guild_id, params},
-           {:guild_id, guild} <- {:guild_id, Discord.Api.V8.Raw.get_guild(guild_id)},
+           {:guild_id, guild} <- {:guild_id, Discord.Api.Raw.get_guild(guild_id)},
            {:guild_id, {200, _bot}} <-
              {:guild_id,
-              Discord.Api.V8.Raw.get_guild_member_with_status_code(
+              Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
                 Application.get_env(:virtualCrypto, :client_id)
               )},

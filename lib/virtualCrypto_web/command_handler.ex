@@ -152,8 +152,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
       info ->
         case Money.balance(DiscordService, user: int_user_id)
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.V8.Raw.get_guild(info.guild)}
-          [] -> {:ok, info, 0, Discord.Api.V8.Raw.get_guild(info.guild)}
+          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.Raw.get_guild(info.guild)}
+          [] -> {:ok, info, 0, Discord.Api.Raw.get_guild(info.guild)}
         end
     end
   end

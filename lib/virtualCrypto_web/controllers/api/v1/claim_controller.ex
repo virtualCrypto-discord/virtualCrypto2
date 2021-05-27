@@ -5,7 +5,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
   defp get_discord_user(discord_user_id, service) do
-    user = Discord.Api.V8.Cached.get_user(discord_user_id, service)
+    user = Discord.Api.Cached.get_user(discord_user_id, service)
 
     Filtering.user(user)
   end

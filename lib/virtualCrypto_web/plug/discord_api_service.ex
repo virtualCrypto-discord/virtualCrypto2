@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.Plug.DiscordApiService do
 
   def call(conn, opts) do
     conn
-    |> set_service(Keyword.get(opts, :service, Discord.Api.V8.Raw))
+    |> set_service(Keyword.get(opts, :service, Discord.Api.Raw))
   end
 
   @spec get_service(Plug.Conn.t()) :: Discord.Api.Behavior.service()

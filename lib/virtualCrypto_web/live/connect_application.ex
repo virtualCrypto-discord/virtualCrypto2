@@ -47,7 +47,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
 
     with {:fetch_integrations, {200, integrations}} <-
            {:fetch_integrations,
-            Discord.Api.V8.Raw.get_guild_integrations_with_status_code(assigns.guild_id)},
+            Discord.Api.Raw.get_guild_integrations_with_status_code(assigns.guild_id)},
          {:find_target_integration, %{} = integration} <-
            {:find_target_integration,
             integrations
@@ -68,7 +68,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
        |> assign(message: "認証成功しました。(トークンは削除して差し支えありません。)", now_id: assigns.bot_id, edit: false)}
     else
       {:fetch_integrations, {403, _data}} ->
-        case Discord.Api.V8.Raw.get_guild_with_status_code(assigns.guild_id) do
+        case Discord.Api.Raw.get_guild_with_status_code(assigns.guild_id) do
           {403, _} ->
             failed(
               socket,
@@ -91,7 +91,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
         failed(socket, ~s/Integrationの取得が#{code}で失敗しました。/, edit: true)
 
       {:find_target_integration, _} ->
-        case Discord.Api.V8.Raw.get_user_with_status(assigns.bot_id) do
+        case Discord.Api.Raw.get_user_with_status(assigns.bot_id) do
           {200, _} ->
             failed(
               socket,
