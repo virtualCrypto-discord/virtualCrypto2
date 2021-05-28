@@ -202,8 +202,7 @@ defmodule ClaimControllerTest.V1 do
   test "get claim3 by claimant", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.claim"])
 
-    conn =
-      get(conn, Routes.v1_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
+    conn = get(conn, Routes.v1_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -322,8 +321,7 @@ defmodule ClaimControllerTest.V1 do
   test "get claim3 by payer", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
 
-    conn =
-      get(conn, Routes.v1_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
+    conn = get(conn, Routes.v1_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -394,7 +392,7 @@ defmodule ClaimControllerTest.V1 do
 
   test "patch claim0 with nothing status", %{conn: conn, claims: claims, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
-    conn = patch(conn, Routes.v1_claim_path(conn, :patch, (claims |> at(0) ).claim.id))
+    conn = patch(conn, Routes.v1_claim_path(conn, :patch, (claims |> at(0)).claim.id))
 
     assert json_response(conn, 400) == %{
              "error" => "invalid_request",

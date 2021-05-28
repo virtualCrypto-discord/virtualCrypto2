@@ -667,6 +667,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       limit
     )
   end
+
   def get_claims(
         user_id,
         statuses,
@@ -678,7 +679,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     received = get_claims_m(user_id, statuses, :received, [desc: claim.id], ^true, ^limit)
 
     claimed = get_claims_m(user_id, statuses, :claimed, [desc: claim.id], ^true, ^limit)
-    %{received: received,claimed: claimed}
+    %{received: received, claimed: claimed}
   end
 
   def get_claims(

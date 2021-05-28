@@ -10,7 +10,10 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     Filtering.user(user)
   end
 
-  defp format_claim(%{claim: claim,currency: currency, claimant: claimant, payer: payer}, service) do
+  defp format_claim(
+         %{claim: claim, currency: currency, claimant: claimant, payer: payer},
+         service
+       ) do
     %{
       "id" => claim.id |> to_string,
       "currency" => %{

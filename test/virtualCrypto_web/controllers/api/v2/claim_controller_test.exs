@@ -261,7 +261,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim0 by payer", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0) ).claim.id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0)).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}

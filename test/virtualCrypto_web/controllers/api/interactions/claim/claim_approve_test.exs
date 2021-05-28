@@ -100,7 +100,12 @@ defmodule InteractionsControllerTest.Claim.Approve do
 
   test "approve approved claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> approved_claim() |> Map.fetch!(:claim), user1)
+    test_invalid_operator(
+      conn,
+      "approve",
+      claims |> approved_claim() |> Map.fetch!(:claim),
+      user1
+    )
   end
 
   test "approve approved claim by not related user",
@@ -130,7 +135,12 @@ defmodule InteractionsControllerTest.Claim.Approve do
 
   test "approve canceled claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> Map.fetch!(:claim), user1)
+    test_invalid_operator(
+      conn,
+      "approve",
+      claims |> canceled_claim() |> Map.fetch!(:claim),
+      user1
+    )
   end
 
   test "approve canceled claim by not related user",

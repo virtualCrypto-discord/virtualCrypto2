@@ -177,9 +177,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     %{claimed: sent_claims, received: received_claims} =
       Money.get_claims(DiscordService, int_user_id, ["pending"], :legacy, :claim_id, :first, 11)
 
-    {:ok, "list",
-     Enum.slice(sent_claims , 0, 10),
-     Enum.slice(received_claims, 0, 10)}
+    {:ok, "list", Enum.slice(sent_claims, 0, 10), Enum.slice(received_claims, 0, 10)}
   end
 
   def handle(

@@ -31,7 +31,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   defp render_sent_claim(sent_claims) do
     sent_claims
-    |> Enum.map(fn %{claim: claim, currency: currency,payer: payer} ->
+    |> Enum.map(fn %{claim: claim, currency: currency, payer: payer} ->
       ~s/id: #{claim.id}, 請求先: #{mention(payer.discord_id)}, 請求額: **#{claim.amount}** `#{
         currency.unit
       }`, 請求日: #{format_date_time(claim.inserted_at)}/
@@ -41,7 +41,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   defp render_received_claim(received_claims) do
     received_claims
-    |> Enum.map(fn %{claim: claim, currency: currency,claimant: claimant} ->
+    |> Enum.map(fn %{claim: claim, currency: currency, claimant: claimant} ->
       ~s/id: #{claim.id}, 請求元: #{mention(claimant.discord_id)}, 請求額: **#{claim.amount}** `#{
         currency.unit
       }`, 請求日: #{format_date_time(claim.inserted_at)}/

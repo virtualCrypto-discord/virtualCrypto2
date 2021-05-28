@@ -41,7 +41,16 @@ defmodule InteractionsControllerTest.Claim.List do
     regex = ~r/友達への請求:\n(.*)\n\n自分に来た請求:\n(.*)/us
     assert [_, outgoing, incoming] = Regex.run(regex, content)
 
-    claims = VirtualCrypto.Money.get_claims(VirtualCrypto.Money.DiscordService, user1, ["pending"], :legacy, :claim_id, :first, 11)
+    claims =
+      VirtualCrypto.Money.get_claims(
+        VirtualCrypto.Money.DiscordService,
+        user1,
+        ["pending"],
+        :legacy,
+        :claim_id,
+        :first,
+        11
+      )
 
     outgoing_claims =
       claims.claimed
