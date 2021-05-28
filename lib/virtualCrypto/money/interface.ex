@@ -3,6 +3,12 @@ defmodule VirtualCrypto.Money do
   alias Ecto.Multi
   alias VirtualCrypto.Money.InternalAction, as: Action
 
+  @type claim_t :: %{
+          claim: %VirtualCrypto.Money.Claim{},
+          currency: %VirtualCrypto.Money.Info{},
+          claimant: %VirtualCrypto.User.User{},
+          payer: %VirtualCrypto.User.User{}
+        }
   # FIXME: rename to create_payment and take map
   @moduledoc """
   receiver must be discord user
@@ -278,20 +284,55 @@ defmodule VirtualCrypto.Money do
   end
 
   # FIXME: this is not useful return value!
-  @spec get_claims(module(), Integer.t(), String.t()) ::
+  # FIXME: take too many arguments
+  @spec get_claims(
+          module(),
+          Integer.t(),
+          [String.t()],
+          :all | :received | :claimed | :legacy,
+          :claim_id,
+          :first | {:after | :before, any()} | :last,
+          pos_integer()
+        ) ::
           [
-            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-             VirtualCrypto.User.User}
+            claim_t
           ]
-  def get_claims(service, user_id, status) do
-    service.get_claims(user_id, status)
+          | %{
+              received: [
+                claim_t
+              ],
+              claimed: [claim_t()]
+            }
+  def get_claims(
+        service,
+        user_id,
+        statuses,
+        type,
+        order_by,
+        cursor,
+        limit
+      ) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        service.get_claims(user_id, statuses, type, order_by, cursor, limit)
+      end)
+
+    x
+  end
+
+  # FIXME: this is not useful return value!
+  @spec get_claims(module(), Integer.t(), [String.t()]) ::
+          [
+            claim_t
+          ]
+  def get_claims(service, user_id, statuses) do
+    service.get_claims(user_id, statuses)
   end
 
   # FIXME: this is not useful return value!
   @spec get_claims(module(), Integer.t()) ::
           [
-            {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-             VirtualCrypto.User.User}
+            claim_t
           ]
   def get_claims(service, user_id) do
     service.get_claims(user_id)
@@ -299,16 +340,20 @@ defmodule VirtualCrypto.Money do
 
   # FIXME: this is not useful return value!
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok,
-           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-            VirtualCrypto.User.User}}
+          {:ok, claim_t}
           | {:error, :not_found}
           | {:error, :not_found_money}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def approve_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: status, amount: amount}, info, claimant, payer}} <-
+           with {:get_claim,
+                 %{
+                   claim: %{status: status, amount: amount},
+                   currency: currency,
+                   claimant: claimant,
+                   payer: payer
+                 }} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(payer, user_id)},
@@ -318,11 +363,11 @@ defmodule VirtualCrypto.Money do
                     payer.id,
                     claimant.discord_id,
                     amount,
-                    info.unit
+                    currency.unit
                   ),
                 {:ok, claim} <-
                   VirtualCrypto.Money.InternalAction.approve_claim(id) do
-             {claim, info, claimant, payer}
+             %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
                Repo.rollback(:not_found)
@@ -347,19 +392,18 @@ defmodule VirtualCrypto.Money do
 
   # FIXME: this is not useful return value!
   @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok,
-           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-            VirtualCrypto.User.User}}
+          {:ok, claim_t}
           | {:error, :not_found}
   def cancel_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
+           with {:get_claim,
+                 %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(claimant, user_id)},
                 {:status, "pending"} <- {:status, status},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
-             {claim, info, claimant, payer}
+             %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
                Repo.rollback(:not_found)
@@ -381,19 +425,18 @@ defmodule VirtualCrypto.Money do
 
   # FIXME: this is not useful return value!
   @spec deny_claim(module(), Integer.t(), Integer.t()) ::
-          {:ok,
-           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-            VirtualCrypto.User.User}}
+          {:ok, claim_t}
           | {:error, :not_found}
   def deny_claim(service, id, user_id) do
     case Repo.transaction(fn ->
-           with {:get_claim, {%{status: status}, info, claimant, payer}} <-
+           with {:get_claim,
+                 %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
                   {:get_claim, Action.get_claim_by_id(id)},
                 {:validate_operator, true} <-
                   {:validate_operator, service.equals?(payer, user_id)},
                 {:status, "pending"} <- {:status, status},
                 {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
-             {claim, info, claimant, payer}
+             %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
                Repo.rollback(:not_found)
@@ -418,9 +461,7 @@ defmodule VirtualCrypto.Money do
   payer must be discord user
   """
   @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
-          {:ok,
-           {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-            VirtualCrypto.User.User}}
+          {:ok, claim_t}
           | {:error, :money_not_found}
           | {:error, :invalid_amount}
   def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
@@ -428,10 +469,7 @@ defmodule VirtualCrypto.Money do
   end
 
   # FIXME: this is not useful return value!
-  @spec get_claim_by_id(Integer.t()) ::
-          {VirtualCrypto.Money.Claim, VirtualCrypto.Money.Info, VirtualCrypto.User.User,
-           VirtualCrypto.User.User}
-          | {:error, :not_found}
+  @spec get_claim_by_id(Integer.t()) :: claim_t | {:error, :not_found}
   def get_claim_by_id(id) do
     Action.get_claim_by_id(id)
   end

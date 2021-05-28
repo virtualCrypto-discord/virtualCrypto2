@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Money.DiscordService do
   alias VirtualCrypto.Money
   alias VirtualCrypto.User.User
   import Ecto.Query
-  alias VirtualCrypto.Money.InternalAction, as: Action
+  require VirtualCrypto.Money.InternalAction, as: Action
 
   defp resolve(discord_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exists(discord_id)
@@ -44,8 +44,19 @@ defmodule VirtualCrypto.Money.DiscordService do
     Action.get_claims(resolve(discord_user_id))
   end
 
-  def get_claims(discord_user_id, status) do
-    Action.get_claims(resolve(discord_user_id), status)
+  def get_claims(discord_user_id, statuses) do
+    Action.get_claims(resolve(discord_user_id), statuses)
+  end
+
+  def get_claims(
+        discord_user_id,
+        statuses,
+        type,
+        order_by,
+        cursor,
+        limit
+      ) do
+    Action.get_claims(resolve(discord_user_id), statuses, type, order_by, cursor, limit)
   end
 
   def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do

@@ -5,7 +5,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
   setup :setup_claim
 
   test "cancel pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
-    claim_id = (claims |> at(0) |> elem(0)).id
+    claim_id = (claims |> at(0) |> Map.fetch!(:claim)).id
     claim_id_str = to_string(claim_id)
 
     conn =
@@ -24,56 +24,56 @@ defmodule InteractionsControllerTest.Claim.Cancel do
   end
 
   test "cancel pending claim by payer", %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_operator(conn, "cancel", claims |> at(0) |> elem(0), user2)
+    test_invalid_operator(conn, "cancel", claims |> at(0) |> Map.fetch!(:claim), user2)
   end
 
   test "cancel pending claim by not related user", %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "cancel", claims |> at(0) |> elem(0), -1)
+    test_invalid_operator(conn, "cancel", claims |> at(0) |> Map.fetch!(:claim), -1)
   end
 
   test "cancel approved claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_status(conn, "cancel", claims |> approved_claim() |> elem(0), user1)
+    test_invalid_status(conn, "cancel", claims |> approved_claim() |> Map.fetch!(:claim), user1)
   end
 
   test "cancel approved claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_operator(conn, "cancel", claims |> approved_claim() |> elem(0), user2)
+    test_invalid_operator(conn, "cancel", claims |> approved_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "cancel approved claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "cancel", claims |> approved_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "cancel", claims |> approved_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "cancel denied claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_status(conn, "cancel", claims |> denied_claim() |> elem(0), user1)
+    test_invalid_status(conn, "cancel", claims |> denied_claim() |> Map.fetch!(:claim), user1)
   end
 
   test "cancel denied claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_operator(conn, "cancel", claims |> denied_claim() |> elem(0), user2)
+    test_invalid_operator(conn, "cancel", claims |> denied_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "cancel denied claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "cancel", claims |> denied_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "cancel", claims |> denied_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "cancel canceled claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_status(conn, "cancel", claims |> canceled_claim() |> elem(0), user1)
+    test_invalid_status(conn, "cancel", claims |> canceled_claim() |> Map.fetch!(:claim), user1)
   end
 
   test "cancel canceled claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_operator(conn, "cancel", claims |> canceled_claim() |> elem(0), user2)
+    test_invalid_operator(conn, "cancel", claims |> canceled_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "cancel canceled claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "cancel", claims |> canceled_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "cancel", claims |> canceled_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "cancel invalid id claim",

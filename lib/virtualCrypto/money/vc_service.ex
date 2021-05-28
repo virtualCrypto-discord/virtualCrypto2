@@ -2,7 +2,7 @@ defmodule VirtualCrypto.Money.VCService do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Money
   import Ecto.Query
-  alias VirtualCrypto.Money.InternalAction, as: Action
+  require VirtualCrypto.Money.InternalAction, as: Action
 
   def pay(
         sender_vc_id,
@@ -47,6 +47,17 @@ defmodule VirtualCrypto.Money.VCService do
 
   def get_claims(user_id, status) do
     Action.get_claims(user_id, status)
+  end
+
+  def get_claims(
+        user_id,
+        statuses,
+        type,
+        order_by,
+        cursor,
+        limit
+      ) do
+    Action.get_claims(user_id, statuses,type, order_by, cursor, limit)
   end
 
   def create_claim(claimant_id, payer_discord_user_id, unit, amount) do

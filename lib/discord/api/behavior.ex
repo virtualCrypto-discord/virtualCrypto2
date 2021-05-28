@@ -25,5 +25,10 @@ defmodule Discord.Api.Behavior do
   @callback get_user(user_id()) :: user
   @callback get_user_with_status(user_id()) :: {status_code(), user}
   @callback get_guild_integrations_with_status_code(guild_id()) :: {status_code(), [integration]}
-  @callback patch_webhook_message(application_id(),interaction_token(),webhook_message_id(),message()) :: {status_code(), message()}
+  @callback patch_webhook_message(
+              application_id(),
+              interaction_token(),
+              webhook_message_id(),
+              message()
+            ) :: {status_code(), message()}
 end

@@ -10,14 +10,14 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     Filtering.user(user)
   end
 
-  defp format_claim({claim, info, claimant, payer}, service) do
+  defp format_claim(%{claim: claim,currency: currency, claimant: claimant, payer: payer}, service) do
     %{
       "id" => claim.id |> to_string,
       "currency" => %{
-        "name" => info.name,
-        "unit" => info.unit,
-        "guild" => to_string(info.guild_id),
-        "pool_amount" => to_string(info.pool_amount)
+        "name" => currency.name,
+        "unit" => currency.unit,
+        "guild" => to_string(currency.guild_id),
+        "pool_amount" => to_string(currency.pool_amount)
       },
       "amount" => to_string(claim.amount),
       "claimant" => %{
@@ -53,7 +53,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   def me(conn, _) do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(Money.VCService, user_id, "pending")
+        claims = Money.get_claims(Money.VCService, user_id, ["pending"])
 
         render(conn, "data.json", params: format_claims(claims, get_service(conn)))
 
@@ -226,10 +226,10 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
         case Money.get_claim_by_id(id) do
-          {_, _, %VirtualCrypto.User.User{id: ^user_id}, _} = d ->
+          %{payer: %VirtualCrypto.User.User{id: ^user_id}} = d ->
             render(conn, "data.json", params: format_claim(d, get_service(conn)))
 
-          {_, _, _, %VirtualCrypto.User.User{id: ^user_id}} = d ->
+          %{claimant: %VirtualCrypto.User.User{id: ^user_id}} = d ->
             render(conn, "data.json", params: format_claim(d, get_service(conn)))
 
           _ ->

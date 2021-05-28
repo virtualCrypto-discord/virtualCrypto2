@@ -54,7 +54,7 @@ defmodule InteractionsControllerTest.Claim.Make do
     regex = ~r/請求id: (\d+) で請求を受け付けました。`\/claim list`でご確認ください。/
     assert [_, claim_id] = Regex.run(regex, content)
 
-    assert {%{amount: ^amount}, %{unit: ^unit}, %{discord_id: ^user2}, %{discord_id: ^user1}} =
+    assert %{claim: %{amount: ^amount}, currency: %{unit: ^unit}, claimant: %{discord_id: ^user2},payer: %{discord_id: ^user1}} =
              VirtualCrypto.Money.get_claim_by_id(claim_id)
   end
 

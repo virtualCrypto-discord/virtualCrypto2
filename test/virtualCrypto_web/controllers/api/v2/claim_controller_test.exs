@@ -142,7 +142,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get user1 claim0", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0)).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -160,7 +160,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim1 by payer", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(1) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(1)).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -182,7 +182,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       get(
         conn,
-        Routes.v2_claim_path(conn, :get_by_id, (claims |> approved_claim() |> elem(0)).id)
+        Routes.v2_claim_path(conn, :get_by_id, (claims |> approved_claim()).claim.id)
       )
 
     res = json_response(conn, 200)
@@ -202,8 +202,7 @@ defmodule ClaimControllerTest.V2 do
   test "get claim3 by claimant", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.claim"])
 
-    conn =
-      get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> denied_claim() |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -225,7 +224,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       get(
         conn,
-        Routes.v2_claim_path(conn, :get_by_id, (claims |> canceled_claim() |> elem(0)).id)
+        Routes.v2_claim_path(conn, :get_by_id, (claims |> canceled_claim()).claim.id)
       )
 
     res = json_response(conn, 200)
@@ -244,7 +243,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim by payer and claimant", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5)).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -262,7 +261,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim0 by payer", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(0) ).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -280,7 +279,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim1 by claimant", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(1) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(1)).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -302,7 +301,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       get(
         conn,
-        Routes.v2_claim_path(conn, :get_by_id, (claims |> approved_claim() |> elem(0)).id)
+        Routes.v2_claim_path(conn, :get_by_id, (claims |> approved_claim()).claim.id)
       )
 
     res = json_response(conn, 200)
@@ -322,8 +321,7 @@ defmodule ClaimControllerTest.V2 do
   test "get claim3 by payer", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
 
-    conn =
-      get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> denied_claim() |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> denied_claim()).claim.id))
 
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
@@ -345,7 +343,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       get(
         conn,
-        Routes.v2_claim_path(conn, :get_by_id, (claims |> canceled_claim() |> elem(0)).id)
+        Routes.v2_claim_path(conn, :get_by_id, canceled_claim(claims).claim.id)
       )
 
     res = json_response(conn, 200)
@@ -364,7 +362,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim5 by not related user", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user2, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5)).claim.id))
 
     assert json_response(conn, 403) == %{
              "error" => "forbidden",
@@ -374,7 +372,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim5 with invalid token ", %{conn: conn, claims: claims} = ctx do
     conn = set_user_auth(conn, :user, ctx.user1, ["oauth2.register"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5)).claim.id))
 
     assert json_response(conn, 403) == %{
              "error" => "invalid_token",
@@ -384,7 +382,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "get claim5 by invalid user", %{conn: conn, claims: claims} do
     conn = set_user_auth(conn, :user, -1, ["vc.claim"])
-    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5) |> elem(0)).id))
+    conn = get(conn, Routes.v2_claim_path(conn, :get_by_id, (claims |> at(5)).claim.id))
 
     assert json_response(conn, 403) == %{
              "error" => "forbidden",
@@ -394,7 +392,7 @@ defmodule ClaimControllerTest.V2 do
 
   test "patch claim0 with nothing status", %{conn: conn, claims: claims, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
-    conn = patch(conn, Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id))
+    conn = patch(conn, Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id))
 
     assert json_response(conn, 400) == %{
              "error" => "invalid_request",
@@ -406,7 +404,7 @@ defmodule ClaimControllerTest.V2 do
     conn = set_user_auth(conn, :user, user1, ["vc.claim"])
 
     conn =
-      patch(conn, Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id), %{
+      patch(conn, Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id), %{
         "status" => "nyan!"
       })
 
@@ -422,7 +420,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "approved"}
       )
 
@@ -454,7 +452,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "approved"}
       )
 
@@ -493,7 +491,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(1) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(1)).claim.id),
         %{"status" => "approved"}
       )
 
@@ -521,7 +519,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "denied"}
       )
 
@@ -540,7 +538,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "denied"}
       )
 
@@ -576,7 +574,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -601,7 +599,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -632,7 +630,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -649,7 +647,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> approved_claim() |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> approved_claim()).claim.id),
         %{"status" => "approved"}
       )
 
@@ -666,7 +664,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -683,7 +681,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -700,7 +698,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -717,7 +715,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -734,7 +732,7 @@ defmodule ClaimControllerTest.V2 do
     conn =
       patch(
         conn,
-        Routes.v2_claim_path(conn, :patch, (claims |> at(0) |> elem(0)).id),
+        Routes.v2_claim_path(conn, :patch, (claims |> at(0)).claim.id),
         %{"status" => "canceled"}
       )
 
@@ -803,7 +801,7 @@ defmodule ClaimControllerTest.V2 do
       status: "pending"
     })
 
-    assert {_, _, _, _} = VirtualCrypto.Money.get_claim_by_id(res["id"])
+    assert %{} = VirtualCrypto.Money.get_claim_by_id(res["id"])
   end
 
   test "create claim with invalid payer_discord_id type", %{conn: conn, user1: user1, unit: unit} do
