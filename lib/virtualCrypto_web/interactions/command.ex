@@ -172,7 +172,19 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         %{"member" => %{"user" => user}},
         _conn
       ) do
-    case VirtualCryptoWeb.Interaction.Claim.List.page(user, 1, options["sub_options"]) do
+    options = Map.get(options, "sub_options", %{})
+
+    options =
+      options
+      |> Map.put(
+        :related_user_id,
+        case options["user"] do
+          nil -> nil
+          user_id -> String.to_integer(user_id)
+        end
+      )
+
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, 1, options) do
       {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
     end
   end

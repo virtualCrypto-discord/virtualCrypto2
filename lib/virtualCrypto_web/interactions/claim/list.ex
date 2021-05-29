@@ -50,47 +50,34 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
     |> Map.new()
   end
 
-  def page(user, n, nil) do
-    page(user, n, %{})
+  def page(user, page, nil) do
+    page(user, page, %{})
   end
 
-  def page(user, n, options) do
+  def page(user, page, options) do
     int_user_id = String.to_integer(user["id"])
     statuses = statuses(options)
+    related_user_id = options.related_user_id
 
+    query = %{flags: encode_options(statuses)}
+
+    query =
+      case related_user_id do
+        nil -> query
+        _ -> query |> Map.put(:user, related_user_id)
+      end
     {:ok, "list",
      Money.get_claims(
        DiscordService,
        int_user_id,
        statuses,
        :all,
+       related_user_id,
        :desc_claim_id,
-       %{page: n},
+       %{page: page},
        5
      )
      |> Map.put(:me, int_user_id)
-     |> Map.put(:flags, encode_options(statuses))}
-  end
-
-  def last(user, nil) do
-    last(user, %{})
-  end
-
-  def last(user, options) do
-    int_user_id = String.to_integer(user["id"])
-    statuses = statuses(options)
-
-    {:ok, "list",
-     Money.get_claims(
-       DiscordService,
-       int_user_id,
-       statuses,
-       :all,
-       :desc_claim_id,
-       %{page: :last},
-       5
-     )
-     |> Map.put(:me, int_user_id)
-     |> Map.put(:flags, encode_options(statuses))}
+     |> Map.put(:query, query)}
   end
 end

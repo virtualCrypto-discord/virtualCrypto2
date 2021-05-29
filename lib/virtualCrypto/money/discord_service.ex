@@ -5,10 +5,14 @@ defmodule VirtualCrypto.Money.DiscordService do
   import Ecto.Query
   require VirtualCrypto.Money.InternalAction, as: Action
 
+  defp resolve(nil) do
+    nil
+  end
   defp resolve(discord_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exists(discord_id)
     user.id
   end
+
 
   def pay(
         sender_discord_id,
@@ -51,12 +55,21 @@ defmodule VirtualCrypto.Money.DiscordService do
   def get_claims(
         discord_user_id,
         statuses,
-        type,
+        sr_filter,
+        related_user_id,
         order_by,
         cursor,
         limit
       ) do
-    Action.get_claims(resolve(discord_user_id), statuses, type, order_by, cursor, limit)
+    Action.get_claims(
+      resolve(discord_user_id),
+      statuses,
+      sr_filter,
+      resolve(related_user_id),
+      order_by,
+      cursor,
+      limit
+    )
   end
 
   def create_claim(claimant_discord_user_id, payer_discord_user_id, unit, amount) do
