@@ -578,7 +578,7 @@ defmodule VirtualCrypto.Money.InternalAction do
     query |> Repo.all()
   end
 
-  defp sr_filter(q, :all, user_id) do
+  defp claims_filter(q, :all, user_id) do
     q
     |> where(
       [claim, currency, claimant, payer],
@@ -586,45 +586,27 @@ defmodule VirtualCrypto.Money.InternalAction do
     )
   end
 
-  defp sr_filter(q, :received, user_id) do
+  defp claims_filter(q, :received, user_id) do
     q |> where([claim, currency, claimant, payer], claim.payer_user_id == ^user_id)
   end
 
-  defp sr_filter(q, :claimed, user_id) do
+  defp claims_filter(q, :claimed, user_id) do
     q |> where([claim, currency, claimant, payer], claim.claimant_user_id == ^user_id)
   end
 
-  defmacrop get_claims_m_q(
-              q,
-              operator_id,
-              statuses,
-              sr_filter,
-              related_user_id,
-              order_by,
-              cond_expr,
-              limit \\ nil
-            ) do
+  defmacrop get_claims_m_q(q, user_id, statuses, user_filter, order_by, cond_expr, limit \\ nil) do
     q =
       quote do
-        operator_id = unquote(operator_id)
+        user_id = unquote(user_id)
         statuses = unquote(statuses)
-        related_user_id = unquote(related_user_id)
 
-        q =
-          unquote(q)
-          |> where(
-            [claim, currency, claimant, payer],
-            claim.status in ^statuses and unquote(cond_expr)
-          )
-          |> sr_filter(unquote(sr_filter), operator_id)
-
-        q =
-          case related_user_id do
-            nil -> q
-            related_user_id -> q|>sr_filter(:all, related_user_id)
-          end
-
-        q |> order_by([claim, info, claimant, payer], unquote(order_by))
+        unquote(q)
+        |> where(
+          [claim, currency, claimant, payer],
+          claim.status in ^statuses and unquote(cond_expr)
+        )
+        |> claims_filter(unquote(user_filter), user_id)
+        |> order_by([claim, info, claimant, payer], unquote(order_by))
       end
 
     case limit do
@@ -649,22 +631,13 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  defmacrop get_claims_m(
-              operator_id,
-              statuses,
-              sr_filter,
-              related_user_id,
-              order_by,
-              cond_expr,
-              limit \\ nil
-            ) do
+  defmacrop get_claims_m(user_id, statuses, user_filter, order_by, cond_expr, limit \\ nil) do
     quote do
       get_claims_m_q(
         claims_base_query(),
-        unquote(operator_id),
+        unquote(user_id),
         unquote(statuses),
-        unquote(sr_filter),
-        unquote(related_user_id),
+        unquote(user_filter),
         unquote(order_by),
         unquote(cond_expr),
         unquote(limit)
@@ -674,34 +647,32 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses \\ ["pending", "approved", "canceled", "denied"]
       ) do
-    get_claims(operator_id, statuses, :all, nil, :desc_claim_id)
+    get_claims(user_id, statuses, :all, :desc_claim_id)
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
         :desc_claim_id
       ) do
-    get_claims_m(operator_id, statuses, sr_filter, related_user_id, [desc: claim.id], ^true)
+    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], ^true)
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
+        user_filter,
         :desc_claim_id,
         limit
       ) do
     get_claims(
-      operator_id,
+      user_id,
       statuses,
-      sr_filter,
-      nil,
+      user_filter,
       :desc_claim_id,
       %{cursor: :first},
       limit
@@ -709,30 +680,34 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        :legacy,
         :desc_claim_id,
         %{cursor: :first},
         limit
       ) do
-    get_claims_m(
-      operator_id,
-      statuses,
-      sr_filter,
-      related_user_id,
-      [desc: claim.id],
-      ^true,
-      limit
-    )
+    received = get_claims_m(user_id, statuses, :received, [desc: claim.id], ^true, limit)
+
+    claimed = get_claims_m(user_id, statuses, :claimed, [desc: claim.id], ^true, limit)
+    %{received: received, claimed: claimed}
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
+        :desc_claim_id,
+        %{cursor: :first},
+        limit
+      ) do
+    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], ^true, limit)
+  end
+
+  def get_claims(
+        user_id,
+        statuses,
+        user_filter,
         :desc_claim_id,
         %{page: :last},
         limit
@@ -748,10 +723,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         select: count(claim.id)
       )
 
-    [cnt] =
-      get_claims_m_q(q, operator_id, statuses, sr_filter, related_user_id, [], ^true)
-      |> Repo.all()
-
+    [cnt] = get_claims_m_q(q, user_id, statuses, user_filter, [], ^true) |> Repo.all()
     page = div(cnt + limit - 1, limit)
 
     limit =
@@ -760,17 +732,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         x -> x
       end
 
-    result =
-      get_claims_m(
-        operator_id,
-        statuses,
-        sr_filter,
-        related_user_id,
-        [asc: claim.id],
-        ^true,
-        limit
-      )
-
+    result = get_claims_m(user_id, statuses, user_filter, [asc: claim.id], ^true, limit)
     {first, prev} = if cnt > limit, do: {1, page - 1}, else: {nil, nil}
 
     %{
@@ -784,20 +746,18 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
         :desc_claim_id,
         %{page: n},
         limit
       ) do
     result =
       get_claims_m(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
         [desc: claim.id],
         ^true,
         {limit + 1, limit * (n - 1)}
@@ -819,43 +779,25 @@ defmodule VirtualCrypto.Money.InternalAction do
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
         :desc_claim_id,
         %{cursor: {:after, x}},
         limit
       ) do
-    get_claims_m(
-      operator_id,
-      statuses,
-      sr_filter,
-      related_user_id,
-      [desc: claim.id],
-      claim.id < ^x,
-      limit
-    )
+    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], claim.id < ^x, limit)
   end
 
   def get_claims(
-        operator_id,
+        user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        user_filter,
         :desc_claim_id,
         %{cursor: {:before, x}},
         limit
       ) do
-    get_claims_m(
-      operator_id,
-      statuses,
-      sr_filter,
-      related_user_id,
-      [asc: claim.id],
-      claim.id > ^x,
-      limit
-    )
+    get_claims_m(user_id, statuses, user_filter, [asc: claim.id], claim.id > ^x, limit)
     |> Enum.reverse()
   end
 

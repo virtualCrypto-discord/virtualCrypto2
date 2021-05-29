@@ -289,7 +289,6 @@ defmodule VirtualCrypto.Money do
           Integer.t(),
           [String.t()],
           :all | :received | :claimed,
-          pos_integer(),
           :desc_claim_id,
           %{page: pos_integer() | :last} | %{cursor: {:after | :before, any()} | :first | :last},
           pos_integer()
@@ -301,15 +300,14 @@ defmodule VirtualCrypto.Money do
         service,
         user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        type,
         order_by,
         cursor,
         limit
       ) do
     {:ok, x} =
       Repo.transaction(fn ->
-        service.get_claims(user_id, statuses, sr_filter,related_user_id, order_by, cursor, limit)
+        service.get_claims(user_id, statuses, type, order_by, cursor, limit)
       end)
 
     x

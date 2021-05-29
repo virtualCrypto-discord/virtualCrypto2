@@ -80,12 +80,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "disabled"
   end
 
-  defp custom_id(:last, query) do
-    "claim/list/last?#{query}"
+  defp custom_id(:last, flags) do
+    "claim/list/last?flags=#{flags}"
   end
 
-  defp custom_id(n, query) do
-    "claim/list/#{n}?#{query}"
+  defp custom_id(n, flags) do
+    "claim/list/#{n}?flags=#{flags}"
   end
 
   defp disabled(nil) do
@@ -107,7 +107,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
            prev: prev,
            next: next,
            page: page,
-           query: query
+           flags: flags
          }}
       ) do
     typ =
@@ -115,8 +115,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
         :command -> channel_message_with_source()
         :button -> 7
       end
-
-    query = URI.encode_query(query)
 
     %{
       type: typ,
@@ -142,34 +140,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏪"},
-                custom_id: custom_id(first, query),
+                custom_id: custom_id(first, flags),
                 disabled: disabled(first)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏮️"},
-                custom_id: custom_id(prev, query),
+                custom_id: custom_id(prev, flags),
                 disabled: disabled(prev)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏭️"},
-                custom_id: custom_id(next, query),
+                custom_id: custom_id(next, flags),
                 disabled: disabled(next)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏩"},
-                custom_id: custom_id(last, query),
+                custom_id: custom_id(last, flags),
                 disabled: disabled(last)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                custom_id: custom_id(page, query),
+                custom_id: custom_id(page, flags),
                 emoji: %{name: "🔄"}
               }
             ]
