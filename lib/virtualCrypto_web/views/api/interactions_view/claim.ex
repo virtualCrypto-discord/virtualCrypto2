@@ -53,7 +53,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
         請求元: #{mention(claimant.discord_id)}
         請求先: #{mention(payer.discord_id)}
         請求額: **#{claim.amount}** `#{currency.unit}`
-        請求日: #{format_date_time(claim.inserted_at)}/
+        請求日: #{format_date_time(claim.inserted_at)}
         """
       }
     end)
