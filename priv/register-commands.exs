@@ -120,6 +120,33 @@ defmodule Command do
   end
 
   def claim do
+    options_for_listing = [
+      %{
+        "name" => "pending",
+        "description" => "未処理の請求を表示します。",
+        "type" => 5
+      },
+      %{
+        "name" => "approved",
+        "description" => "承諾済みの請求を表示します。",
+        "type" => 5
+      },
+      %{
+        "name" => "denied",
+        "description" => "拒否済みの請求を表示します。",
+        "type" => 5
+      },
+      %{
+        "name" => "canceled",
+        "description" => "キャンセル済みの請求を表示します。",
+        "type" => 5
+      },
+      %{
+        "name" => "user",
+        "description" => "ユーザーからの請求及びユーザーへの請求を表示します。",
+        "type" => 6
+      }
+    ]
     %{
       "name" => "claim",
       "description" => "請求に関するコマンドです。",
@@ -128,33 +155,19 @@ defmodule Command do
           "name" => "list",
           "description" => "請求の一覧を表示します。",
           "type" => 1,
-          "options" => [
-            %{
-              "name" => "pending",
-              "description" => "未処理の請求を表示します。",
-              "type" => 5
-            },
-            %{
-              "name" => "approved",
-              "description" => "承諾済みの請求を表示します。",
-              "type" => 5
-            },
-            %{
-              "name" => "denied",
-              "description" => "拒否済みの請求を表示します。",
-              "type" => 5
-            },
-            %{
-              "name" => "canceled",
-              "description" => "キャンセル済みの請求を表示します。",
-              "type" => 5
-            },
-            %{
-              "name" => "user",
-              "description" => "ユーザーからの請求及びユーザーへの請求を表示します。",
-              "type" => 6
-            }
-          ]
+          "options" => options_for_listing
+        },
+        %{
+          "name" => "received",
+          "description" => "受け取った請求の一覧を表示します。",
+          "type" => 1,
+          "options" => options_for_listing
+        },
+        %{
+          "name" => "sent",
+          "description" => "送信した請求の一覧を表示します。",
+          "type" => 1,
+          "options" => options_for_listing
         },
         %{
           "name" => "make",

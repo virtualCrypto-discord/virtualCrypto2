@@ -1,10 +1,11 @@
 defmodule VirtualCryptoWeb.Interaction.Button do
-  defp handle_(page, query, user) do
+  defp handle_(subcommand, page, query, user) do
     query = query |> Map.new()
 
     {a, b, params} =
       VirtualCryptoWeb.Interaction.Claim.List.page(
         user,
+        subcommand,
         page,
         %{}
         |> Map.merge(
@@ -25,24 +26,26 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   end
 
   def handle(
-        ["claim", "list", "last"],
+        ["claim", subcommand, "last"],
         query,
         %{
           "member" => %{"user" => user}
         },
         _conn
-      ) do
-    handle_(:last, query, user)
+      )
+      when subcommand in ["sent", "received", "list"] do
+    handle_(subcommand, :last, query, user)
   end
 
   def handle(
-        ["claim", "list", n],
+        ["claim", subcommand, n],
         query,
         %{
           "member" => %{"user" => user}
         },
         _conn
-      ) do
-    handle_(n |> String.to_integer(), query, user)
+      )
+      when subcommand in ["sent", "received", "list"] do
+    handle_(subcommand, n |> String.to_integer(), query, user)
   end
 end

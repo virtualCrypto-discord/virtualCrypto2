@@ -50,11 +50,18 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
     |> Map.new()
   end
 
-  def page(user, page, nil) do
-    page(user, page, %{})
+  def page(user, subcommand, page, nil) do
+    page(user, subcommand, page, %{})
   end
 
-  def page(user, page, options) do
+  def page(user, subcommand, page, options) do
+    sr_filter =
+      case subcommand do
+        "list" -> :all
+        "received" -> :received
+        "sent" -> :claimed
+      end
+
     int_user_id = String.to_integer(user["id"])
     statuses = statuses(options)
     related_user_id = options.related_user_id
@@ -67,12 +74,12 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
         _ -> query |> Map.put(:user, related_user_id)
       end
 
-    {:ok, "list",
+    {:ok, subcommand,
      Money.get_claims(
        DiscordService,
        int_user_id,
        statuses,
-       :all,
+       sr_filter,
        related_user_id,
        :desc_claim_id,
        %{page: page},

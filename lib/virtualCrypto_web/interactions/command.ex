@@ -168,10 +168,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
 
   def handle(
         "claim",
-        %{"subcommand" => "list"} = options,
+        %{"subcommand" => subcommand} = options,
         %{"member" => %{"user" => user}},
         _conn
-      ) do
+      )
+      when subcommand in ["list", "received", "sent"] do
     options = Map.get(options, "sub_options", %{})
 
     options =
@@ -184,7 +185,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         end
       )
 
-    case VirtualCryptoWeb.Interaction.Claim.List.page(user, 1, options) do
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, subcommand, 1, options) do
       {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
     end
   end

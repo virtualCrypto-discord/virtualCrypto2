@@ -76,16 +76,16 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     end)
   end
 
-  defp custom_id(nil, _flags) do
+  defp custom_id(_subcommand, nil, _flags) do
     "disabled"
   end
 
-  defp custom_id(:last, query) do
-    "claim/list/last?#{query}"
+  defp custom_id(subcommand, :last, query) do
+    "claim/#{subcommand}/last?#{query}"
   end
 
-  defp custom_id(n, query) do
-    "claim/list/#{n}?#{query}"
+  defp custom_id(subcommand, n, query) do
+    "claim/#{subcommand}/#{n}?#{query}"
   end
 
   defp disabled(nil) do
@@ -97,7 +97,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   end
 
   def render(
-        {:ok, "list",
+        {:ok, subcommand,
          %{
            type: typ,
            claims: claims,
@@ -109,7 +109,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
            page: page,
            query: query
          }}
-      ) do
+      )
+      when subcommand in ["list", "received", "sent"] do
     typ =
       case typ do
         :command -> channel_message_with_source()
@@ -142,34 +143,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏪"},
-                custom_id: custom_id(first, query),
+                custom_id: custom_id(subcommand, first, query),
                 disabled: disabled(first)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏮️"},
-                custom_id: custom_id(prev, query),
+                custom_id: custom_id(subcommand, prev, query),
                 disabled: disabled(prev)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏭️"},
-                custom_id: custom_id(next, query),
+                custom_id: custom_id(subcommand, next, query),
                 disabled: disabled(next)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏩"},
-                custom_id: custom_id(last, query),
+                custom_id: custom_id(subcommand, last, query),
                 disabled: disabled(last)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                custom_id: custom_id(page, query),
+                custom_id: custom_id(subcommand, page, query),
                 emoji: %{name: "🔄"}
               }
             ]
