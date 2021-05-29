@@ -283,15 +283,14 @@ defmodule VirtualCrypto.Money do
     nil
   end
 
-  # FIXME: this is not useful return value!
   # FIXME: take too many arguments
   @spec get_claims(
           module(),
           Integer.t(),
           [String.t()],
           :all | :received | :claimed | :legacy,
-          :claim_id,
-          :first | {:after | :before, any()} | :last,
+          :desc_claim_id,
+          :first | {:after | :before, any()} | :paged_last,
           pos_integer()
         ) ::
           [
@@ -320,7 +319,6 @@ defmodule VirtualCrypto.Money do
     x
   end
 
-  # FIXME: this is not useful return value!
   @spec get_claims(module(), Integer.t(), [String.t()]) ::
           [
             claim_t
@@ -329,7 +327,6 @@ defmodule VirtualCrypto.Money do
     service.get_claims(user_id, statuses)
   end
 
-  # FIXME: this is not useful return value!
   @spec get_claims(module(), Integer.t()) ::
           [
             claim_t
@@ -338,7 +335,6 @@ defmodule VirtualCrypto.Money do
     service.get_claims(user_id)
   end
 
-  # FIXME: this is not useful return value!
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
@@ -390,7 +386,6 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  # FIXME: this is not useful return value!
   @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
@@ -423,7 +418,6 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  # FIXME: this is not useful return value!
   @spec deny_claim(module(), Integer.t(), Integer.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
@@ -456,7 +450,6 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  # FIXME: this is not useful input and return value!
   @doc """
   payer must be discord user
   """
@@ -468,7 +461,6 @@ defmodule VirtualCrypto.Money do
     service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
   end
 
-  # FIXME: this is not useful return value!
   @spec get_claim_by_id(Integer.t()) :: claim_t | {:error, :not_found}
   def get_claim_by_id(id) do
     Action.get_claim_by_id(id)

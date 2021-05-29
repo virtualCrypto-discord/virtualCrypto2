@@ -1,6 +1,10 @@
-defmodule VirtualCryptoWeb.CommandHandler do
+defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
+  @moduledoc false
+  @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
+  @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
+  @site_url Application.get_env(:virtualCrypto, :site_url)
 
   # NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
   defp cast_int(v) when is_binary(v) do
@@ -15,10 +19,6 @@ defmodule VirtualCryptoWeb.CommandHandler do
     v
   end
 
-  @moduledoc false
-  @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
-  @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
-  @site_url Application.get_env(:virtualCrypto, :site_url)
   defp logo_url,
     do: @site_url <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
 
@@ -172,11 +172,9 @@ defmodule VirtualCryptoWeb.CommandHandler do
         %{"member" => %{"user" => user}},
         _conn
       ) do
-    int_user_id = String.to_integer(user["id"])
-
-    {:ok, "list",
-     Money.get_claims(DiscordService, int_user_id, ["pending"], :all, :claim_id, :first, 10),
-     int_user_id}
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, 1) do
+      {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
+    end
   end
 
   def handle(

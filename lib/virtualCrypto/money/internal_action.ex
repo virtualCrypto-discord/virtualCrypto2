@@ -594,13 +594,13 @@ defmodule VirtualCrypto.Money.InternalAction do
     q |> where([claim, currency, claimant, payer], claim.claimant_user_id == ^user_id)
   end
 
-  defmacrop get_claims_m_q(user_id, statuses, user_filter, order_by, cond_expr, limit \\ nil) do
+  defmacrop get_claims_m_q(q, user_id, statuses, user_filter, order_by, cond_expr, limit \\ nil) do
     q =
       quote do
         user_id = unquote(user_id)
         statuses = unquote(statuses)
 
-        claims_base_query()
+        unquote(q)
         |> where(
           [claim, currency, claimant, payer],
           claim.status in ^statuses and unquote(cond_expr)
@@ -615,8 +615,18 @@ defmodule VirtualCrypto.Money.InternalAction do
 
       _ ->
         quote do
-          unquote(q)
-          |> limit(unquote(limit))
+          limit = unquote(limit)
+
+          case limit do
+            {limit, offset} ->
+              unquote(q)
+              |> limit(^limit)
+              |> offset(^offset)
+
+            limit ->
+              unquote(q)
+              |> limit(^limit)
+          end
         end
     end
   end
@@ -624,6 +634,7 @@ defmodule VirtualCrypto.Money.InternalAction do
   defmacrop get_claims_m(user_id, statuses, user_filter, order_by, cond_expr, limit \\ nil) do
     quote do
       get_claims_m_q(
+        claims_base_query(),
         unquote(user_id),
         unquote(statuses),
         unquote(user_filter),
@@ -639,14 +650,14 @@ defmodule VirtualCrypto.Money.InternalAction do
         user_id,
         statuses \\ ["pending", "approved", "canceled", "denied"]
       ) do
-    get_claims(user_id, statuses, :all, :claim_id)
+    get_claims(user_id, statuses, :all, :desc_claim_id)
   end
 
   def get_claims(
         user_id,
         statuses,
         user_filter,
-        :claim_id
+        :desc_claim_id
       ) do
     get_claims_m(user_id, statuses, user_filter, [desc: claim.id], ^true)
   end
@@ -655,15 +666,15 @@ defmodule VirtualCrypto.Money.InternalAction do
         user_id,
         statuses,
         user_filter,
-        :claim_id,
+        :desc_claim_id,
         limit
       ) do
     get_claims(
       user_id,
       statuses,
       user_filter,
-      :claim_id,
-      :first,
+      :desc_claim_id,
+      %{cursor: :first},
       limit
     )
   end
@@ -672,13 +683,13 @@ defmodule VirtualCrypto.Money.InternalAction do
         user_id,
         statuses,
         :legacy,
-        :claim_id,
-        :first,
+        :desc_claim_id,
+        %{cursor: :first},
         limit
       ) do
-    received = get_claims_m(user_id, statuses, :received, [desc: claim.id], ^true, ^limit)
+    received = get_claims_m(user_id, statuses, :received, [desc: claim.id], ^true, limit)
 
-    claimed = get_claims_m(user_id, statuses, :claimed, [desc: claim.id], ^true, ^limit)
+    claimed = get_claims_m(user_id, statuses, :claimed, [desc: claim.id], ^true, limit)
     %{received: received, claimed: claimed}
   end
 
@@ -686,33 +697,108 @@ defmodule VirtualCrypto.Money.InternalAction do
         user_id,
         statuses,
         user_filter,
-        :claim_id,
-        :first,
+        :desc_claim_id,
+        %{cursor: :first},
         limit
       ) do
-    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], ^true, ^limit)
+    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], ^true, limit)
   end
 
   def get_claims(
         user_id,
         statuses,
         user_filter,
-        :claim_id,
-        {:after, x},
+        :desc_claim_id,
+        %{page: :last},
         limit
       ) do
-    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], claim.id > ^x, ^limit)
+    q =
+      from(claim in Money.Claim,
+        join: currency in Money.Info,
+        join: claimant in VirtualCrypto.User.User,
+        join: payer in VirtualCrypto.User.User,
+        on:
+          claim.payer_user_id == payer.id and claim.money_info_id == currency.id and
+            claim.claimant_user_id == claimant.id,
+        select: count(claim.id)
+      )
+
+    [cnt] = get_claims_m_q(q, user_id, statuses, user_filter, [], ^true) |> Repo.all()
+    page = div(cnt - 1, limit)
+
+    limit =
+      case rem(cnt, limit) do
+        0 -> limit
+        x -> x
+      end
+
+    result = get_claims_m(user_id, statuses, user_filter, [asc: claim.id], ^true, limit)
+    {first, prev} = if cnt > limit, do: {1, page - 1}, else: {nil, nil}
+
+    %{
+      claims: result |> Enum.reverse(),
+      next: nil,
+      prev: prev,
+      last: nil,
+      first: first,
+      page: page
+    }
   end
 
   def get_claims(
         user_id,
         statuses,
         user_filter,
-        :claim_id,
-        {:before, x},
+        :desc_claim_id,
+        %{page: n},
         limit
       ) do
-    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], claim.id < ^x, ^limit)
+    result =
+      get_claims_m(
+        user_id,
+        statuses,
+        user_filter,
+        [desc: claim.id],
+        ^true,
+        {limit + 1, limit * (n - 1)}
+      )
+
+    prev? = n != 1
+    next? = Enum.count(result) > limit
+    {first, prev} = if prev?, do: {1, n - 1}, else: {nil, nil}
+    {last, next} = if next?, do: {:last, n + 1}, else: {nil, nil}
+
+    %{
+      claims: result |> Enum.take(limit),
+      next: next,
+      prev: prev,
+      last: last,
+      first: first,
+      page: n
+    }
+  end
+
+  def get_claims(
+        user_id,
+        statuses,
+        user_filter,
+        :desc_claim_id,
+        %{cursor: {:after, x}},
+        limit
+      ) do
+    get_claims_m(user_id, statuses, user_filter, [desc: claim.id], claim.id < ^x, limit)
+  end
+
+  def get_claims(
+        user_id,
+        statuses,
+        user_filter,
+        :desc_claim_id,
+        %{cursor: {:before, x}},
+        limit
+      ) do
+    get_claims_m(user_id, statuses, user_filter, [asc: claim.id], claim.id > ^x, limit)
+    |> Enum.reverse()
   end
 
   defp update_claim_status(id, new_status) do

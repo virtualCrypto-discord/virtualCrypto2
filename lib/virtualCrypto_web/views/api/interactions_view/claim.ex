@@ -44,7 +44,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "⬇"
   end
 
-  defp render_claim(claims,me) do
+  defp render_claim(claims, me) do
     claims
     |> Enum.map(fn %{claim: claim, currency: currency, claimant: claimant, payer: payer} ->
       %{
@@ -57,9 +57,36 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     end)
   end
 
-  def render({:ok, "list", claims, me}) do
+  defp custom_id(nil) do
+    "disabled"
+  end
+
+  defp custom_id(:last) do
+    "claim/list/last"
+  end
+
+  defp custom_id(n) do
+    "claim/list/#{n}"
+  end
+
+  defp disabled(nil) do
+    true
+  end
+
+  defp disabled(_) do
+    false
+  end
+
+  def render(
+        {:ok, "list", %{type: typ,claims: claims, me: me, first: first, last: last, prev: prev, next: next,page: page}}
+      ) do
+    typ =  case typ do
+      :command -> channel_message_with_source()
+      :button -> 7
+    end
+
     %{
-      type: channel_message_with_source(),
+      type: typ,
       data: %{
         flags: 64,
         embeds: [
@@ -76,26 +103,36 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
               %{
                 type: button(),
                 style: button_style_secondary(),
-                label: "先頭へ",
-                custom_id: "claim/list/first"
+                emoji: %{name: "⏪"},
+                custom_id: custom_id(first),
+                disabled: disabled(first)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                label: "前へ",
-                custom_id: "claim/list/prev"
+                emoji: %{name: "⏮️"},
+                custom_id: custom_id(prev),
+                disabled: disabled(prev)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                label: "次へ",
-                custom_id: "claim/list/next"
+                emoji: %{name: "⏭️"},
+                custom_id: custom_id(next),
+                disabled: disabled(next)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                label: "最後へ",
-                custom_id: "claim/list/last"
+                emoji: %{name: "⏩"},
+                custom_id: custom_id(last),
+                disabled: disabled(last)
+              },
+              %{
+                type: button(),
+                style: button_style_secondary(),
+                custom_id: custom_id(page),
+                emoji: %{name: "🔄"},
               }
             ]
           }

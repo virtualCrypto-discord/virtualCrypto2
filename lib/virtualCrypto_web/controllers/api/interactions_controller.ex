@@ -83,8 +83,25 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       |> parse_options
 
     render(conn, name <> ".json",
-      params: VirtualCryptoWeb.CommandHandler.handle(name, options, params, conn)
+      params: VirtualCryptoWeb.Interaction.Command.handle(name, options, params, conn)
     )
+  end
+
+  def verified(conn, %{"type" => 3, "data" => %{"custom_id" => custom_id}} = params) do
+    custom_id = URI.parse(custom_id)
+
+    {name, params} =
+      VirtualCryptoWeb.Interaction.Button.handle(
+        custom_id.path |> String.split("/"),
+        case custom_id.query do
+          nil -> nil
+          q -> q |> URI.query_decoder() |> Enum.to_list()
+        end,
+        params,
+        conn
+      )
+
+    render(conn, "#{name}.json", params: params)
   end
 
   def verified(conn, _) do
