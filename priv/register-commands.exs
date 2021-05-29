@@ -148,6 +148,11 @@ defmodule Command do
               "name" => "canceled",
               "description" => "キャンセル済みの請求を表示します。",
               "type" => 5
+            },
+            %{
+              "name" => "user",
+              "description" => "ユーザーからの請求及びユーザーへの請求を表示します。",
+              "type" => 6
             }
           ]
         },
