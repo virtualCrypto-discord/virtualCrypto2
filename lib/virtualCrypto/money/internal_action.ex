@@ -724,7 +724,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       )
 
     [cnt] = get_claims_m_q(q, user_id, statuses, user_filter, [], ^true) |> Repo.all()
-    page = div(cnt - 1, limit)
+    page = div(cnt + limit - 1, limit)
 
     limit =
       case rem(cnt, limit) do
