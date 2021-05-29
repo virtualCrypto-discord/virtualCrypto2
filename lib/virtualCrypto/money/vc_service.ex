@@ -52,13 +52,12 @@ defmodule VirtualCrypto.Money.VCService do
   def get_claims(
         user_id,
         statuses,
-        sr_filter,
-        related_user_id,
+        type,
         order_by,
         cursor,
         limit
       ) do
-    Action.get_claims(user_id, statuses, sr_filter, related_user_id, order_by, cursor, limit)
+    Action.get_claims(user_id, statuses, type, order_by, cursor, limit)
   end
 
   def create_claim(claimant_id, payer_discord_user_id, unit, amount) do
