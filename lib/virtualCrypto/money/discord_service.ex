@@ -8,11 +8,11 @@ defmodule VirtualCrypto.Money.DiscordService do
   defp resolve(nil) do
     nil
   end
+
   defp resolve(discord_id) do
     {:ok, user} = VirtualCrypto.User.insert_user_if_not_exists(discord_id)
     user.id
   end
-
 
   def pay(
         sender_discord_id,

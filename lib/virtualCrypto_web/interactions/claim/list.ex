@@ -66,6 +66,7 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
         nil -> query
         _ -> query |> Map.put(:user, related_user_id)
       end
+
     {:ok, "list",
      Money.get_claims(
        DiscordService,

@@ -621,7 +621,7 @@ defmodule VirtualCrypto.Money.InternalAction do
         q =
           case related_user_id do
             nil -> q
-            related_user_id -> q|>sr_filter(:all, related_user_id)
+            related_user_id -> q |> sr_filter(:all, related_user_id)
           end
 
         q |> order_by([claim, info, claimant, payer], unquote(order_by))

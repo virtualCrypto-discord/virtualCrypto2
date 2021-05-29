@@ -309,7 +309,7 @@ defmodule VirtualCrypto.Money do
       ) do
     {:ok, x} =
       Repo.transaction(fn ->
-        service.get_claims(user_id, statuses, sr_filter,related_user_id, order_by, cursor, limit)
+        service.get_claims(user_id, statuses, sr_filter, related_user_id, order_by, cursor, limit)
       end)
 
     x

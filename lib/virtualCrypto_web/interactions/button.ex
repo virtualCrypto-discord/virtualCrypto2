@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.Interaction.Button do
   defp handle_(page, query, user) do
-    query = query|> Map.new()
+    query = query |> Map.new()
+
     {a, b, params} =
       VirtualCryptoWeb.Interaction.Claim.List.page(
         user,
