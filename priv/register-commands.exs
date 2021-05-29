@@ -128,7 +128,28 @@ defmodule Command do
           "name" => "list",
           "description" => "請求の一覧を表示します。",
           "type" => 1,
-          "options" => []
+          "options" => [
+            %{
+              "name" => "pending",
+              "description" => "未処理の請求を表示します。",
+              "type" => 5
+            },
+            %{
+              "name" => "approved",
+              "description" => "承諾済みの請求を表示します。",
+              "type" => 5
+            },
+            %{
+              "name" => "denied",
+              "description" => "拒否済みの請求を表示します。",
+              "type" => 5
+            },
+            %{
+              "name" => "canceled",
+              "description" => "キャンセル済みの請求を表示します。",
+              "type" => 5
+            }
+          ]
         },
         %{
           "name" => "make",
