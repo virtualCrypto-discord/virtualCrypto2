@@ -11,7 +11,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     user2: user2,
     currency: currency
   } do
-    claim_id = (claims |> at(0) |> elem(0)).id
+    claim_id = (claims |> at(0) |> Map.fetch!(:claim)).id
     claim_id_str = to_string(claim_id)
 
     before_claimant =
@@ -39,7 +39,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
 
     regex = ~r/id: (\d+)の請求を承諾し、支払いました。/
     assert [_, ^claim_id_str] = Regex.run(regex, content)
-    assert (VirtualCrypto.Money.get_claim_by_id(claim_id) |> elem(0)).status == "approved"
+    assert VirtualCrypto.Money.get_claim_by_id(claim_id).claim.status == "approved"
 
     after_claimant =
       VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
@@ -60,11 +60,11 @@ defmodule InteractionsControllerTest.Claim.Approve do
   end
 
   test "approve pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> at(0) |> elem(0), user1)
+    test_invalid_operator(conn, "approve", claims |> at(0) |> Map.fetch!(:claim), user1)
   end
 
   test "approve pending claim by not related user", %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> at(0) |> elem(0), -1)
+    test_invalid_operator(conn, "approve", claims |> at(0) |> Map.fetch!(:claim), -1)
   end
 
   test "approve claim by payer but not_enough_amount",
@@ -72,7 +72,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
     conn =
       post_command(
         conn,
-        patch_from_guild("approve", (claims |> at(1) |> elem(0)).id, user1)
+        patch_from_guild("approve", (claims |> at(1) |> Map.fetch!(:claim)).id, user1)
       )
 
     assert_discord_message(conn, "エラー: お金が足りません。")
@@ -83,59 +83,69 @@ defmodule InteractionsControllerTest.Claim.Approve do
     claims: claims,
     user2: user2
   } do
-    test_invalid_operator(conn, "approve", claims |> at(1) |> elem(0), user2)
+    test_invalid_operator(conn, "approve", claims |> at(1) |> Map.fetch!(:claim), user2)
   end
 
   test "approve pending claim by not related user not_enough_amount", %{
     conn: conn,
     claims: claims
   } do
-    test_invalid_operator(conn, "approve", claims |> at(1) |> elem(0), -1)
+    test_invalid_operator(conn, "approve", claims |> at(1) |> Map.fetch!(:claim), -1)
   end
 
   test "approve approved claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> approved_claim() |> elem(0), user2)
+    test_invalid_status(conn, "approve", claims |> approved_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "approve approved claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> approved_claim() |> elem(0), user1)
+    test_invalid_operator(
+      conn,
+      "approve",
+      claims |> approved_claim() |> Map.fetch!(:claim),
+      user1
+    )
   end
 
   test "approve approved claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> approved_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "approve", claims |> approved_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "approve denied claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> denied_claim() |> elem(0), user2)
+    test_invalid_status(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "approve denied claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> denied_claim() |> elem(0), user1)
+    test_invalid_operator(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), user1)
   end
 
   test "approve denied claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> denied_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "approve canceled claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> canceled_claim() |> elem(0), user2)
+    test_invalid_status(conn, "approve", claims |> canceled_claim() |> Map.fetch!(:claim), user2)
   end
 
   test "approve canceled claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> elem(0), user1)
+    test_invalid_operator(
+      conn,
+      "approve",
+      claims |> canceled_claim() |> Map.fetch!(:claim),
+      user1
+    )
   end
 
   test "approve canceled claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> elem(0), -1)
+    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> Map.fetch!(:claim), -1)
   end
 
   test "approve invalid id claim",

@@ -84,7 +84,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         9_999_999
       )
 
-    {:ok, {c, _, _, _}} =
+    {:ok, %{claim: c}} =
       VirtualCrypto.Money.create_claim(
         VirtualCrypto.Money.DiscordService,
         d.user1,
@@ -96,7 +96,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     {:ok, c3} =
       VirtualCrypto.Money.approve_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
 
-    {:ok, {c, _, _, _}} =
+    {:ok, %{claim: c}} =
       VirtualCrypto.Money.create_claim(
         VirtualCrypto.Money.DiscordService,
         d.user1,
@@ -107,7 +107,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
 
     {:ok, c4} = VirtualCrypto.Money.deny_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
 
-    {:ok, {c, _, _, _}} =
+    {:ok, %{claim: c}} =
       VirtualCrypto.Money.create_claim(
         VirtualCrypto.Money.DiscordService,
         d.user1,

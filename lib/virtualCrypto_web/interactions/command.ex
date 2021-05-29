@@ -1,6 +1,10 @@
-defmodule VirtualCryptoWeb.CommandHandler do
+defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
+  @moduledoc false
+  @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
+  @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
+  @site_url Application.get_env(:virtualCrypto, :site_url)
 
   # NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
   defp cast_int(v) when is_binary(v) do
@@ -15,10 +19,6 @@ defmodule VirtualCryptoWeb.CommandHandler do
     v
   end
 
-  @moduledoc false
-  @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
-  @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
-  @site_url Application.get_env(:virtualCrypto, :site_url)
   defp logo_url,
     do: @site_url <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
 
@@ -152,8 +152,8 @@ defmodule VirtualCryptoWeb.CommandHandler do
       info ->
         case Money.balance(DiscordService, user: int_user_id)
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.V8.Raw.get_guild(info.guild)}
-          [] -> {:ok, info, 0, Discord.Api.V8.Raw.get_guild(info.guild)}
+          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.Raw.get_guild(info.guild)}
+          [] -> {:ok, info, 0, Discord.Api.Raw.get_guild(info.guild)}
         end
     end
   end
@@ -172,26 +172,9 @@ defmodule VirtualCryptoWeb.CommandHandler do
         %{"member" => %{"user" => user}},
         _conn
       ) do
-    int_user_id = String.to_integer(user["id"])
-
-    {sent_claims, received_claims} =
-      Money.get_claims(DiscordService, int_user_id, "pending")
-      |> Enum.reduce({[], []}, fn {_claim, _info, claimant, payer} = d, {sent, received} ->
-        {
-          if(claimant.discord_id == int_user_id,
-            do: [d | sent],
-            else: sent
-          ),
-          if(payer.discord_id == int_user_id,
-            do: [d | received],
-            else: received
-          )
-        }
-      end)
-
-    {:ok, "list",
-     Enum.slice(sent_claims |> Enum.sort(&(elem(&1, 0).id <= elem(&2, 0).id)), 0, 10),
-     Enum.slice(received_claims |> Enum.sort(&(elem(&1, 0).id <= elem(&2, 0).id)), 0, 10)}
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, 1) do
+      {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
+    end
   end
 
   def handle(
@@ -210,7 +193,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
            options["sub_options"]["unit"],
            cast_int(options["sub_options"]["amount"])
          ) do
-      {:ok, {claim, _, _, _}} -> {:ok, "make", claim}
+      {:ok, %{claim: claim}} -> {:ok, "make", claim}
       {:error, :money_not_found} -> {:error, "make", :money_not_found}
       {:error, :invalid_amount} -> {:error, "make", :invalid_amount}
     end
@@ -226,7 +209,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.approve_claim(DiscordService, id, int_user_id) do
-      {:ok, {claim, _, _, _}} -> {:ok, "approve", claim}
+      {:ok, %{claim: claim}} -> {:ok, "approve", claim}
       {:error, err} -> {:error, "approve", err}
     end
   end
@@ -241,7 +224,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.deny_claim(DiscordService, id, int_user_id) do
-      {:ok, {claim, _, _, _}} -> {:ok, "deny", claim}
+      {:ok, %{claim: claim}} -> {:ok, "deny", claim}
       {:error, err} -> {:error, "deny", err}
     end
   end
@@ -256,7 +239,7 @@ defmodule VirtualCryptoWeb.CommandHandler do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.cancel_claim(DiscordService, id, int_user_id) do
-      {:ok, {claim, _, _, _}} -> {:ok, "cancel", claim}
+      {:ok, %{claim: claim}} -> {:ok, "cancel", claim}
       {:error, err} -> {:error, "cancel", err}
     end
   end

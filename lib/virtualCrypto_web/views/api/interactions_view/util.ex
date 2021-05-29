@@ -25,4 +25,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
       d.minute |> padding
     }(#{d.zone_abbr})/
   end
+
+  def action_row(), do: 1
+  def button(), do: 2
+  def button_style_primary(), do: 1
+  def button_style_secondary(), do: 2
+  def button_style_success(), do: 3
+  def button_style_danger(), do: 4
+  def button_style_link(), do: 5
 end
