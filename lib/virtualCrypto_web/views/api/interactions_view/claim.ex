@@ -31,33 +31,17 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   defp render_claim_name(me, claimant_discord_id, payer_discord_id)
        when me == claimant_discord_id and me == payer_discord_id do
-    "📤📥"
+    "⬆⬇"
   end
 
   defp render_claim_name(me, claimant_discord_id, _payer_discord_id)
        when me == claimant_discord_id do
-    "📤"
+    "⬆"
   end
 
   defp render_claim_name(me, _claimant_discord_id, payer_discord_id)
        when me == payer_discord_id do
-    "📥"
-  end
-
-  defp render_status("approved") do
-    "✅支払い済み"
-  end
-
-  defp render_status("denied") do
-    "❌拒否"
-  end
-
-  defp render_status("canceled") do
-    "🗑️キャンセル"
-  end
-
-  defp render_status("pending") do
-    "⌛未決定"
+    "⬇"
   end
 
   defp render_claim(claims, me) do
@@ -66,26 +50,25 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       %{
         name: render_claim_name(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
         value: """
-        状態　: #{render_status(claim.status)}
-        請求額: **#{claim.amount}** `#{currency.unit}`
         請求元: #{mention(claimant.discord_id)}
         請求先: #{mention(payer.discord_id)}
+        請求額: **#{claim.amount}** `#{currency.unit}`
         請求日: #{format_date_time(claim.inserted_at)}
         """
       }
     end)
   end
 
-  defp custom_id(nil, _flags) do
+  defp custom_id(nil) do
     "disabled"
   end
 
-  defp custom_id(:last, flags) do
-    "claim/list/last?flags=#{flags}"
+  defp custom_id(:last) do
+    "claim/list/last"
   end
 
-  defp custom_id(n, flags) do
-    "claim/list/#{n}?flags=#{flags}"
+  defp custom_id(n) do
+    "claim/list/#{n}"
   end
 
   defp disabled(nil) do
@@ -106,8 +89,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
            last: last,
            prev: prev,
            next: next,
-           page: page,
-           flags: flags
+           page: page
          }}
       ) do
     typ =
@@ -140,34 +122,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏪"},
-                custom_id: custom_id(first, flags),
+                custom_id: custom_id(first),
                 disabled: disabled(first)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏮️"},
-                custom_id: custom_id(prev, flags),
+                custom_id: custom_id(prev),
                 disabled: disabled(prev)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏭️"},
-                custom_id: custom_id(next, flags),
+                custom_id: custom_id(next),
                 disabled: disabled(next)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏩"},
-                custom_id: custom_id(last, flags),
+                custom_id: custom_id(last),
                 disabled: disabled(last)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                custom_id: custom_id(page, flags),
+                custom_id: custom_id(page),
                 emoji: %{name: "🔄"}
               }
             ]
