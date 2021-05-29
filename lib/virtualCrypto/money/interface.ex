@@ -288,20 +288,14 @@ defmodule VirtualCrypto.Money do
           module(),
           Integer.t(),
           [String.t()],
-          :all | :received | :claimed | :legacy,
+          :all | :received | :claimed,
           :desc_claim_id,
-          :first | {:after | :before, any()} | :paged_last,
+          %{page: pos_integer() | :last} | %{cursor: {:after | :before, any()} | :first | :last},
           pos_integer()
         ) ::
           [
             claim_t
           ]
-          | %{
-              received: [
-                claim_t
-              ],
-              claimed: [claim_t()]
-            }
   def get_claims(
         service,
         user_id,

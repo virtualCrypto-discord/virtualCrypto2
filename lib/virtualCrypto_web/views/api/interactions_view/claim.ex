@@ -29,18 +29,18 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "この請求に対してこの操作を行うことは出来ません。"
   end
 
-  defp render_claim_name(me, claimant_discord_id, payer_disocrd_id)
-       when me == claimant_discord_id and me == payer_disocrd_id do
+  defp render_claim_name(me, claimant_discord_id, payer_discord_id)
+       when me == claimant_discord_id and me == payer_discord_id do
     "⬆⬇"
   end
 
-  defp render_claim_name(me, claimant_discord_id, _payer_disocrd_id)
+  defp render_claim_name(me, claimant_discord_id, _payer_discord_id)
        when me == claimant_discord_id do
     "⬆"
   end
 
-  defp render_claim_name(me, _claimant_discord_id, payer_disocrd_id)
-       when me == payer_disocrd_id do
+  defp render_claim_name(me, _claimant_discord_id, payer_discord_id)
+       when me == payer_discord_id do
     "⬇"
   end
 
@@ -49,10 +49,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     |> Enum.map(fn %{claim: claim, currency: currency, claimant: claimant, payer: payer} ->
       %{
         name: render_claim_name(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
-        value:
-          ~s/請求元: #{mention(claimant.discord_id)} \n 請求先: #{mention(payer.discord_id)} \n 請求額: **#{
-            claim.amount
-          }** `#{currency.unit}`\n 請求日: #{format_date_time(claim.inserted_at)}/
+        value: """
+        請求元: #{mention(claimant.discord_id)}
+        請求先: #{mention(payer.discord_id)}
+        請求額: **#{claim.amount}** `#{currency.unit}`
+        請求日: #{format_date_time(claim.inserted_at)}/
+        """
       }
     end)
   end
@@ -78,12 +80,23 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   end
 
   def render(
-        {:ok, "list", %{type: typ,claims: claims, me: me, first: first, last: last, prev: prev, next: next,page: page}}
+        {:ok, "list",
+         %{
+           type: typ,
+           claims: claims,
+           me: me,
+           first: first,
+           last: last,
+           prev: prev,
+           next: next,
+           page: page
+         }}
       ) do
-    typ =  case typ do
-      :command -> channel_message_with_source()
-      :button -> 7
-    end
+    typ =
+      case typ do
+        :command -> channel_message_with_source()
+        :button -> 7
+      end
 
     %{
       type: typ,
@@ -93,7 +106,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
           %{
             title: "請求一覧",
             color: color_brand(),
-            fields: render_claim(claims, me)
+            fields: render_claim(claims, me),
+            description:
+              case claims do
+                [] -> "表示する内容がありません。"
+                _ -> nil
+              end
           }
         ],
         components: [
@@ -132,7 +150,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
                 type: button(),
                 style: button_style_secondary(),
                 custom_id: custom_id(page),
-                emoji: %{name: "🔄"},
+                emoji: %{name: "🔄"}
               }
             ]
           }
