@@ -9,17 +9,17 @@ defmodule InteractionsControllerTest.Claim.List do
 
   defp render_claim_name(me, claimant_discord_id, payer_discord_id)
        when me == claimant_discord_id and me == payer_discord_id do
-    "⬆⬇"
+    "📤📥"
   end
 
   defp render_claim_name(me, claimant_discord_id, _payer_discord_id)
        when me == claimant_discord_id do
-    "⬆"
+    "📤"
   end
 
   defp render_claim_name(me, _claimant_discord_id, payer_discord_id)
        when me == payer_discord_id do
-    "⬇"
+    "📥"
   end
 
   def generate_claim_field(me) do
@@ -27,9 +27,10 @@ defmodule InteractionsControllerTest.Claim.List do
       %{
         "name" => "#{render_claim_name(me, claimant.discord_id, payer.discord_id)}#{claim.id}",
         "value" => """
+        状態　: ⌛未決定
+        請求額: **#{claim.amount}** `#{currency.unit}`
         請求元: #{mention(claimant.discord_id)}
         請求先: #{mention(payer.discord_id)}
-        請求額: **#{claim.amount}** `#{currency.unit}`
         請求日: #{format_date_time(claim.inserted_at)}
         """
       }
@@ -78,7 +79,7 @@ defmodule InteractionsControllerTest.Claim.List do
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "claim/list/1",
+                       "custom_id" => "claim/list/1?flags=1",
                        "emoji" => %{"name" => "🔄"},
                        "style" => 2,
                        "type" => 2
@@ -144,7 +145,7 @@ defmodule InteractionsControllerTest.Claim.List do
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "claim/list/1",
+                       "custom_id" => "claim/list/1?flags=1",
                        "emoji" => %{"name" => "🔄"},
                        "style" => 2,
                        "type" => 2
@@ -170,6 +171,7 @@ defmodule InteractionsControllerTest.Claim.List do
         user1,
         ["pending"],
         :all,
+        nil,
         :desc_claim_id,
         %{page: 1},
         5

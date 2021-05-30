@@ -31,17 +31,33 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
 
   defp render_claim_name(me, claimant_discord_id, payer_discord_id)
        when me == claimant_discord_id and me == payer_discord_id do
-    "⬆⬇"
+    "📤📥"
   end
 
   defp render_claim_name(me, claimant_discord_id, _payer_discord_id)
        when me == claimant_discord_id do
-    "⬆"
+    "📤"
   end
 
   defp render_claim_name(me, _claimant_discord_id, payer_discord_id)
        when me == payer_discord_id do
-    "⬇"
+    "📥"
+  end
+
+  defp render_status("approved") do
+    "✅支払い済み"
+  end
+
+  defp render_status("denied") do
+    "❌拒否"
+  end
+
+  defp render_status("canceled") do
+    "🗑️キャンセル"
+  end
+
+  defp render_status("pending") do
+    "⌛未決定"
   end
 
   defp render_claim(claims, me) do
@@ -50,25 +66,26 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       %{
         name: render_claim_name(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
         value: """
+        状態　: #{render_status(claim.status)}
+        請求額: **#{claim.amount}** `#{currency.unit}`
         請求元: #{mention(claimant.discord_id)}
         請求先: #{mention(payer.discord_id)}
-        請求額: **#{claim.amount}** `#{currency.unit}`
         請求日: #{format_date_time(claim.inserted_at)}
         """
       }
     end)
   end
 
-  defp custom_id(nil) do
+  defp custom_id(_subcommand, nil, _flags) do
     "disabled"
   end
 
-  defp custom_id(:last) do
-    "claim/list/last"
+  defp custom_id(subcommand, :last, query) do
+    "claim/#{subcommand}/last?#{query}"
   end
 
-  defp custom_id(n) do
-    "claim/list/#{n}"
+  defp custom_id(subcommand, n, query) do
+    "claim/#{subcommand}/#{n}?#{query}"
   end
 
   defp disabled(nil) do
@@ -80,7 +97,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   end
 
   def render(
-        {:ok, "list",
+        {:ok, subcommand,
          %{
            type: typ,
            claims: claims,
@@ -89,14 +106,18 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
            last: last,
            prev: prev,
            next: next,
-           page: page
+           page: page,
+           query: query
          }}
-      ) do
+      )
+      when subcommand in ["list", "received", "sent"] do
     typ =
       case typ do
         :command -> channel_message_with_source()
         :button -> 7
       end
+
+    query = URI.encode_query(query)
 
     %{
       type: typ,
@@ -122,34 +143,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏪"},
-                custom_id: custom_id(first),
+                custom_id: custom_id(subcommand, first, query),
                 disabled: disabled(first)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏮️"},
-                custom_id: custom_id(prev),
+                custom_id: custom_id(subcommand, prev, query),
                 disabled: disabled(prev)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏭️"},
-                custom_id: custom_id(next),
+                custom_id: custom_id(subcommand, next, query),
                 disabled: disabled(next)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
                 emoji: %{name: "⏩"},
-                custom_id: custom_id(last),
+                custom_id: custom_id(subcommand, last, query),
                 disabled: disabled(last)
               },
               %{
                 type: button(),
                 style: button_style_secondary(),
-                custom_id: custom_id(page),
+                custom_id: custom_id(subcommand, page, query),
                 emoji: %{name: "🔄"}
               }
             ]
