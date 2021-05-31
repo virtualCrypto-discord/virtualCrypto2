@@ -5,7 +5,7 @@ defmodule VirtualCrypto.Money do
 
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
-          currency: %VirtualCrypto.Money.Info{},
+          currency: %VirtualCrypto.Money.Currency{},
           claimant: %VirtualCrypto.User.User{},
           payer: %VirtualCrypto.User.User{}
         }
@@ -22,7 +22,7 @@ defmodule VirtualCrypto.Money do
           unit: String.t()
         ) ::
           {:ok}
-          | {:error, :not_found_money}
+          | {:error, :not_found_currency}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
           | {:error, :invalid_amount}
@@ -38,7 +38,7 @@ defmodule VirtualCrypto.Money do
          end)
          |> Repo.transaction() do
       {:ok, _} -> {:ok}
-      {:error, :pay, :not_found_money, _} -> {:error, :not_found_money}
+      {:error, :pay, :not_found_currency, _} -> {:error, :not_found_currency}
       {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
       {:error, :pay, :invalid_amount, _} -> {:error, :invalid_amount}
@@ -112,7 +112,7 @@ defmodule VirtualCrypto.Money do
           guild: non_neg_integer()
         ) ::
           {:ok, Ecto.Schema.t()}
-          | {:error, :not_found_money}
+          | {:error, :not_found_currency}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def give(kw) do
@@ -128,7 +128,7 @@ defmodule VirtualCrypto.Money do
          end)
          |> Repo.transaction() do
       {:ok, %{give: m}} -> {:ok, m}
-      {:error, :give, :not_found_money, _} -> {:error, :not_found_money}
+      {:error, :give, :not_found_currency, _} -> {:error, :not_found_currency}
       {:error, :give, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
       {:error, :give, :not_enough_amount, _} -> {:error, :not_enough_amount}
       {:error, :give, :invalid_amount, _} -> {:error, :invalid_amount}
@@ -208,13 +208,13 @@ defmodule VirtualCrypto.Money do
   @spec balance(module(), user: non_neg_integer(), currency: non_neg_integer()) ::
           [
             %{
-              asset: VirtualCrypto.Money.Asset,
-              currency: VirtualCrypto.Money.Info
+              asset: %VirtualCrypto.Money.Asset{},
+              currency: %VirtualCrypto.Money.Currency{}
             }
           ]
           | %{
-              asset: VirtualCrypto.Money.Asset,
-              currency: VirtualCrypto.Money.Info
+              asset: %VirtualCrypto.Money.Asset{},
+              currency: %VirtualCrypto.Money.Currency{}
             }
           | nil
   def balance(service, kw) do
@@ -264,12 +264,12 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, info_name, info_unit, info_guild_id, pool_amount} ->
+      {amount, currency_name, currency_unit, currency_guild_id, pool_amount} ->
         %{
           amount: Decimal.to_integer(amount),
-          name: info_name,
-          unit: info_unit,
-          guild: info_guild_id,
+          name: currency_name,
+          unit: currency_unit,
+          guild: currency_guild_id,
           pool_amount: pool_amount
         }
 
@@ -343,7 +343,7 @@ defmodule VirtualCrypto.Money do
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
-          | {:error, :not_found_money}
+          | {:error, :not_found_currency}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
   def approve_claim(service, id, user_id) do
@@ -460,7 +460,7 @@ defmodule VirtualCrypto.Money do
   """
   @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
           {:ok, claim_t}
-          | {:error, :money_not_found}
+          | {:error, :not_found_currency}
           | {:error, :invalid_amount}
   def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
     service.create_claim(claimant_id, payer_discord_user_id, unit, amount)

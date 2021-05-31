@@ -8,19 +8,19 @@ defmodule VirtualCrypto.Money.VCService do
         sender_vc_id,
         receiver_discord_id,
         amount,
-        money_unit
+        currency_unit
       ) do
-    Action.pay(sender_vc_id, receiver_discord_id, amount, money_unit)
+    Action.pay(sender_vc_id, receiver_discord_id, amount, currency_unit)
   end
 
   def balance(user_id) do
     q =
       from asset in Money.Asset,
-        join: info in Money.Info,
-        on: asset.money_id == info.id,
+        join: currency in Money.Currency,
+        on: asset.currency_id == currency.id,
         on: asset.user_id == ^user_id,
-        select: {asset, info},
-        order_by: info.unit
+        select: {asset, currency},
+        order_by: currency.unit
 
     Repo.all(q)
   end

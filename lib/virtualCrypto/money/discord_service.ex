@@ -18,20 +18,20 @@ defmodule VirtualCrypto.Money.DiscordService do
         sender_discord_id,
         receiver_discord_id,
         amount,
-        money_unit
+        currency_unit
       ) do
-    Action.pay(resolve(sender_discord_id), receiver_discord_id, amount, money_unit)
+    Action.pay(resolve(sender_discord_id), receiver_discord_id, amount, currency_unit)
   end
 
   def balance(discord_user_id) do
     q =
       from asset in Money.Asset,
-        join: info in Money.Info,
-        on: asset.money_id == info.id,
+        join: currency in Money.Currency,
+        on: asset.currency_id == currency.id,
         join: users in User,
         on: users.discord_id == ^discord_user_id and users.id == asset.user_id,
-        select: {asset, info},
-        order_by: info.unit
+        select: {asset, currency},
+        order_by: currency.unit
 
     Repo.all(q)
   end

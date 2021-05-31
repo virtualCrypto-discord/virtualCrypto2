@@ -85,7 +85,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       case VirtualCrypto.Money.give(receiver: int_receiver, amount: int_amount, guild: int_guild) do
         {:ok,
          %{
-           currency: %VirtualCrypto.Money.Info{unit: unit, pool_amount: pool_amount},
+           currency: %VirtualCrypto.Money.Currency{unit: unit, pool_amount: pool_amount},
            amount: int_amount
          }} ->
           {:ok, {receiver, int_amount, unit, pool_amount}}
@@ -207,7 +207,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
            cast_int(options["sub_options"]["amount"])
          ) do
       {:ok, %{claim: claim}} -> {:ok, "make", claim}
-      {:error, :money_not_found} -> {:error, "make", :money_not_found}
+      {:error, :not_found_currency} -> {:error, "make", :not_found_currency}
       {:error, :invalid_amount} -> {:error, "make", :invalid_amount}
     end
   end

@@ -5,7 +5,7 @@ defmodule VirtualCrypto.Money.Asset do
   schema "assets" do
     field :amount, :integer
     field :user_id, :id
-    field :money_id, :id
+    field :currency_id, :id
 
     timestamps()
   end
@@ -15,6 +15,6 @@ defmodule VirtualCrypto.Money.Asset do
     asset
     |> cast(attrs, [:amount])
     |> validate_required([:amount])
-    |> unique_constraint([:user_id, :money_id])
+    |> unique_constraint([:user_id, :currency_id])
   end
 end

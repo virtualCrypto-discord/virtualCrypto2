@@ -33,18 +33,18 @@ defmodule VirtualCrypto.ConnectUser do
       Repo.delete_all(
         from(assets in VirtualCrypto.Money.Asset,
           where: assets.user_id == ^source_user_id,
-          select: {assets.money_id, assets.amount}
+          select: {assets.currency_id, assets.amount}
         )
       )
 
     Repo.insert_all(
       VirtualCrypto.Money.Asset,
       assets
-      |> Enum.map(fn {money_id, amount} ->
+      |> Enum.map(fn {currency_id, amount} ->
         [
           amount: amount,
           user_id: base_user_id,
-          money_id: money_id,
+          currency_id: currency_id,
           inserted_at: now,
           updated_at: now
         ]
@@ -56,7 +56,7 @@ defmodule VirtualCrypto.ConnectUser do
             set: [user_id: ^base_user_id, updated_at: ^now]
           ]
         ),
-      conflict_target: [:money_id, :user_id]
+      conflict_target: [:currency_id, :user_id]
     )
 
     # replace user_id of histories

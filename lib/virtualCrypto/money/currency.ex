@@ -1,8 +1,8 @@
-defmodule VirtualCrypto.Money.Info do
+defmodule VirtualCrypto.Money.Currency do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "info" do
+  schema "currencies" do
     field :guild_id, :integer
     field :name, :string
     field :pool_amount, :integer
@@ -11,8 +11,8 @@ defmodule VirtualCrypto.Money.Info do
   end
 
   @doc false
-  def changeset(info, attrs) do
-    info
+  def changeset(currency, attrs) do
+    currency
     |> cast(attrs, [:name, :unit, :status, :guild_id, :pool_amount])
     |> validate_required([:name, :unit, :status, :guild_id, :pool_amount])
     |> unique_constraint(:unit)

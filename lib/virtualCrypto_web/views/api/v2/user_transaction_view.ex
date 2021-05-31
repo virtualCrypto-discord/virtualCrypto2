@@ -7,10 +7,10 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionView do
 end
 
 defmodule VirtualCryptoWeb.Api.V2.UserTransactionView.Pure do
-  defp render_error(:not_found_money) do
+  defp render_error(:not_found_currency) do
     %{
       error: "invalid_request",
-      error_info: "not_found_money"
+      error_info: "not_found_currency"
     }
   end
 

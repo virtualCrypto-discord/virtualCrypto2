@@ -34,8 +34,8 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         creator_amount: 1000 * 200
       )
 
-    currency = Repo.get_by(VirtualCrypto.Money.Info, unit: unit)
-    currency2 = Repo.get_by(VirtualCrypto.Money.Info, unit: unit2)
+    currency = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit)
+    currency2 = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit2)
 
     {:ok} =
       VirtualCrypto.Money.pay(VirtualCrypto.Money.DiscordService,

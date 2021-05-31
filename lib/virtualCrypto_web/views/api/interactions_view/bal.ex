@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Bal do
 
   def render_line(%{
         asset: %VirtualCrypto.Money.Asset{amount: amount},
-        currency: %VirtualCrypto.Money.Info{unit: unit, name: name}
+        currency: %VirtualCrypto.Money.Currency{unit: unit, name: name}
       }),
       do: ~s/#{name}: #{amount} #{unit}/
 

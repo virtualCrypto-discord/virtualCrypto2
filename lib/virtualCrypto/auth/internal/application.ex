@@ -52,7 +52,7 @@ defmodule VirtualCrypto.Auth.InternalAction.Application do
     case v do
       %Auth.Application{client_secret: ^client_secret} -> {:ok, v}
       %Auth.Application{client_secret: _} -> {:error, {:invalid_client, :invalid_secret}}
-      nil -> {:error, {:invalid_client, :client_not_found}}
+      nil -> {:error, {:invalid_client, :not_found_client}}
     end
   end
 

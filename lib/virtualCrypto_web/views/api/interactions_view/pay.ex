@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Pay do
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
-  defp render_error(:not_found_money) do
+  defp render_error(:not_found_currency) do
     "エラー: 通貨は存在しません。"
   end
 

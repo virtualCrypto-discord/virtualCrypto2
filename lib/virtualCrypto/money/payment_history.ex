@@ -2,12 +2,12 @@ defmodule VirtualCrypto.Money.PaymentHistory do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "money_payment_historys" do
+  schema "currency_payment_histories" do
     field :amount, :integer
     field :time, :naive_datetime
     field :sender_id, :id
     field :receiver_id, :id
-    field :money_id, :id
+    field :currency_id, :id
 
     timestamps()
   end

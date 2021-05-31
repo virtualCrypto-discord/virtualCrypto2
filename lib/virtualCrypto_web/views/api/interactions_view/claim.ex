@@ -9,7 +9,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "お金が足りません。"
   end
 
-  defp render_error(:money_not_found) do
+  defp render_error(:not_found_currency) do
     "指定された通貨は存在しません。"
   end
 
