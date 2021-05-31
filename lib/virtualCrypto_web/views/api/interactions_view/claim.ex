@@ -114,7 +114,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     typ =
       case typ do
         :command -> channel_message_with_source()
-        :button -> 7
+        :button -> update_message()
       end
 
     query = URI.encode_query(query)
