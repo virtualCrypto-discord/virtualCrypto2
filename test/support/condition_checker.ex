@@ -2,7 +2,6 @@ defmodule VirtualCryptoWeb.ConditionChecker do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.User.User
   alias VirtualCrypto.Money.Asset
-  alias VirtualCrypto.Money.Info
 
   def get_amount(user, currency) do
     case Repo.get_by(Asset,

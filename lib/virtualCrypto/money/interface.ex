@@ -9,6 +9,7 @@ defmodule VirtualCrypto.Money do
           claimant: %VirtualCrypto.User.User{},
           payer: %VirtualCrypto.User.User{}
         }
+  @type page :: pos_integer() | :last
   # FIXME: rename to create_payment and take map
   @moduledoc """
   receiver must be discord user
@@ -291,12 +292,20 @@ defmodule VirtualCrypto.Money do
           :all | :received | :claimed,
           pos_integer(),
           :desc_claim_id,
-          %{page: pos_integer() | :last} | %{cursor: {:after | :before, any()} | :first | :last},
+          %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
           pos_integer()
         ) ::
-          [
-            claim_t
-          ]
+          %{
+            claims: [
+              claim_t
+            ],
+            next: page(),
+            prev: page(),
+            last: page(),
+            first: page(),
+            page: pos_integer()
+          }
+
   def get_claims(
         service,
         user_id,
