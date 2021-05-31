@@ -55,9 +55,9 @@ defmodule VirtualCrypto.Money.InternalAction do
     with {:check_amount, true} <-
            {:check_amount,
             money_unit_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
-         money_unit_receiver_id_and_amount <-
+         money_unit_receiver_id_and_amount_grouped <-
            money_unit_receiver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
-         units <- Map.keys(money_unit_receiver_id_and_amount),
+         units <- Map.keys(money_unit_receiver_id_and_amount_grouped),
          q <-
            from(assets in Money.Asset,
              join: currencies in Money.Info,
@@ -80,10 +80,10 @@ defmodule VirtualCrypto.Money.InternalAction do
            |> Enum.map(fn {aid, currency_id, _unit, _amount} -> {currency_id, aid} end)
            |> Map.new(),
          sent_unit_amount_pair <-
-           money_unit_receiver_id_and_amount
-           |> Enum.map(fn {unit, money_unit_receiver_id_and_amount} ->
+           money_unit_receiver_id_and_amount_grouped
+           |> Enum.map(fn {unit, money_unit_receiver_id_and_amount_grouped_entry} ->
              {unit,
-              money_unit_receiver_id_and_amount
+              money_unit_receiver_id_and_amount_grouped_entry
               |> Enum.map(fn {_unit, _receiver, amount} -> amount end)
               |> Enum.sum()}
            end),
