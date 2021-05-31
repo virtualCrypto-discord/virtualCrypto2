@@ -18,7 +18,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          # Get sender id.
          # Get sender asset by sender id and money id.
          sender_asset <- get_asset_with_lock(sender_id, money.id),
-         # Is sender asset exsits?
+         # Is sender asset exists?
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
          {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
