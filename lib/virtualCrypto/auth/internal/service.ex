@@ -178,7 +178,7 @@ defmodule VirtualCrypto.Auth.InternalAction do
             {:error, {:invalid_grant, :invalid_code}}
 
           {:get_application, nil} ->
-            {:error, {:invalid_request, :client_not_found}}
+            {:error, {:invalid_request, :not_found_client}}
 
           {:validate_application, false} ->
             {:error, {:invalid_grant, :issued_to_other_client}}

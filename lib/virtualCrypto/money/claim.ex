@@ -7,7 +7,7 @@ defmodule VirtualCrypto.Money.Claim do
     field :status, :string
     field :claimant_user_id, :integer
     field :payer_user_id, :integer
-    field :money_info_id, :integer
+    field :currency_id, :integer
 
     timestamps()
   end

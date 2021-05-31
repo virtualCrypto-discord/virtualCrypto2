@@ -86,12 +86,12 @@ defmodule VirtualCrypto.Guardian do
         {:ok, claims}
 
       false ->
-        {:error, :token_not_found}
+        {:error, :not_found_token}
     end
   end
 
   @impl Guardian
-  def verify_claims(_cliams, _options) do
+  def verify_claims(_claims, _options) do
     {:error, :invalid_kind}
   end
 

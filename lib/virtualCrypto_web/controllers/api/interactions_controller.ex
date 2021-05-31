@@ -1,30 +1,6 @@
 defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
 
-  defp get_signature([]) do
-    nil
-  end
-
-  defp get_signature([{"x-signature-ed25519", value} | _tail]) do
-    value
-  end
-
-  defp get_signature([_ | tail]) do
-    get_signature(tail)
-  end
-
-  defp get_timestamp([]) do
-    nil
-  end
-
-  defp get_timestamp([{"x-signature-timestamp", value} | _tail]) do
-    value
-  end
-
-  defp get_timestamp([_ | tail]) do
-    get_timestamp(tail)
-  end
-
   defp parse_options(options) do
     options
     |> Enum.map(fn
@@ -43,9 +19,18 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
 
   def verify(conn) do
     public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
-    encoded_signature = conn.req_headers |> get_signature
 
-    timestamp = get_timestamp(conn.req_headers)
+    encoded_signature =
+      case Plug.Conn.get_req_header(conn, "x-signature-ed25519") do
+        [encoded_signature] -> encoded_signature
+        _ -> nil
+      end
+
+    timestamp =
+      case Plug.Conn.get_req_header(conn, "x-signature-timestamp") do
+        [timestamp] -> timestamp
+        _ -> nil
+      end
 
     case {encoded_signature, timestamp} do
       {nil, _} ->

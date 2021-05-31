@@ -57,7 +57,8 @@ defmodule VirtualCrypto.MixProject do
       {:phoenix_live_view, "~> 0.15.4"},
       {:elixir_uuid, "~> 1.2"},
       {:tzdata, "~> 1.1"},
-      {:excoveralls, "~> 0.3", only: :test}
+      {:excoveralls, "~> 0.3", only: :test},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 

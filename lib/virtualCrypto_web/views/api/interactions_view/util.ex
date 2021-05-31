@@ -1,5 +1,6 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
   def channel_message_with_source, do: 4
+  def update_message, do: 7
   def pong, do: 1
   def ephemeral, do: 64
   def color_ok, do: 0x38EA42

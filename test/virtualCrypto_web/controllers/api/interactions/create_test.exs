@@ -49,7 +49,7 @@ defmodule InteractionsControllerTest.Create do
              "type" => 4
            } = json_response(conn, 200)
 
-    currency = VirtualCrypto.Repo.get_by(VirtualCrypto.Money.Info, unit: unit)
+    currency = VirtualCrypto.Repo.get_by(VirtualCrypto.Money.Currency, unit: unit)
 
     assert currency.name == name
     assert currency.pool_amount == div(amount + 199, 200)
