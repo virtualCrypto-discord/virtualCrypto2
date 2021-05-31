@@ -22,7 +22,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
          {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
-         # Insert reciver user if not exists.
+         # Insert receiver user if not exists.
          {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Upsert receiver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, money.id, amount),
@@ -49,15 +49,15 @@ defmodule VirtualCrypto.Money.InternalAction do
     {:error, :invalid_amount}
   end
 
-  def bulk_pay(sender_id, money_unit_reciver_id_and_amount) do
+  def bulk_pay(sender_id, money_unit_receiver_id_and_amount) do
     time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     with {:check_amount, true} <-
            {:check_amount,
-            money_unit_reciver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
-         money_unit_reciver_id_and_amount_grouped <-
-           money_unit_reciver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
-         units <- Map.keys(money_unit_reciver_id_and_amount_grouped),
+            money_unit_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
+         money_unit_receiver_id_and_amount <-
+           money_unit_receiver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
+         units <- Map.keys(money_unit_receiver_id_and_amount),
          q <-
            from(assets in Money.Asset,
              join: currencies in Money.Info,
@@ -80,10 +80,10 @@ defmodule VirtualCrypto.Money.InternalAction do
            |> Enum.map(fn {aid, currency_id, _unit, _amount} -> {currency_id, aid} end)
            |> Map.new(),
          sent_unit_amount_pair <-
-           money_unit_reciver_id_and_amount_grouped
-           |> Enum.map(fn {unit, money_unit_reciver_id_and_amount_grouped_entry} ->
+           money_unit_receiver_id_and_amount
+           |> Enum.map(fn {unit, money_unit_receiver_id_and_amount} ->
              {unit,
-              money_unit_reciver_id_and_amount_grouped_entry
+              money_unit_receiver_id_and_amount
               |> Enum.map(fn {_unit, _receiver, amount} -> amount end)
               |> Enum.sum()}
            end),
@@ -101,7 +101,7 @@ defmodule VirtualCrypto.Money.InternalAction do
             end)},
          {:ok, _} <-
            upsert_asset_amounts(
-             money_unit_reciver_id_and_amount
+             money_unit_receiver_id_and_amount
              |> Enum.map(fn {unit, receiver_id, amount} ->
                {sender_unit_currency_id_pair[unit], receiver_id, amount}
              end),
@@ -118,7 +118,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          {_, _} <-
            Repo.insert_all(
              VirtualCrypto.Money.PaymentHistory,
-             money_unit_reciver_id_and_amount
+             money_unit_receiver_id_and_amount
              |> Enum.map(fn {unit, receiver_id, amount} ->
                %{
                  amount: amount,
