@@ -84,7 +84,10 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
           {:error, :not_found_currency} ->
             conn
             |> put_status(400)
-            |> render("error.json", error: :invalid_request, error_description: :not_found_currency)
+            |> render("error.json",
+              error: :invalid_request,
+              error_description: :not_found_currency
+            )
         end
 
       {_, :error, _} ->
@@ -180,7 +183,10 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
           {:error, :not_found_currency} ->
             conn
             |> put_status(400)
-            |> render("error.json", error: :invalid_request, error_description: :not_found_currency)
+            |> render("error.json",
+              error: :invalid_request,
+              error_description: :not_found_currency
+            )
 
           {:error, :not_found_sender_asset} ->
             conn

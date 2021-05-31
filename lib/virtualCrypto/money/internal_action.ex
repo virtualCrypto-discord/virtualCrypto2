@@ -54,9 +54,9 @@ defmodule VirtualCrypto.Money.InternalAction do
 
     with {:check_amount, true} <-
            {:check_amount,
-           currency_unit_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
-           currency_unit_receiver_id_and_amount_grouped <-
-            currency_unit_receiver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
+            currency_unit_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
+         currency_unit_receiver_id_and_amount_grouped <-
+           currency_unit_receiver_id_and_amount |> Enum.group_by(fn {unit, _, _} -> unit end),
          units <- Map.keys(currency_unit_receiver_id_and_amount_grouped),
          q <-
            from(assets in Money.Asset,
@@ -83,7 +83,7 @@ defmodule VirtualCrypto.Money.InternalAction do
            currency_unit_receiver_id_and_amount_grouped
            |> Enum.map(fn {unit, currency_unit_receiver_id_and_amount_grouped_entry} ->
              {unit,
-             currency_unit_receiver_id_and_amount_grouped_entry
+              currency_unit_receiver_id_and_amount_grouped_entry
               |> Enum.map(fn {_unit, _receiver, amount} -> amount end)
               |> Enum.sum()}
            end),
@@ -262,7 +262,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.currency_id == currency.id,
       where: currency.guild_id == ^guild_id,
       group_by: currency.id,
-      select: {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
     )
   end
 
@@ -272,7 +273,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.currency_id == currency.id,
       where: currency.name == ^name,
       group_by: currency.id,
-      select: {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
     )
   end
 
@@ -282,7 +284,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.currency_id == currency.id,
       where: currency.unit == ^unit,
       group_by: currency.id,
-      select: {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
     )
   end
 
@@ -292,7 +295,8 @@ defmodule VirtualCrypto.Money.InternalAction do
       on: asset.currency_id == currency.id,
       where: currency.id == ^id,
       group_by: currency.id,
-      select: {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
     )
   end
 
