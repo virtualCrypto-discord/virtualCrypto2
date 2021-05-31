@@ -58,7 +58,7 @@ defmodule VirtualCrypto.MixProject do
       {:elixir_uuid, "~> 1.2"},
       {:tzdata, "~> 1.1"},
       {:excoveralls, "~> 0.3", only: :test},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 
