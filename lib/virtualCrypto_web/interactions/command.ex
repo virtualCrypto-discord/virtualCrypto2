@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Money.DiscordService
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -56,8 +57,8 @@ defmodule VirtualCryptoWeb.Interaction.Command do
 
     case Money.pay(
            DiscordService,
-           sender: int_sender,
-           receiver: int_receiver,
+           sender: %DiscordUser{id: int_sender},
+           receiver: %DiscordUser{id: int_receiver},
            amount: cast_int(amount),
            unit: unit
          ) do

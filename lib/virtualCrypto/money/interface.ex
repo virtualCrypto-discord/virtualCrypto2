@@ -2,7 +2,7 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
   alias VirtualCrypto.Money.InternalAction, as: Action
-
+  alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
           currency: %VirtualCrypto.Money.Currency{},
@@ -26,10 +26,10 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
           | {:error, :invalid_amount}
-  def pay(service, kw) do
+  def pay(_service, kw) do
     case Multi.new()
          |> Multi.run(:pay, fn _, _ ->
-           service.pay(
+           Action.pay(
              Keyword.fetch!(kw, :sender),
              Keyword.fetch!(kw, :receiver),
              Keyword.fetch!(kw, :amount),
@@ -40,6 +40,7 @@ defmodule VirtualCrypto.Money do
       {:ok, _} -> {:ok}
       {:error, :pay, :not_found_currency, _} -> {:error, :not_found_currency}
       {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
+      {:error, :pay, :not_found_user, _} -> {:error, :not_found_user}
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
       {:error, :pay, :invalid_amount, _} -> {:error, :invalid_amount}
     end
@@ -361,8 +362,8 @@ defmodule VirtualCrypto.Money do
                 {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
-                    payer.id,
-                    claimant.discord_id,
+                    %VCUser{id: payer.id},
+                    %VCUser{id: claimant.id},
                     amount,
                     currency.unit
                   ),

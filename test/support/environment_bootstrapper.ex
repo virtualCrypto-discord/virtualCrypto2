@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
   alias VirtualCrypto.Repo
-
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   def counter() do
     System.unique_integer([:positive])
   end
@@ -39,8 +39,8 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
 
     {:ok} =
       VirtualCrypto.Money.pay(VirtualCrypto.Money.DiscordService,
-        sender: user1,
-        receiver: user2,
+        sender: %DiscordUser{id: user1},
+        receiver: %DiscordUser{id: user2},
         amount: 500,
         unit: "n#{guild}"
       )

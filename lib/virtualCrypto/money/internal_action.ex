@@ -2,19 +2,28 @@ defmodule VirtualCrypto.Money.InternalAction do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Money
   alias VirtualCrypto.User.User
+  alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
+  alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
   import VirtualCrypto.User
   import Ecto.Query
 
   defguard is_non_neg_integer(v) when is_integer(v) and v >= 0
   defguard is_positive_integer(v) when is_integer(v) and v > 0
 
+  defp filled?(enumerable) do
+    Enum.all?(enumerable, &(&1 != nil))
+  end
+
   # FIXME: order of parameters
-  def pay(sender_id, receiver_discord_id, amount, currency_unit)
+  def pay(sender_id, receiver_id, amount, currency_unit)
       when is_positive_integer(amount) do
     # Get currency info by unit.
     with currency <- get_currency_by_unit(currency_unit),
          # Is currency exits?
          {:currency, true} <- {:currency, currency != nil},
+         # resolve ids
+         [sender_id, receiver_id] = ids = UserResolver.resolve_ids([sender_id, receiver_id]),
+         {:user_ids, true} <- {:user_ids, filled?(ids)},
          # Get sender id.
          # Get sender asset by sender id and currency id.
          sender_asset <- get_asset_with_lock(sender_id, currency.id),
@@ -22,8 +31,6 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:sender_asset, true} <- {:sender_asset, sender_asset != nil},
          # Has sender enough amount?
          {:sender_asset_amount, true} <- {:sender_asset_amount, sender_asset.amount >= amount},
-         # Insert receiver user if not exists.
-         {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
          # Upsert receiver amount.
          {:ok, _} <- upsert_asset_amount(receiver_id, currency.id, amount),
          # Update sender amount.
@@ -39,6 +46,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       {:ok, nil}
     else
       {:currency, false} -> {:error, :not_found_currency}
+      {:user_ids,false} -> {:error, :not_found_user}
       {:sender_asset, false} -> {:error, :not_found_sender_asset}
       {:sender_asset_amount, false} -> {:error, :not_enough_amount}
       err -> {:error, err}

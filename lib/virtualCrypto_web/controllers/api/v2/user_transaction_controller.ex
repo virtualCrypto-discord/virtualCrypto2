@@ -1,5 +1,7 @@
 defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
   use VirtualCryptoWeb, :controller
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
 
   plug(VirtualCryptoWeb.IdempotencyLayer.Plug,
     behavior: VirtualCryptoWeb.IdempotencyLayer.Payments
@@ -64,8 +66,8 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
              {:convert_amount, Integer.parse(amount)},
            %{"sub" => user_id, "vc.pay" => true} <- Guardian.Plug.current_resource(conn) do
         VirtualCrypto.Money.pay(VirtualCrypto.Money.VCService,
-          sender: user_id,
-          receiver: int_receiver_discord_id,
+          sender: %VCUser{id: user_id},
+          receiver: %DiscordUser{id: int_receiver_discord_id},
           unit: unit,
           amount: int_amount
         )
