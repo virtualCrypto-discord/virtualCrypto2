@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+
   def counter() do
     System.unique_integer([:positive])
   end

@@ -46,7 +46,7 @@ defmodule VirtualCrypto.Money.InternalAction do
       {:ok, nil}
     else
       {:currency, false} -> {:error, :not_found_currency}
-      {:user_ids,false} -> {:error, :not_found_user}
+      {:user_ids, false} -> {:error, :not_found_user}
       {:sender_asset, false} -> {:error, :not_found_sender_asset}
       {:sender_asset_amount, false} -> {:error, :not_enough_amount}
       err -> {:error, err}

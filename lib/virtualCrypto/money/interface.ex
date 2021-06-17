@@ -3,6 +3,7 @@ defmodule VirtualCrypto.Money do
   alias Ecto.Multi
   alias VirtualCrypto.Money.InternalAction, as: Action
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
+
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
           currency: %VirtualCrypto.Money.Currency{},

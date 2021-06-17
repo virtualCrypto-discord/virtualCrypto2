@@ -9,32 +9,7 @@ defmodule VirtualCrypto.Exterior do
     end
 
     defmodule Resolver do
-      defp grouped(exteriors) do
-        exteriors |> Enum.with_index() |> Enum.group_by(fn {e, _i} -> Resolvable.resolver(e) end)
-      end
-
-      defp resolves_(exteriors, f) do
-        grouped(exteriors)
-        |> Enum.map(fn {k, v} ->
-          # Task.async(fn ->
-          f.(k, v |> Enum.map(fn {e, _i} -> e end))
-          |> Enum.zip(v |> Enum.map(fn {_e, i} -> i end))
-
-          # end)
-        end)
-        # |> Enum.map(&Task.await/1)
-        |> Enum.flat_map(&Function.identity/1)
-        |> Enum.sort_by(fn {_e, i} -> i end)
-        |> Enum.map(fn {e, _i} -> e end)
-      end
-
-      def resolves(exteriors) do
-        resolves_(exteriors, fn k, v -> k.resolves(v) end)
-      end
-
-      def resolve_ids(exteriors) do
-        resolves_(exteriors, fn k, v -> k.resolve_ids(v) end)
-      end
+      use VirtualCrypto.Exterior.Resolver, resolvable: Resolvable
     end
 
     defmodule Discord do
