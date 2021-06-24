@@ -124,7 +124,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
                guild: int_guild_id,
                name: options["name"],
                unit: options["unit"],
-               creator: int_user_id,
+               creator: %DiscordUser{id: int_user_id},
                creator_amount: options["amount"]
              ) do
           {:ok} -> {:ok, :ok, options}

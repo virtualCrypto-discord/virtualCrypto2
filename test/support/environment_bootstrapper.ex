@@ -22,7 +22,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         guild: guild,
         name: name,
         unit: unit,
-        creator: user1,
+        creator: %DiscordUser{id: user1},
         creator_amount: 1000 * 200
       )
 
@@ -31,7 +31,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         guild: guild2,
         name: name2,
         unit: unit2,
-        creator: user2,
+        creator: %DiscordUser{id: user2},
         creator_amount: 1000 * 200
       )
 

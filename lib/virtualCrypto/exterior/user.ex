@@ -2,6 +2,7 @@ defmodule VirtualCrypto.Exterior.User do
   alias VirtualCrypto.User, as: U
 
   defprotocol Resolvable do
+    @type t :: term()
     def resolve(exterior)
     def resolve_id(exterior)
     def resolver(exterior)
@@ -12,6 +13,8 @@ defmodule VirtualCrypto.Exterior.User do
   end
 
   defmodule Discord do
+    @type t :: %Discord{id: non_neg_integer()}
+
     defstruct [:id]
 
     def resolves(discords) do
@@ -31,6 +34,7 @@ defmodule VirtualCrypto.Exterior.User do
   end
 
   defmodule VirtualCrypto do
+    @type t :: %VirtualCrypto{id: non_neg_integer()}
     defstruct [:id]
 
     def resolves(vcs) do

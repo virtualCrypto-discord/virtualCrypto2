@@ -3,6 +3,8 @@ defmodule VirtualCrypto.Money do
   alias Ecto.Multi
   alias VirtualCrypto.Money.InternalAction, as: Action
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
 
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
@@ -16,8 +18,8 @@ defmodule VirtualCrypto.Money do
   receiver must be discord user
   """
   @spec pay(
-          sender: non_neg_integer(),
-          receiver: non_neg_integer(),
+          sender: UserResolvable.t(),
+          receiver: UserResolvable.t(),
           amount: non_neg_integer(),
           unit: String.t()
         ) ::
@@ -182,7 +184,7 @@ defmodule VirtualCrypto.Money do
           name: String.t(),
           unit: String.t(),
           retry_count: pos_integer(),
-          creator: non_neg_integer(),
+          creator: DiscordUser.t(),
           creator_amount: pos_integer()
         ) ::
           {:ok}
@@ -193,12 +195,13 @@ defmodule VirtualCrypto.Money do
           | {:error, :invalid_amount}
   def create(kw) do
     creator_amount = Keyword.fetch!(kw, :creator_amount)
+    %DiscordUser{id: creator} = Keyword.fetch!(kw, :creator)
 
     _create(
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
-      Keyword.fetch!(kw, :creator),
+      creator,
       creator_amount,
       max(div(creator_amount + 199, 200), 5),
       Keyword.get(kw, :retry_count, 5)
