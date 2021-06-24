@@ -14,15 +14,6 @@ defmodule VirtualCrypto.Money.DiscordService do
     user.id
   end
 
-  def pay(
-        sender_discord_id,
-        receiver_discord_id,
-        amount,
-        currency_unit
-      ) do
-    Action.pay(resolve(sender_discord_id), receiver_discord_id, amount, currency_unit)
-  end
-
   def balance(discord_user_id) do
     q =
       from asset in Money.Asset,

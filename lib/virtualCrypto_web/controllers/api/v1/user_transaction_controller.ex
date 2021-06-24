@@ -15,7 +15,7 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
            {:convert_amount, {int_amount, ""}} <-
              {:convert_amount, Integer.parse(amount)},
            %{"sub" => user_id, "vc.pay" => true} <- Guardian.Plug.current_resource(conn) do
-        VirtualCrypto.Money.pay(VirtualCrypto.Money.VCService,
+        VirtualCrypto.Money.pay(
           sender: %VCUser{id: user_id},
           receiver: %DiscordUser{id: int_receiver_discord_id},
           unit: unit,

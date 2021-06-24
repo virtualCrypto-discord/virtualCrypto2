@@ -16,7 +16,6 @@ defmodule VirtualCrypto.Money do
   receiver must be discord user
   """
   @spec pay(
-          module(),
           sender: non_neg_integer(),
           receiver: non_neg_integer(),
           amount: non_neg_integer(),
@@ -27,7 +26,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
           | {:error, :invalid_amount}
-  def pay(_service, kw) do
+  def pay(kw) do
     case Multi.new()
          |> Multi.run(:pay, fn _, _ ->
            Action.pay(

@@ -4,15 +4,6 @@ defmodule VirtualCrypto.Money.VCService do
   import Ecto.Query
   require VirtualCrypto.Money.InternalAction, as: Action
 
-  def pay(
-        sender_vc_id,
-        receiver_discord_id,
-        amount,
-        currency_unit
-      ) do
-    Action.pay(sender_vc_id, receiver_discord_id, amount, currency_unit)
-  end
-
   def balance(user_id) do
     q =
       from asset in Money.Asset,

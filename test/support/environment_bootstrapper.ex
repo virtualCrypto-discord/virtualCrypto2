@@ -39,7 +39,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     currency2 = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit2)
 
     {:ok} =
-      VirtualCrypto.Money.pay(VirtualCrypto.Money.DiscordService,
+      VirtualCrypto.Money.pay(
         sender: %DiscordUser{id: user1},
         receiver: %DiscordUser{id: user2},
         amount: 500,

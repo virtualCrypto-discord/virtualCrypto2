@@ -56,7 +56,6 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     int_sender = String.to_integer(sender)
 
     case Money.pay(
-           DiscordService,
            sender: %DiscordUser{id: int_sender},
            receiver: %DiscordUser{id: int_receiver},
            amount: cast_int(amount),
