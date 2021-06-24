@@ -10,7 +10,7 @@ defmodule VirtualCrypto.Money.Query.Balance do
   Query service module for balances
   """
 
-  @spec balance(UserResolvable.t()) :: [
+  @spec get_balances(UserResolvable.t()) :: [
           %{
             asset: %VirtualCrypto.Money.Asset{},
             currency: %VirtualCrypto.Money.Currency{}
@@ -19,7 +19,7 @@ defmodule VirtualCrypto.Money.Query.Balance do
   @doc """
   Get user's balance.
   """
-  def balance(%VCUser{id: user_id}) do
+  def get_balances(%VCUser{id: user_id}) do
     q =
       from asset in Money.Asset,
         join: currency in Money.Currency,
@@ -31,7 +31,7 @@ defmodule VirtualCrypto.Money.Query.Balance do
     Repo.all(q)
   end
 
-  def balance(%DiscordUser{id: discord_user_id}) do
+  def get_balances(%DiscordUser{id: discord_user_id}) do
     q =
       from asset in Money.Asset,
         join: currency in Money.Currency,
@@ -44,7 +44,7 @@ defmodule VirtualCrypto.Money.Query.Balance do
     Repo.all(q)
   end
 
-  def balance(resolvable) do
-    balance(%VCUser{id: UserResolvable.resolve_id(resolvable)})
+  def get_balances(resolvable) do
+    get_balances(%VCUser{id: UserResolvable.resolve_id(resolvable)})
   end
 end

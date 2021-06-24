@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.Interaction.Claim.List do
   alias VirtualCrypto.Money
-  alias VirtualCrypto.Money.DiscordService
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   use Bitwise
 
   defp statuses(nil) do
@@ -76,8 +76,7 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
 
     {:ok, subcommand,
      Money.get_claims(
-       DiscordService,
-       int_user_id,
+       %DiscordUser{id: int_user_id},
        statuses,
        sr_filter,
        related_user_id,

@@ -6,7 +6,10 @@ defmodule VirtualCrypto.Exterior.Resolver do
       defp grouped(exteriors) do
         exteriors
         |> Enum.with_index()
-        |> Enum.group_by(fn {e, _i} -> unquote(module).resolver(e) end)
+        |> Enum.group_by(fn
+          {nil, i} -> nil
+          {e, _i} -> unquote(module).resolver(e)
+        end)
       end
 
       defp resolves_(exteriors, f) do
@@ -21,11 +24,17 @@ defmodule VirtualCrypto.Exterior.Resolver do
       end
 
       def resolves(exteriors) do
-        resolves_(exteriors, fn k, v -> k.resolves(v) end)
+        resolves_(exteriors, fn
+          nil, v -> v
+          k, v -> k.resolves(v)
+        end)
       end
 
       def resolve_ids(exteriors) do
-        resolves_(exteriors, fn k, v -> k.resolve_ids(v) end)
+        resolves_(exteriors, fn
+          nil, v -> v
+          k, v -> k.resolve_ids(v)
+        end)
       end
     end
   end

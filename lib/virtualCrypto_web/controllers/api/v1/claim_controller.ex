@@ -2,6 +2,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
+  alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
   defp get_discord_user(discord_user_id, service) do
@@ -56,7 +57,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   def me(conn, _) do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(Money.VCService, user_id, ["pending"])
+        claims = Money.get_claims(%VCUser{id: user_id}, ["pending"])
 
         render(conn, "data.json", params: format_claims(claims, get_service(conn)))
 

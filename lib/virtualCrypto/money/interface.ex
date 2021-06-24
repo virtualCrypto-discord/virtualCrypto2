@@ -225,7 +225,7 @@ defmodule VirtualCrypto.Money do
   def balance(kw) do
     case Keyword.fetch(kw, :currency) do
       {:ok, currency} ->
-        case Query.Balance.balance(Keyword.fetch!(kw, :user))
+        case Query.Balance.get_balances(Keyword.fetch!(kw, :user))
              |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
           {asset, currency} ->
             %{
@@ -238,7 +238,7 @@ defmodule VirtualCrypto.Money do
         end
 
       :error ->
-        Query.Balance.balance(Keyword.fetch!(kw, :user))
+        Query.Balance.get_balances(Keyword.fetch!(kw, :user))
         |> Enum.map(fn {asset, currency} ->
           %{
             asset: asset,
@@ -291,14 +291,13 @@ defmodule VirtualCrypto.Money do
 
   # FIXME: take too many arguments
   @spec get_claims(
-          module(),
-          Integer.t(),
+          UserResolvable.t(),
           [String.t()],
           :all | :received | :claimed,
-          pos_integer(),
+          UserResolvable.t(),
           :desc_claim_id,
           %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
-          pos_integer()
+          pos_integer() | {pos_integer(), pos_integer()}
         ) ::
           %{
             claims: [
@@ -312,7 +311,6 @@ defmodule VirtualCrypto.Money do
           }
 
   def get_claims(
-        service,
         user_id,
         statuses,
         sr_filter,
@@ -323,26 +321,34 @@ defmodule VirtualCrypto.Money do
       ) do
     {:ok, x} =
       Repo.transaction(fn ->
-        service.get_claims(user_id, statuses, sr_filter, related_user_id, order_by, cursor, limit)
+        Query.GetClaim.get_claims(
+          user_id,
+          statuses,
+          sr_filter,
+          related_user_id,
+          order_by,
+          cursor,
+          limit
+        )
       end)
 
     x
   end
 
-  @spec get_claims(module(), Integer.t(), [String.t()]) ::
+  @spec get_claims(UserResolvable.t(), [String.t()]) ::
           [
             claim_t
           ]
-  def get_claims(service, user_id, statuses) do
-    service.get_claims(user_id, statuses)
+  def get_claims(user_id, statuses) do
+    Query.GetClaim.get_claims(user_id, statuses)
   end
 
-  @spec get_claims(module(), Integer.t()) ::
+  @spec get_claims(UserResolvable.t()) ::
           [
             claim_t
           ]
-  def get_claims(service, user_id) do
-    service.get_claims(user_id)
+  def get_claims(user_id) do
+    Query.GetClaim.get_claims(user_id)
   end
 
   @spec approve_claim(module(), Integer.t(), Integer.t()) ::
