@@ -2,7 +2,7 @@ defmodule InteractionsControllerTest.Create do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Create.Helper
   import VirtualCryptoWeb.Api.InteractionsView.Util
-
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_money
 
   defp _encode(0) do
@@ -55,8 +55,8 @@ defmodule InteractionsControllerTest.Create do
     assert currency.pool_amount == div(amount + 199, 200)
 
     asset =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: sender,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: sender},
         currency: currency.id
       ).asset
 

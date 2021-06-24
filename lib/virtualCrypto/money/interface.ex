@@ -1,6 +1,7 @@
 defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
+  alias VirtualCrypto.Money.Query
   alias VirtualCrypto.Money.InternalAction, as: Action
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
@@ -209,7 +210,7 @@ defmodule VirtualCrypto.Money do
   end
 
   # TODO: separate this
-  @spec balance(module(), user: non_neg_integer(), currency: non_neg_integer()) ::
+  @spec balance(user: UserResolvable.t(), currency: non_neg_integer()) ::
           [
             %{
               asset: %VirtualCrypto.Money.Asset{},
@@ -221,10 +222,10 @@ defmodule VirtualCrypto.Money do
               currency: %VirtualCrypto.Money.Currency{}
             }
           | nil
-  def balance(service, kw) do
+  def balance(kw) do
     case Keyword.fetch(kw, :currency) do
       {:ok, currency} ->
-        case service.balance(Keyword.fetch!(kw, :user))
+        case Query.Balance.balance(Keyword.fetch!(kw, :user))
              |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
           {asset, currency} ->
             %{
@@ -237,7 +238,7 @@ defmodule VirtualCrypto.Money do
         end
 
       :error ->
-        service.balance(Keyword.fetch!(kw, :user))
+        Query.Balance.balance(Keyword.fetch!(kw, :user))
         |> Enum.map(fn {asset, currency} ->
           %{
             asset: asset,

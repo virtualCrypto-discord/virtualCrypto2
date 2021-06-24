@@ -14,19 +14,6 @@ defmodule VirtualCrypto.Money.DiscordService do
     user.id
   end
 
-  def balance(discord_user_id) do
-    q =
-      from asset in Money.Asset,
-        join: currency in Money.Currency,
-        on: asset.currency_id == currency.id,
-        join: users in User,
-        on: users.discord_id == ^discord_user_id and users.id == asset.user_id,
-        select: {asset, currency},
-        order_by: currency.unit
-
-    Repo.all(q)
-  end
-
   def get_sent_claim(id, discord_user_id) do
     Action.get_sent_claim(id, resolve(discord_user_id))
   end

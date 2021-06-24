@@ -2,6 +2,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
   import InteractionsControllerTest.Claim.Helper
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_claim
 
   test "approve pending claim by payer", %{
@@ -15,14 +16,14 @@ defmodule InteractionsControllerTest.Claim.Approve do
     claim_id_str = to_string(claim_id)
 
     before_claimant =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user1,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user1},
         currency: currency
       )
 
     before_payer =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user2,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user2},
         currency: currency
       )
 
@@ -42,14 +43,14 @@ defmodule InteractionsControllerTest.Claim.Approve do
     assert VirtualCrypto.Money.get_claim_by_id(claim_id).claim.status == "approved"
 
     after_claimant =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user1,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user1},
         currency: currency
       )
 
     after_payer =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user2,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user2},
         currency: currency
       )
 

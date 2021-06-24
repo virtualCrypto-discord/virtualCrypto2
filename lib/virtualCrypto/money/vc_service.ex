@@ -4,18 +4,6 @@ defmodule VirtualCrypto.Money.VCService do
   import Ecto.Query
   require VirtualCrypto.Money.InternalAction, as: Action
 
-  def balance(user_id) do
-    q =
-      from asset in Money.Asset,
-        join: currency in Money.Currency,
-        on: asset.currency_id == currency.id,
-        on: asset.user_id == ^user_id,
-        select: {asset, currency},
-        order_by: currency.unit
-
-    Repo.all(q)
-  end
-
   def get_sent_claim(id, user_id) do
     Action.get_sent_claim(id, user_id)
   end

@@ -41,7 +41,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         _conn
       ) do
     int_executor = String.to_integer(executor)
-    Money.balance(DiscordService, user: int_executor)
+    Money.balance(user: %DiscordUser{id: int_executor})
   end
 
   def handle(
@@ -150,7 +150,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         {:error, nil, nil, nil}
 
       info ->
-        case Money.balance(DiscordService, user: int_user_id)
+        case Money.balance(user: %DiscordUser{id: int_user_id})
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
           [balance] -> {:ok, info, balance.asset.amount, Discord.Api.Raw.get_guild(info.guild)}
           [] -> {:ok, info, 0, Discord.Api.Raw.get_guild(info.guild)}
