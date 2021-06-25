@@ -143,7 +143,7 @@ defmodule VirtualCrypto.Money do
        when retry > 0 do
     case Multi.new()
          |> Multi.run(:create, fn _, _ ->
-           Action.create(
+           VirtualCrypto.Money.Query.Currency.create(
              guild,
              name,
              unit,
@@ -196,7 +196,7 @@ defmodule VirtualCrypto.Money do
           | {:error, :invalid_amount}
   def create(kw) do
     creator_amount = Keyword.fetch!(kw, :creator_amount)
-    %DiscordUser{id: creator} = Keyword.fetch!(kw, :creator)
+    creator = Keyword.fetch!(kw, :creator)
 
     _create(
       Keyword.fetch!(kw, :guild),
@@ -285,7 +285,7 @@ defmodule VirtualCrypto.Money do
 
   @spec reset_pool_amount() :: nil
   def reset_pool_amount() do
-    VirtualCrypto.Money.InternalAction.reset_pool_amount()
+    VirtualCrypto.Money.Query.Currency.reset_pool_amount()
     nil
   end
 
