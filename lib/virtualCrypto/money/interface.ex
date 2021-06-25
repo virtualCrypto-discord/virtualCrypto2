@@ -321,7 +321,7 @@ defmodule VirtualCrypto.Money do
       ) do
     {:ok, x} =
       Repo.transaction(fn ->
-        Query.GetClaim.get_claims(
+        Query.Claim.get_claims(
           user_id,
           statuses,
           sr_filter,
@@ -340,7 +340,12 @@ defmodule VirtualCrypto.Money do
             claim_t
           ]
   def get_claims(user_id, statuses) do
-    Query.GetClaim.get_claims(user_id, statuses)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Claim.get_claims(user_id, statuses)
+      end)
+
+    x
   end
 
   @spec get_claims(UserResolvable.t()) ::
@@ -348,16 +353,21 @@ defmodule VirtualCrypto.Money do
             claim_t
           ]
   def get_claims(user_id) do
-    Query.GetClaim.get_claims(user_id)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Claim.get_claims(user_id)
+      end)
+
+    x
   end
 
-  @spec approve_claim(module(), Integer.t(), Integer.t()) ::
+  @spec approve_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
           | {:error, :not_found_currency}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
-  def approve_claim(service, id, user_id) do
+  def approve_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{
@@ -366,9 +376,9 @@ defmodule VirtualCrypto.Money do
                    claimant: claimant,
                    payer: payer
                  }} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(payer, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, payer)},
                 {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
                   VirtualCrypto.Money.InternalAction.pay(
@@ -378,7 +388,7 @@ defmodule VirtualCrypto.Money do
                     currency.unit
                   ),
                 {:ok, claim} <-
-                  VirtualCrypto.Money.InternalAction.approve_claim(id) do
+                  VirtualCrypto.Money.Query.Claim.approve_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -402,18 +412,18 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
+  @spec cancel_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
-  def cancel_claim(service, id, user_id) do
+  def cancel_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(claimant, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, claimant)},
                 {:status, "pending"} <- {:status, status},
-                {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
+                {:ok, claim} <- VirtualCrypto.Money.Query.Claim.cancel_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -434,18 +444,18 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec deny_claim(module(), Integer.t(), Integer.t()) ::
+  @spec deny_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
-  def deny_claim(service, id, user_id) do
+  def deny_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(payer, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, payer)},
                 {:status, "pending"} <- {:status, status},
-                {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
+                {:ok, claim} <- VirtualCrypto.Money.Query.Claim.deny_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -469,16 +479,26 @@ defmodule VirtualCrypto.Money do
   @doc """
   payer must be discord user
   """
-  @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
+  @spec create_claim(UserResolvable.t(), UserResolvable.t(), String.t(), pos_integer()) ::
           {:ok, claim_t}
           | {:error, :not_found_currency}
           | {:error, :invalid_amount}
-  def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
-    service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
+  def create_claim(claimant, payer, unit, amount) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        VirtualCrypto.Money.Query.Claim.create_claim(claimant, payer, unit, amount)
+      end)
+
+    x
   end
 
-  @spec get_claim_by_id(Integer.t()) :: claim_t | {:error, :not_found}
+  @spec get_claim_by_id(non_neg_integer()) :: claim_t | {:error, :not_found}
   def get_claim_by_id(id) do
-    Action.get_claim_by_id(id)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)
+      end)
+
+    x
   end
 end

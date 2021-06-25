@@ -1,6 +1,5 @@
 defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
-  alias VirtualCrypto.Money.DiscordService
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
@@ -200,9 +199,8 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.create_claim(
-           DiscordService,
-           int_user_id,
-           int_payer_id,
+           %DiscordUser{id: int_user_id},
+           %DiscordUser{id: int_payer_id},
            options["sub_options"]["unit"],
            cast_int(options["sub_options"]["amount"])
          ) do
@@ -221,7 +219,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
 
-    case Money.approve_claim(DiscordService, id, int_user_id) do
+    case Money.approve_claim(id, %DiscordUser{id: int_user_id}) do
       {:ok, %{claim: claim}} -> {:ok, "approve", claim}
       {:error, err} -> {:error, "approve", err}
     end
@@ -236,7 +234,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
 
-    case Money.deny_claim(DiscordService, id, int_user_id) do
+    case Money.deny_claim(id, %DiscordUser{id: int_user_id}) do
       {:ok, %{claim: claim}} -> {:ok, "deny", claim}
       {:error, err} -> {:error, "deny", err}
     end
@@ -251,7 +249,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     id = options["sub_options"]["id"]
     int_user_id = user["id"] |> String.to_integer()
 
-    case Money.cancel_claim(DiscordService, id, int_user_id) do
+    case Money.cancel_claim(id, %DiscordUser{id: int_user_id}) do
       {:ok, %{claim: claim}} -> {:ok, "cancel", claim}
       {:error, err} -> {:error, "cancel", err}
     end

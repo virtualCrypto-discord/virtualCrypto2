@@ -6,6 +6,7 @@ defmodule VirtualCrypto.Exterior.User do
     def resolve(exterior)
     def resolve_id(exterior)
     def resolver(exterior)
+    def is?(exterior, user)
   end
 
   defmodule Resolver do
@@ -60,6 +61,10 @@ defmodule VirtualCrypto.Exterior.User do
     def resolver(_exterior) do
       Discord
     end
+
+    def is?(exterior, user) do
+      exterior.id == user.discord_id
+    end
   end
 
   defimpl Resolvable, for: VirtualCrypto do
@@ -73,6 +78,10 @@ defmodule VirtualCrypto.Exterior.User do
 
     def resolver(_exterior) do
       VirtualCrypto
+    end
+
+    def is?(exterior, user) do
+      exterior.id == user.id
     end
   end
 end

@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   alias VirtualCrypto.Money
   alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
   defp get_discord_user(discord_user_id, service) do
@@ -71,7 +72,12 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
     case {Guardian.Plug.current_resource(conn), Integer.parse(payer_discord_id),
           Integer.parse(amount)} do
       {%{"sub" => user_id, "vc.claim" => true}, {payer_discord_id, ""}, {amount, ""}} ->
-        case Money.create_claim(Money.VCService, user_id, payer_discord_id, unit, amount) do
+        case Money.create_claim(
+               %VCUser{id: user_id},
+               %DiscordUser{id: payer_discord_id},
+               unit,
+               amount
+             ) do
           {:ok, claim} ->
             conn
             |> put_status(201)
@@ -162,7 +168,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   defp patch_(conn, id, f) do
     case {Guardian.Plug.current_resource(conn), Integer.parse(id)} do
       {%{"sub" => user_id, "vc.claim" => true}, {int_id, ""}} ->
-        case f.(Money.VCService, int_id, user_id) do
+        case f.(int_id, %VCUser{id: user_id}) do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
@@ -215,15 +221,15 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   end
 
   def patch(conn, %{"id" => id, "status" => "approved"}) do
-    patch_(conn, id, &Money.approve_claim/3)
+    patch_(conn, id, &Money.approve_claim/2)
   end
 
   def patch(conn, %{"id" => id, "status" => "denied"}) do
-    patch_(conn, id, &Money.deny_claim/3)
+    patch_(conn, id, &Money.deny_claim/2)
   end
 
   def patch(conn, %{"id" => id, "status" => "canceled"}) do
-    patch_(conn, id, &Money.cancel_claim/3)
+    patch_(conn, id, &Money.cancel_claim/2)
   end
 
   def patch(conn, %{"id" => _id}) do

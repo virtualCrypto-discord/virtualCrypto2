@@ -1,4 +1,4 @@
-defmodule VirtualCrypto.Money.Query.GetClaim.Raw do
+defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Repo
   import Ecto.Query

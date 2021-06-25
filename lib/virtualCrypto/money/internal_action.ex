@@ -5,10 +5,8 @@ defmodule VirtualCrypto.Money.InternalAction do
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
   alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
   import VirtualCrypto.User
+  import VirtualCrypto.Money.Query.Util
   import Ecto.Query
-
-  defguard is_non_neg_integer(v) when is_integer(v) and v >= 0
-  defguard is_positive_integer(v) when is_integer(v) and v > 0
 
   defp filled?(enumerable) do
     Enum.all?(enumerable, &(&1 != nil))
@@ -347,47 +345,6 @@ defmodule VirtualCrypto.Money.InternalAction do
     Ecto.Adapters.SQL.query!(Repo, @reset_pool_amount)
   end
 
-  def get_claim_by_id(id) do
-    query =
-      from(claim in Money.Claim,
-        join: currency in Money.Currency,
-        join: claimant in VirtualCrypto.User.User,
-        join: payer in VirtualCrypto.User.User,
-        on:
-          claim.payer_user_id == payer.id and claim.currency_id == currency.id and
-            claim.claimant_user_id == claimant.id,
-        where: claim.id == ^id,
-        select: %{claim: claim, currency: currency, claimant: claimant, payer: payer}
-      )
-
-    query |> Repo.one()
-  end
-
-  def create_claim(claimant_user_id, payer_user_id, unit, amount)
-      when is_positive_integer(amount) and amount <= 9_223_372_036_854_775_807 do
-    case Money.Currency |> where([i], i.unit == ^unit) |> Repo.one() do
-      nil ->
-        {:error, :not_found_currency}
-
-      currency ->
-        {:ok, claim} =
-          %Money.Claim{
-            amount: amount,
-            status: "pending",
-            claimant_user_id: claimant_user_id,
-            payer_user_id: payer_user_id,
-            currency_id: currency.id
-          }
-          |> Repo.insert()
-
-        {:ok, get_claim_by_id(claim.id)}
-    end
-  end
-
-  def create_claim(_claimant_user_id, _payer_user_id, _unit, _amount) do
-    {:error, :invalid_amount}
-  end
-
   def create(guild, name, unit, creator_discord_id, creator_amount, pool_amount)
       when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) and
              creator_amount <= 4_294_967_295 do
@@ -491,130 +448,5 @@ defmodule VirtualCrypto.Money.InternalAction do
 
   def give(_receiver_discord_id, _amount, _guild_id) do
     {:error, :invalid_amount}
-  end
-
-  defp claims_base_query do
-    from(claim in Money.Claim,
-      join: currency in Money.Currency,
-      join: claimant in VirtualCrypto.User.User,
-      join: payer in VirtualCrypto.User.User,
-      on:
-        claim.payer_user_id == payer.id and claim.currency_id == currency.id and
-          claim.claimant_user_id == claimant.id,
-      select: %{claim: claim, currency: currency, claimant: claimant, payer: payer}
-    )
-  end
-
-  def get_sent_claim(id, user_id) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.id == ^id and claim.claimant_user_id == ^user_id
-      )
-
-    query |> Repo.one()
-  end
-
-  def get_sent_claim(id, user_id, status) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.id == ^id and claim.claimant_user_id == ^user_id and ^status == claim.status
-      )
-
-    query |> Repo.one()
-  end
-
-  def get_received_claim(id, user_id) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.id == ^id and claim.payer_user_id == ^user_id
-      )
-
-    query |> Repo.one()
-  end
-
-  def get_received_claim(id, user_id, status) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.id == ^id and claim.payer_user_id == ^user_id and ^status == claim.status
-      )
-
-    query |> Repo.one()
-  end
-
-  def get_sent_claims(user_id) do
-    query =
-      claims_base_query()
-      |> where([claim, info, claimant, payer], claim.claimant_user_id == ^user_id)
-
-    query |> Repo.all()
-  end
-
-  def get_sent_claims(user_id, status) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.claimant_user_id == ^user_id and claim.status == ^status
-      )
-
-    query |> Repo.all()
-  end
-
-  def get_received_claims(user_id) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.payer_user_id == ^user_id
-      )
-
-    query |> Repo.all()
-  end
-
-  def get_received_claims(user_id, status) do
-    query =
-      claims_base_query()
-      |> where(
-        [claim, currency, claimant, payer],
-        claim.payer_user_id == ^user_id and claim.status == ^status
-      )
-
-    query |> Repo.all()
-  end
-
-  defp update_claim_status(id, new_status) do
-    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-
-    result =
-      Money.Claim
-      |> where([c], c.id == ^id and c.status == "pending")
-      |> update(set: [status: ^new_status, updated_at: ^now])
-      |> select([c], {c})
-      |> Repo.update_all([])
-
-    case result do
-      {0, _} -> {:error, :not_found}
-      {1, [{c}]} -> {:ok, c}
-    end
-  end
-
-  def approve_claim(id) do
-    update_claim_status(id, "approved")
-  end
-
-  def deny_claim(id) do
-    update_claim_status(id, "denied")
-  end
-
-  def cancel_claim(id) do
-    update_claim_status(id, "canceled")
   end
 end

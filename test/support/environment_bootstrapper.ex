@@ -64,12 +64,20 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     })
   end
 
+  defp create_claim(user_id1, user_id2, unit, amount) do
+    VirtualCrypto.Money.create_claim(
+      %DiscordUser{id: user_id1},
+      %DiscordUser{id: user_id2},
+      unit,
+      amount
+    )
+  end
+
   def setup_claim(ctx) do
     d = setup_money(ctx)
 
     {:ok, c1} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
@@ -77,8 +85,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       )
 
     {:ok, c2} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user2,
         d.user1,
         d.unit,
@@ -86,43 +93,37 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       )
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c3} =
-      VirtualCrypto.Money.approve_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
+    {:ok, c3} = VirtualCrypto.Money.approve_claim(c.id, %DiscordUser{id: d.user2})
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c4} = VirtualCrypto.Money.deny_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
+    {:ok, c4} = VirtualCrypto.Money.deny_claim(c.id, %DiscordUser{id: d.user2})
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c5} =
-      VirtualCrypto.Money.cancel_claim(VirtualCrypto.Money.DiscordService, c.id, d.user1)
+    {:ok, c5} = VirtualCrypto.Money.cancel_claim(c.id, %DiscordUser{id: d.user1})
 
     {:ok, c6} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user1,
         d.unit,
