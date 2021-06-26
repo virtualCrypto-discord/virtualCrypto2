@@ -150,6 +150,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
 
       info ->
         guild = VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
+
         case Money.balance(user: %DiscordUser{id: int_user_id})
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
           [balance] -> {:ok, info, balance.asset.amount, guild}
