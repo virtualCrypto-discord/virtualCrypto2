@@ -1,19 +1,18 @@
-defmodule VirtualCrypto.Money.InternalAction do
-  alias VirtualCrypto.Repo
+defmodule VirtualCrypto.Money.Query.Asset.Transfer do
   alias VirtualCrypto.Money
-  alias VirtualCrypto.User.User
-  alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
-  import VirtualCrypto.User
-  import VirtualCrypto.Money.Query.Util
-  import VirtualCrypto.Money.Query.Currency
+  alias VirtualCrypto.Repo
   import Ecto.Query
+  import VirtualCrypto.Money.Query.Asset
+  import VirtualCrypto.Money.Query.Util
+  import VirtualCrypto.Money.Query.Currency, only: [get_currency_by_unit: 1]
+  alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
 
   defp filled?(enumerable) do
     Enum.all?(enumerable, &(&1 != nil))
   end
 
   # FIXME: order of parameters
-  def pay(sender_id, receiver_id, amount, currency_unit)
+  def transfer(sender_id, receiver_id, amount, currency_unit)
       when is_positive_integer(amount) do
     # Get currency info by unit.
     with currency <- get_currency_by_unit(currency_unit),
@@ -51,11 +50,11 @@ defmodule VirtualCrypto.Money.InternalAction do
     end
   end
 
-  def pay(_sender_id, _receiver_discord_id, _amount, _currency_unit) do
+  def transfer(_sender_id, _receiver_discord_id, _amount, _currency_unit) do
     {:error, :invalid_amount}
   end
 
-  def bulk_pay(sender_id, currency_unit_receiver_id_and_amount) do
+  def transfer_bulk(sender_id, currency_unit_receiver_id_and_amount) do
     time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     with {:check_amount, true} <-
@@ -143,160 +142,5 @@ defmodule VirtualCrypto.Money.InternalAction do
       {:sender_asset_amount, _} -> {:error, :not_enough_amount}
       err -> {:error, err}
     end
-  end
-
-  def get_asset_with_lock(user_id, currency_id) do
-    Money.Asset
-    |> where([a], a.user_id == ^user_id and a.currency_id == ^currency_id)
-    |> lock("FOR UPDATE")
-    |> Repo.one()
-  end
-
-  def upsert_asset_amount(user_id, currency_id, amount) do
-    Repo.insert(
-      %Money.Asset{
-        user_id: user_id,
-        currency_id: currency_id,
-        amount: amount
-      },
-      on_conflict: [inc: [amount: amount]],
-      conflict_target: [:user_id, :currency_id]
-    )
-  end
-
-  def upsert_asset_amounts(assets, now) do
-    Repo.insert_all(
-      VirtualCrypto.Money.Asset,
-      assets
-      |> Enum.map(fn {currency_id, user_id, amount} ->
-        [
-          amount: amount,
-          user_id: user_id,
-          currency_id: currency_id,
-          inserted_at: now,
-          updated_at: now
-        ]
-      end),
-      on_conflict:
-        from(assets in VirtualCrypto.Money.Asset,
-          update: [
-            inc: [amount: fragment("EXCLUDED.amount")]
-          ]
-        ),
-      conflict_target: [:currency_id, :user_id]
-    )
-
-    {:ok, nil}
-  end
-
-  def update_asset_amount(asset_id, amount) do
-    {_, nil} =
-      Money.Asset
-      |> where([a], a.id == ^asset_id)
-      |> update(inc: [amount: ^amount])
-      |> Repo.update_all([])
-
-    {:ok, nil}
-  end
-
-  def update_asset_amounts([], _time) do
-    {:ok, nil}
-  end
-
-  def update_asset_amounts([{asset_id, amount}], _time) do
-    update_asset_amount(asset_id, amount)
-
-    {:ok, nil}
-  end
-
-  def update_asset_amounts(list, time) do
-    q = 2..length(list) |> Enum.map(&"($#{&1 * 2},$#{&1 * 2 + 1})") |> Enum.join(",")
-
-    Ecto.Adapters.SQL.query!(
-      Repo,
-      "UPDATE assets SET amount = assets.amount + tmp.amount, updated_at = $1 FROM (VALUES ($2::bigint,$3::integer),#{
-        q
-      }) as tmp (id, amount) WHERE assets.id=tmp.id;",
-      [time | list |> Enum.flat_map(fn {a, b} -> [a, b] end)]
-    )
-
-    {:ok, nil}
-  end
-
-  def get_currency_by_guild_id_with_lock(guild_id) do
-    Money.Currency
-    |> where([m], m.guild_id == ^guild_id)
-    |> lock("FOR UPDATE")
-    |> Repo.one()
-  end
-
-  def update_pool_amount(currency_id, amount) do
-    {1, nil} =
-      Money.Currency
-      |> where([a], a.id == ^currency_id)
-      |> update(inc: [pool_amount: ^amount])
-      |> Repo.update_all([])
-
-    {:ok, nil}
-  end
-
-  def give(receiver_discord_id, :all, guild_id) do
-    # Get currency info by guild.
-    with currency <- get_currency_by_guild_id_with_lock(guild_id),
-         # Is currency exits?
-         {:currency, true} <- {:currency, currency != nil},
-         {:pool_amount, amount} when amount > 0 <- {:pool_amount, currency.pool_amount},
-         # Insert receiver user if not exists.
-         {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
-         # Update receiver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, currency.id, amount),
-         # Update pool amount.
-         {:ok, _} <- update_pool_amount(currency.id, -amount),
-         {:ok, _} <-
-           Repo.insert(%VirtualCrypto.Money.GivenHistory{
-             amount: amount,
-             currency_id: currency.id,
-             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-             receiver_id: receiver_id
-           }) do
-      {:ok, %{amount: amount, currency: %{currency | pool_amount: currency.pool_amount - amount}}}
-    else
-      {:currency, false} -> {:error, :not_found_currency}
-      {:pool_amount, _} -> {:error, :not_enough_amount}
-      err -> {:error, err}
-    end
-  end
-
-  def give(receiver_discord_id, amount, guild_id)
-      when is_positive_integer(amount) do
-    # Get currency info by guild.
-    with currency <- get_currency_by_guild_id_with_lock(guild_id),
-         # Is currency exits?
-         {:currency, true} <- {:currency, currency != nil},
-         # Check pool amount enough.
-         {:pool_amount, true} <- {:pool_amount, currency.pool_amount >= amount},
-         # Insert receiver user if not exists.
-         {:ok, %User{id: receiver_id}} <- insert_user_if_not_exists(receiver_discord_id),
-         # Update receiver amount.
-         {:ok, _} <- upsert_asset_amount(receiver_id, currency.id, amount),
-         # Update pool amount.
-         {:ok, _} <- update_pool_amount(currency.id, -amount),
-         {:ok, _} <-
-           Repo.insert(%VirtualCrypto.Money.GivenHistory{
-             amount: amount,
-             currency_id: currency.id,
-             time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-             receiver_id: receiver_id
-           }) do
-      {:ok, %{amount: amount, currency: currency}}
-    else
-      {:currency, false} -> {:error, :not_found_currency}
-      {:pool_amount, false} -> {:error, :not_enough_amount}
-      err -> {:error, err}
-    end
-  end
-
-  def give(_receiver_discord_id, _amount, _guild_id) do
-    {:error, :invalid_amount}
   end
 end

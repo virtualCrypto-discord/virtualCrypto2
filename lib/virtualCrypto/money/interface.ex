@@ -2,7 +2,6 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
   alias VirtualCrypto.Money.Query
-  alias VirtualCrypto.Money.InternalAction, as: Action
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
@@ -32,7 +31,7 @@ defmodule VirtualCrypto.Money do
   def pay(kw) do
     case Multi.new()
          |> Multi.run(:pay, fn _, _ ->
-           Action.pay(
+           VirtualCrypto.Money.Query.Asset.Transfer.transfer(
              Keyword.fetch!(kw, :sender),
              Keyword.fetch!(kw, :receiver),
              Keyword.fetch!(kw, :amount),
@@ -87,7 +86,7 @@ defmodule VirtualCrypto.Money do
                  |> Map.put(:receiver_id, Map.get(returns, receiver_discord_id))
                end),
              partial_payments <- Enum.concat(has_discord_id, has_not_discord_id) do
-          Action.bulk_pay(
+          VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
             sender_id,
             partial_payments
             |> Enum.map(fn %{
@@ -124,7 +123,7 @@ defmodule VirtualCrypto.Money do
 
     case Multi.new()
          |> Multi.run(:give, fn _, _ ->
-           Action.give(
+           VirtualCrypto.Money.Query.Issue.issue(
              Keyword.fetch!(kw, :receiver),
              Keyword.fetch!(kw, :amount),
              guild
@@ -381,7 +380,7 @@ defmodule VirtualCrypto.Money do
                   {:validate_operator, UserResolvable.is?(operator, payer)},
                 {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
-                  VirtualCrypto.Money.InternalAction.pay(
+                  VirtualCrypto.Money.Query.Asset.Transfer.transfer(
                     %VCUser{id: payer.id},
                     %VCUser{id: claimant.id},
                     amount,

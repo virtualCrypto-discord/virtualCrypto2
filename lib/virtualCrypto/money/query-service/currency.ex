@@ -44,6 +44,16 @@ defmodule VirtualCrypto.Money.Query.Currency do
     Ecto.Adapters.SQL.query!(Repo, @reset_pool_amount)
   end
 
+  def update_pool_amount(currency_id, amount) do
+    {1, nil} =
+      Money.Currency
+      |> where([a], a.id == ^currency_id)
+      |> update(inc: [pool_amount: ^amount])
+      |> Repo.update_all([])
+
+    {:ok, nil}
+  end
+
   def create(guild, name, unit, creator, creator_amount, pool_amount)
       when is_non_neg_integer(pool_amount) and is_non_neg_integer(creator_amount) and
              creator_amount <= 4_294_967_295 do
