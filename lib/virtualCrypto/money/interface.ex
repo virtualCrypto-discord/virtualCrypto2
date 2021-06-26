@@ -4,6 +4,7 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Money.Query
   alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
 
   @type claim_t :: %{
@@ -48,56 +49,40 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  def create_payments(sender_id, partial_payments, _kw \\ []) do
+  @spec create_payments(UserResolvable.t(), [
+          %{
+            receiver: UserResolvable.t(),
+            unit: String.t(),
+            amount: pos_integer()
+          }
+        ]) ::
+          {:ok, nil} | {:error, :invalid_amount} | {:error, :not_enough_amount} | {:error, atom()}
+  def create_payments(sender, partial_payments, _kw \\ []) do
     Repo.transaction(fn ->
+      {receivers, partial_payments} =
+        partial_payments |> Enum.map(fn m -> Map.pop!(m, :receiver) end) |> Enum.unzip()
+
+      [sender_id | receiver_ids] = UserResolver.resolve_ids([sender | receivers])
+
+      partial_payments =
+        receiver_ids
+        |> Enum.zip(partial_payments)
+        |> Enum.map(fn {receiver_id, partial_payment} ->
+          Map.put_new(partial_payment, :receiver_id, receiver_id)
+        end)
+
       r =
-        with {:check_receiver_id_type, false} <-
-               {:check_receiver_id_type,
-                partial_payments
-                |> Enum.any?(
-                  &(Map.has_key?(&1, :receiver_discord_id) and Map.has_key?(&1, :receiver_id))
-                )},
-             m <-
-               partial_payments |> Enum.group_by(&Map.has_key?(&1, :receiver_discord_id)),
-             has_discord_id <- Map.get(m, true, []),
-             has_not_discord_id <- Map.get(m, false, []),
-             discord_ids <-
-               MapSet.new(
-                 has_discord_id
-                 |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} ->
-                   receiver_discord_id
-                 end)
-               ),
-             {:ok, returns} <-
-               discord_ids
-               |> MapSet.to_list()
-               |> VirtualCrypto.User.insert_users_if_not_exists(),
-             {:check_length, true} <-
-               {:check_length, length(returns) == MapSet.size(discord_ids)},
-             returns <-
-               returns
-               |> Enum.map(fn %{discord_id: discord_id, id: id} -> {discord_id, id} end)
-               |> Map.new(),
-             has_discord_id <-
-               has_discord_id
-               |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} = partial_payment ->
-                 partial_payment
-                 |> Map.delete(:receiver_discord_id)
-                 |> Map.put(:receiver_id, Map.get(returns, receiver_discord_id))
-               end),
-             partial_payments <- Enum.concat(has_discord_id, has_not_discord_id) do
-          VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
-            sender_id,
-            partial_payments
-            |> Enum.map(fn %{
-                             receiver_id: receiver,
-                             unit: unit,
-                             amount: amount
-                           } ->
-              {unit, receiver, amount}
-            end)
-          )
-        end
+        VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
+          sender_id,
+          partial_payments
+          |> Enum.map(fn %{
+                           receiver_id: receiver_id,
+                           unit: unit,
+                           amount: amount
+                         } ->
+            {unit, receiver_id, amount}
+          end)
+        )
 
       case r do
         {:ok, _} -> nil

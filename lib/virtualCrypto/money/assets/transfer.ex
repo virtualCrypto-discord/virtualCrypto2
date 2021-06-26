@@ -71,17 +71,17 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
              select: {assets.id, currencies.id, currencies.unit, assets.amount},
              lock: fragment("FOR UPDATE OF ?", assets)
            ),
-         aid_sender_currency_id_unit_amount <- Repo.all(q),
+         asset_id_sender_currency_id_unit_amount <- Repo.all(q),
          sender_currency_id_amount_pair <-
-           aid_sender_currency_id_unit_amount
+           asset_id_sender_currency_id_unit_amount
            |> Enum.map(fn {_aid, currency_id, _unit, amount} -> {currency_id, amount} end)
            |> Map.new(),
          sender_unit_currency_id_pair <-
-           aid_sender_currency_id_unit_amount
+           asset_id_sender_currency_id_unit_amount
            |> Enum.map(fn {_aid, currency_id, unit, _amount} -> {unit, currency_id} end)
            |> Map.new(),
-         sender_currency_id_aid_pair <-
-           aid_sender_currency_id_unit_amount
+         sender_currency_id_asset_id_pair <-
+           asset_id_sender_currency_id_unit_amount
            |> Enum.map(fn {aid, currency_id, _unit, _amount} -> {currency_id, aid} end)
            |> Map.new(),
          sent_unit_amount_pair <-
@@ -116,7 +116,8 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
            update_asset_amounts(
              sent_unit_amount_pair
              |> Enum.map(fn {unit, sent_amount} ->
-               {sender_currency_id_aid_pair[sender_unit_currency_id_pair[unit]], -sent_amount}
+               {sender_currency_id_asset_id_pair[sender_unit_currency_id_pair[unit]],
+                -sent_amount}
              end),
              time
            ),

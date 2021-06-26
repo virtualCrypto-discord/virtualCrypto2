@@ -46,7 +46,8 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         unit: "n#{guild}"
       )
 
-    {:ok, _} = VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
+    {:ok, _} =
+      VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
 
     Map.merge(ctx, %{
       user1: user1,

@@ -111,7 +111,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
     with {:param, param} when is_list(param) <- {:param, convert_list(list)},
          {:token, %{"sub" => user_id, "vc.pay" => true}} <-
            {:token, Guardian.Plug.current_resource(conn)},
-         {:ok, _} <- VirtualCrypto.Money.create_payments(user_id, param) do
+         {:ok, _} <- VirtualCrypto.Money.create_payments(%VCUser{id: user_id}, param) do
       conn |> put_status(201) |> _render("ok.json")
     else
       {:param, {tag, idx}} ->
@@ -153,7 +153,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
              {:receiver_discord_id, Integer.parse(receiver_discord_id)} do
         {:cont,
          [
-           %{amount: int_amount, unit: unit, receiver_discord_id: int_receiver_discord_id}
+           %{amount: int_amount, unit: unit, receiver: %DiscordUser{id: int_receiver_discord_id}}
            | acc
          ]}
       else
