@@ -55,10 +55,22 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_token, error_description: :permission_denied)
   end
 
-  def me(conn, _) do
+  def me(conn, params) do
+    all_status_sets = MapSet.new(["pending", "approved", "canceled", "denied"])
+
+    statuses =
+      case params
+           |> Map.keys()
+           |> MapSet.new()
+           |> MapSet.intersection(all_status_sets)
+           |> MapSet.to_list() do
+        [] -> ["pending"]
+        x -> x
+      end
+
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(%VCUser{id: user_id}, ["pending"])
+        claims = Money.get_claims(%VCUser{id: user_id}, statuses)
 
         render(conn, "data.json", params: format_claims(claims, get_service(conn)))
 
