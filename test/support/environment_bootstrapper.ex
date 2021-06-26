@@ -1,5 +1,6 @@
 defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
   alias VirtualCrypto.Repo
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
   def counter() do
     System.unique_integer([:positive])
@@ -21,7 +22,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         guild: guild,
         name: name,
         unit: unit,
-        creator: user1,
+        creator: %DiscordUser{id: user1},
         creator_amount: 1000 * 200
       )
 
@@ -30,7 +31,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         guild: guild2,
         name: name2,
         unit: unit2,
-        creator: user2,
+        creator: %DiscordUser{id: user2},
         creator_amount: 1000 * 200
       )
 
@@ -38,14 +39,15 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     currency2 = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit2)
 
     {:ok} =
-      VirtualCrypto.Money.pay(VirtualCrypto.Money.DiscordService,
-        sender: user1,
-        receiver: user2,
+      VirtualCrypto.Money.pay(
+        sender: %DiscordUser{id: user1},
+        receiver: %DiscordUser{id: user2},
         amount: 500,
         unit: "n#{guild}"
       )
 
-    {:ok, _} = VirtualCrypto.Money.give(receiver: user2, amount: 500, guild: guild)
+    {:ok, _} =
+      VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
 
     Map.merge(ctx, %{
       user1: user1,
@@ -63,12 +65,20 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
     })
   end
 
+  defp create_claim(user_id1, user_id2, unit, amount) do
+    VirtualCrypto.Money.create_claim(
+      %DiscordUser{id: user_id1},
+      %DiscordUser{id: user_id2},
+      unit,
+      amount
+    )
+  end
+
   def setup_claim(ctx) do
     d = setup_money(ctx)
 
     {:ok, c1} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
@@ -76,8 +86,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       )
 
     {:ok, c2} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user2,
         d.user1,
         d.unit,
@@ -85,43 +94,37 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       )
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c3} =
-      VirtualCrypto.Money.approve_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
+    {:ok, c3} = VirtualCrypto.Money.approve_claim(c.id, %DiscordUser{id: d.user2})
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c4} = VirtualCrypto.Money.deny_claim(VirtualCrypto.Money.DiscordService, c.id, d.user2)
+    {:ok, c4} = VirtualCrypto.Money.deny_claim(c.id, %DiscordUser{id: d.user2})
 
     {:ok, %{claim: c}} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user2,
         d.unit,
         500
       )
 
-    {:ok, c5} =
-      VirtualCrypto.Money.cancel_claim(VirtualCrypto.Money.DiscordService, c.id, d.user1)
+    {:ok, c5} = VirtualCrypto.Money.cancel_claim(c.id, %DiscordUser{id: d.user1})
 
     {:ok, c6} =
-      VirtualCrypto.Money.create_claim(
-        VirtualCrypto.Money.DiscordService,
+      create_claim(
         d.user1,
         d.user1,
         d.unit,

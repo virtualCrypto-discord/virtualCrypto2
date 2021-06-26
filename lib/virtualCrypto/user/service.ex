@@ -34,4 +34,12 @@ defmodule VirtualCrypto.User do
   def get_user_by_id(id) do
     Repo.get_by(VirtualCrypto.User.User, id: id)
   end
+
+  def get_users_by_id(ids) do
+    q =
+      from users in VirtualCrypto.User.User,
+        where: users.id in ^ids
+
+    Repo.all(q)
+  end
 end

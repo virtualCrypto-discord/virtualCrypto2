@@ -1,7 +1,11 @@
 defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Repo
   alias Ecto.Multi
-  alias VirtualCrypto.Money.InternalAction, as: Action
+  alias VirtualCrypto.Money.Query
+  alias VirtualCrypto.Exterior.User.VirtualCrypto, as: VCUser
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
+  alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
 
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
@@ -15,9 +19,8 @@ defmodule VirtualCrypto.Money do
   receiver must be discord user
   """
   @spec pay(
-          module(),
-          sender: non_neg_integer(),
-          receiver: non_neg_integer(),
+          sender: UserResolvable.t(),
+          receiver: UserResolvable.t(),
           amount: non_neg_integer(),
           unit: String.t()
         ) ::
@@ -26,10 +29,10 @@ defmodule VirtualCrypto.Money do
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
           | {:error, :invalid_amount}
-  def pay(service, kw) do
+  def pay(kw) do
     case Multi.new()
          |> Multi.run(:pay, fn _, _ ->
-           service.pay(
+           VirtualCrypto.Money.Query.Asset.Transfer.transfer(
              Keyword.fetch!(kw, :sender),
              Keyword.fetch!(kw, :receiver),
              Keyword.fetch!(kw, :amount),
@@ -40,61 +43,46 @@ defmodule VirtualCrypto.Money do
       {:ok, _} -> {:ok}
       {:error, :pay, :not_found_currency, _} -> {:error, :not_found_currency}
       {:error, :pay, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
+      {:error, :pay, :not_found_user, _} -> {:error, :not_found_user}
       {:error, :pay, :not_enough_amount, _} -> {:error, :not_enough_amount}
       {:error, :pay, :invalid_amount, _} -> {:error, :invalid_amount}
     end
   end
 
-  def create_payments(sender_id, partial_payments, _kw \\ []) do
+  @spec create_payments(UserResolvable.t(), [
+          %{
+            receiver: UserResolvable.t(),
+            unit: String.t(),
+            amount: pos_integer()
+          }
+        ]) ::
+          {:ok, nil} | {:error, :invalid_amount} | {:error, :not_enough_amount} | {:error, atom()}
+  def create_payments(sender, partial_payments, _kw \\ []) do
     Repo.transaction(fn ->
+      {receivers, partial_payments} =
+        partial_payments |> Enum.map(fn m -> Map.pop!(m, :receiver) end) |> Enum.unzip()
+
+      [sender_id | receiver_ids] = UserResolver.resolve_ids([sender | receivers])
+
+      partial_payments =
+        receiver_ids
+        |> Enum.zip(partial_payments)
+        |> Enum.map(fn {receiver_id, partial_payment} ->
+          Map.put_new(partial_payment, :receiver_id, receiver_id)
+        end)
+
       r =
-        with {:check_receiver_id_type, false} <-
-               {:check_receiver_id_type,
-                partial_payments
-                |> Enum.any?(
-                  &(Map.has_key?(&1, :receiver_discord_id) and Map.has_key?(&1, :receiver_id))
-                )},
-             m <-
-               partial_payments |> Enum.group_by(&Map.has_key?(&1, :receiver_discord_id)),
-             has_discord_id <- Map.get(m, true, []),
-             has_not_discord_id <- Map.get(m, false, []),
-             discord_ids <-
-               MapSet.new(
-                 has_discord_id
-                 |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} ->
-                   receiver_discord_id
-                 end)
-               ),
-             {:ok, returns} <-
-               discord_ids
-               |> MapSet.to_list()
-               |> VirtualCrypto.User.insert_users_if_not_exists(),
-             {:check_length, true} <-
-               {:check_length, length(returns) == MapSet.size(discord_ids)},
-             returns <-
-               returns
-               |> Enum.map(fn %{discord_id: discord_id, id: id} -> {discord_id, id} end)
-               |> Map.new(),
-             has_discord_id <-
-               has_discord_id
-               |> Enum.map(fn %{receiver_discord_id: receiver_discord_id} = partial_payment ->
-                 partial_payment
-                 |> Map.delete(:receiver_discord_id)
-                 |> Map.put(:receiver_id, Map.get(returns, receiver_discord_id))
-               end),
-             partial_payments <- Enum.concat(has_discord_id, has_not_discord_id) do
-          Action.bulk_pay(
-            sender_id,
-            partial_payments
-            |> Enum.map(fn %{
-                             receiver_id: receiver,
-                             unit: unit,
-                             amount: amount
-                           } ->
-              {unit, receiver, amount}
-            end)
-          )
-        end
+        VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
+          sender_id,
+          partial_payments
+          |> Enum.map(fn %{
+                           receiver_id: receiver_id,
+                           unit: unit,
+                           amount: amount
+                         } ->
+            {unit, receiver_id, amount}
+          end)
+        )
 
       case r do
         {:ok, _} -> nil
@@ -120,7 +108,7 @@ defmodule VirtualCrypto.Money do
 
     case Multi.new()
          |> Multi.run(:give, fn _, _ ->
-           Action.give(
+           VirtualCrypto.Money.Query.Issue.issue(
              Keyword.fetch!(kw, :receiver),
              Keyword.fetch!(kw, :amount),
              guild
@@ -139,7 +127,7 @@ defmodule VirtualCrypto.Money do
        when retry > 0 do
     case Multi.new()
          |> Multi.run(:create, fn _, _ ->
-           Action.create(
+           VirtualCrypto.Money.Query.Currency.create(
              guild,
              name,
              unit,
@@ -181,7 +169,7 @@ defmodule VirtualCrypto.Money do
           name: String.t(),
           unit: String.t(),
           retry_count: pos_integer(),
-          creator: non_neg_integer(),
+          creator: DiscordUser.t(),
           creator_amount: pos_integer()
         ) ::
           {:ok}
@@ -192,12 +180,13 @@ defmodule VirtualCrypto.Money do
           | {:error, :invalid_amount}
   def create(kw) do
     creator_amount = Keyword.fetch!(kw, :creator_amount)
+    creator = Keyword.fetch!(kw, :creator)
 
     _create(
       Keyword.fetch!(kw, :guild),
       Keyword.fetch!(kw, :name),
       Keyword.fetch!(kw, :unit),
-      Keyword.fetch!(kw, :creator),
+      creator,
       creator_amount,
       max(div(creator_amount + 199, 200), 5),
       Keyword.get(kw, :retry_count, 5)
@@ -205,7 +194,7 @@ defmodule VirtualCrypto.Money do
   end
 
   # TODO: separate this
-  @spec balance(module(), user: non_neg_integer(), currency: non_neg_integer()) ::
+  @spec balance(user: UserResolvable.t(), currency: non_neg_integer()) ::
           [
             %{
               asset: %VirtualCrypto.Money.Asset{},
@@ -217,10 +206,10 @@ defmodule VirtualCrypto.Money do
               currency: %VirtualCrypto.Money.Currency{}
             }
           | nil
-  def balance(service, kw) do
+  def balance(kw) do
     case Keyword.fetch(kw, :currency) do
       {:ok, currency} ->
-        case service.balance(Keyword.fetch!(kw, :user))
+        case Query.Balance.get_balances(Keyword.fetch!(kw, :user))
              |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
           {asset, currency} ->
             %{
@@ -233,7 +222,7 @@ defmodule VirtualCrypto.Money do
         end
 
       :error ->
-        service.balance(Keyword.fetch!(kw, :user))
+        Query.Balance.get_balances(Keyword.fetch!(kw, :user))
         |> Enum.map(fn {asset, currency} ->
           %{
             asset: asset,
@@ -260,7 +249,7 @@ defmodule VirtualCrypto.Money do
            {:id, nil} <- {:id, Keyword.get(kw, :id)} do
         raise "Invalid Argument. Must supply one or more arguments."
       else
-        {atom, key} -> Repo.one(VirtualCrypto.Money.InternalAction.info(atom, key))
+        {atom, key} -> Repo.one(VirtualCrypto.Money.Query.Currency.info(atom, key))
       end
 
     case raw do
@@ -280,20 +269,19 @@ defmodule VirtualCrypto.Money do
 
   @spec reset_pool_amount() :: nil
   def reset_pool_amount() do
-    VirtualCrypto.Money.InternalAction.reset_pool_amount()
+    VirtualCrypto.Money.Query.Currency.reset_pool_amount()
     nil
   end
 
   # FIXME: take too many arguments
   @spec get_claims(
-          module(),
-          Integer.t(),
+          UserResolvable.t(),
           [String.t()],
           :all | :received | :claimed,
-          pos_integer(),
+          UserResolvable.t(),
           :desc_claim_id,
           %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
-          pos_integer()
+          pos_integer() | {pos_integer(), pos_integer()}
         ) ::
           %{
             claims: [
@@ -307,7 +295,6 @@ defmodule VirtualCrypto.Money do
           }
 
   def get_claims(
-        service,
         user_id,
         statuses,
         sr_filter,
@@ -318,35 +305,53 @@ defmodule VirtualCrypto.Money do
       ) do
     {:ok, x} =
       Repo.transaction(fn ->
-        service.get_claims(user_id, statuses, sr_filter, related_user_id, order_by, cursor, limit)
+        Query.Claim.get_claims(
+          user_id,
+          statuses,
+          sr_filter,
+          related_user_id,
+          order_by,
+          cursor,
+          limit
+        )
       end)
 
     x
   end
 
-  @spec get_claims(module(), Integer.t(), [String.t()]) ::
+  @spec get_claims(UserResolvable.t(), [String.t()]) ::
           [
             claim_t
           ]
-  def get_claims(service, user_id, statuses) do
-    service.get_claims(user_id, statuses)
+  def get_claims(user_id, statuses) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Claim.get_claims(user_id, statuses)
+      end)
+
+    x
   end
 
-  @spec get_claims(module(), Integer.t()) ::
+  @spec get_claims(UserResolvable.t()) ::
           [
             claim_t
           ]
-  def get_claims(service, user_id) do
-    service.get_claims(user_id)
+  def get_claims(user_id) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Claim.get_claims(user_id)
+      end)
+
+    x
   end
 
-  @spec approve_claim(module(), Integer.t(), Integer.t()) ::
+  @spec approve_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
           | {:error, :not_found_currency}
           | {:error, :not_found_sender_asset}
           | {:error, :not_enough_amount}
-  def approve_claim(service, id, user_id) do
+  def approve_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{
@@ -355,19 +360,19 @@ defmodule VirtualCrypto.Money do
                    claimant: claimant,
                    payer: payer
                  }} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(payer, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, payer)},
                 {:status, "pending"} <- {:status, status},
                 {:ok, _} <-
-                  VirtualCrypto.Money.InternalAction.pay(
-                    payer.id,
-                    claimant.discord_id,
+                  VirtualCrypto.Money.Query.Asset.Transfer.transfer(
+                    %VCUser{id: payer.id},
+                    %VCUser{id: claimant.id},
                     amount,
                     currency.unit
                   ),
                 {:ok, claim} <-
-                  VirtualCrypto.Money.InternalAction.approve_claim(id) do
+                  VirtualCrypto.Money.Query.Claim.approve_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -391,18 +396,18 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec cancel_claim(module(), Integer.t(), Integer.t()) ::
+  @spec cancel_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
-  def cancel_claim(service, id, user_id) do
+  def cancel_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(claimant, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, claimant)},
                 {:status, "pending"} <- {:status, status},
-                {:ok, claim} <- VirtualCrypto.Money.InternalAction.cancel_claim(id) do
+                {:ok, claim} <- VirtualCrypto.Money.Query.Claim.cancel_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -423,18 +428,18 @@ defmodule VirtualCrypto.Money do
     end
   end
 
-  @spec deny_claim(module(), Integer.t(), Integer.t()) ::
+  @spec deny_claim(non_neg_integer(), UserResolvable.t()) ::
           {:ok, claim_t}
           | {:error, :not_found}
-  def deny_claim(service, id, user_id) do
+  def deny_claim(id, operator) do
     case Repo.transaction(fn ->
            with {:get_claim,
                  %{claim: %{status: status}, currency: currency, claimant: claimant, payer: payer}} <-
-                  {:get_claim, Action.get_claim_by_id(id)},
+                  {:get_claim, VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)},
                 {:validate_operator, true} <-
-                  {:validate_operator, service.equals?(payer, user_id)},
+                  {:validate_operator, UserResolvable.is?(operator, payer)},
                 {:status, "pending"} <- {:status, status},
-                {:ok, claim} <- VirtualCrypto.Money.InternalAction.deny_claim(id) do
+                {:ok, claim} <- VirtualCrypto.Money.Query.Claim.deny_claim(id) do
              %{claim: claim, currency: currency, claimant: claimant, payer: payer}
            else
              {:get_claim, _} ->
@@ -458,16 +463,26 @@ defmodule VirtualCrypto.Money do
   @doc """
   payer must be discord user
   """
-  @spec create_claim(module(), Integer.t(), Integer.t(), String.t(), Integer.t()) ::
+  @spec create_claim(UserResolvable.t(), UserResolvable.t(), String.t(), pos_integer()) ::
           {:ok, claim_t}
           | {:error, :not_found_currency}
           | {:error, :invalid_amount}
-  def create_claim(service, claimant_id, payer_discord_user_id, unit, amount) do
-    service.create_claim(claimant_id, payer_discord_user_id, unit, amount)
+  def create_claim(claimant, payer, unit, amount) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        VirtualCrypto.Money.Query.Claim.create_claim(claimant, payer, unit, amount)
+      end)
+
+    x
   end
 
-  @spec get_claim_by_id(Integer.t()) :: claim_t | {:error, :not_found}
+  @spec get_claim_by_id(non_neg_integer()) :: claim_t | {:error, :not_found}
   def get_claim_by_id(id) do
-    Action.get_claim_by_id(id)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)
+      end)
+
+    x
   end
 end

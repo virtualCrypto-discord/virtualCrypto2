@@ -2,6 +2,7 @@ defmodule ClaimControllerTest.V1 do
   use VirtualCryptoWeb.RestCase, async: true
   import Enum, only: [at: 2]
   import String, only: [to_integer: 1]
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
   defmodule TestDiscordAPi do
     # @behaviour Discord.Api.Behavior
@@ -438,14 +439,14 @@ defmodule ClaimControllerTest.V1 do
     currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
 
     before_claimant =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user1,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user1},
         currency: ctx.currency
       )
 
     before_payer =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user2,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user2},
         currency: ctx.currency
       )
 
@@ -467,14 +468,14 @@ defmodule ClaimControllerTest.V1 do
     })
 
     after_claimant =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user1,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user1},
         currency: ctx.currency
       )
 
     after_payer =
-      VirtualCrypto.Money.balance(VirtualCrypto.Money.DiscordService,
-        user: user2,
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: user2},
         currency: ctx.currency
       )
 

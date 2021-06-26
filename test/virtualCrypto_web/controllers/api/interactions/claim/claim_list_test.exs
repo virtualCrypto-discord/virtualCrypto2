@@ -5,6 +5,7 @@ defmodule InteractionsControllerTest.Claim.List do
   import VirtualCryptoWeb.Api.InteractionsView.Util,
     only: [format_date_time: 1, color_brand: 0, mention: 1]
 
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_claim
 
   defp render_claim_name(me, claimant_discord_id, payer_discord_id)
@@ -167,8 +168,7 @@ defmodule InteractionsControllerTest.Claim.List do
 
     claims =
       VirtualCrypto.Money.get_claims(
-        VirtualCrypto.Money.DiscordService,
-        user1,
+        %DiscordUser{id: user1},
         ["pending"],
         :all,
         nil,
