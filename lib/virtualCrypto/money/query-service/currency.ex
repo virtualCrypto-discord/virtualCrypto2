@@ -111,4 +111,48 @@ defmodule VirtualCrypto.Money.Query.Currency do
     |> where([m], m.id == ^id)
     |> Repo.one()
   end
+
+  def info(:guild, guild_id) do
+    from(asset in Money.Asset,
+      join: currency in Money.Currency,
+      on: asset.currency_id == currency.id,
+      where: currency.guild_id == ^guild_id,
+      group_by: currency.id,
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+    )
+  end
+
+  def info(:name, name) do
+    from(asset in Money.Asset,
+      join: currency in Money.Currency,
+      on: asset.currency_id == currency.id,
+      where: currency.name == ^name,
+      group_by: currency.id,
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+    )
+  end
+
+  def info(:unit, unit) do
+    from(asset in Money.Asset,
+      join: currency in Money.Currency,
+      on: asset.currency_id == currency.id,
+      where: currency.unit == ^unit,
+      group_by: currency.id,
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+    )
+  end
+
+  def info(:id, id) do
+    from(asset in Money.Asset,
+      join: currency in Money.Currency,
+      on: asset.currency_id == currency.id,
+      where: currency.id == ^id,
+      group_by: currency.id,
+      select:
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+    )
+  end
 end

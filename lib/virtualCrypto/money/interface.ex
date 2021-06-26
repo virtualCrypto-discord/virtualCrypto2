@@ -265,7 +265,7 @@ defmodule VirtualCrypto.Money do
            {:id, nil} <- {:id, Keyword.get(kw, :id)} do
         raise "Invalid Argument. Must supply one or more arguments."
       else
-        {atom, key} -> Repo.one(VirtualCrypto.Money.InternalAction.info(atom, key))
+        {atom, key} -> Repo.one(VirtualCrypto.Money.Query.Currency.info(atom, key))
       end
 
     case raw do

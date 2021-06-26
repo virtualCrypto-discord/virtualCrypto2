@@ -22,7 +22,6 @@ defmodule VirtualCrypto.Money.InternalAction do
          # resolve ids
          [sender_id, receiver_id] = ids = UserResolver.resolve_ids([sender_id, receiver_id]),
          {:user_ids, true} <- {:user_ids, filled?(ids)},
-         # Get sender id.
          # Get sender asset by sender id and currency id.
          sender_asset <- get_asset_with_lock(sender_id, currency.id),
          # Is sender asset exists?
@@ -33,6 +32,7 @@ defmodule VirtualCrypto.Money.InternalAction do
          {:ok, _} <- upsert_asset_amount(receiver_id, currency.id, amount),
          # Update sender amount.
          {:ok, _} <- update_asset_amount(sender_asset.id, -amount),
+         # recording histories
          {:ok, _} <-
            Repo.insert(%VirtualCrypto.Money.PaymentHistory{
              amount: amount,
@@ -238,50 +238,6 @@ defmodule VirtualCrypto.Money.InternalAction do
       |> Repo.update_all([])
 
     {:ok, nil}
-  end
-
-  def info(:guild, guild_id) do
-    from(asset in Money.Asset,
-      join: currency in Money.Currency,
-      on: asset.currency_id == currency.id,
-      where: currency.guild_id == ^guild_id,
-      group_by: currency.id,
-      select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
-    )
-  end
-
-  def info(:name, name) do
-    from(asset in Money.Asset,
-      join: currency in Money.Currency,
-      on: asset.currency_id == currency.id,
-      where: currency.name == ^name,
-      group_by: currency.id,
-      select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
-    )
-  end
-
-  def info(:unit, unit) do
-    from(asset in Money.Asset,
-      join: currency in Money.Currency,
-      on: asset.currency_id == currency.id,
-      where: currency.unit == ^unit,
-      group_by: currency.id,
-      select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
-    )
-  end
-
-  def info(:id, id) do
-    from(asset in Money.Asset,
-      join: currency in Money.Currency,
-      on: asset.currency_id == currency.id,
-      where: currency.id == ^id,
-      group_by: currency.id,
-      select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
-    )
   end
 
   def give(receiver_discord_id, :all, guild_id) do
