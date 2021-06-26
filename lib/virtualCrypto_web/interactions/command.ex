@@ -141,7 +141,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     end
   end
 
-  def handle("info", options, %{"guild_id" => guild_id, "member" => %{"user" => user}}, _conn) do
+  def handle("info", options, %{"guild_id" => guild_id, "member" => %{"user" => user}}, conn) do
     int_user_id = String.to_integer(user["id"])
 
     case VirtualCrypto.Money.info(name: options["name"], unit: options["unit"], guild: guild_id) do
@@ -149,10 +149,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         {:error, nil, nil, nil}
 
       info ->
+        guild = VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
         case Money.balance(user: %DiscordUser{id: int_user_id})
              |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-          [balance] -> {:ok, info, balance.asset.amount, Discord.Api.Raw.get_guild(info.guild)}
-          [] -> {:ok, info, 0, Discord.Api.Raw.get_guild(info.guild)}
+          [balance] -> {:ok, info, balance.asset.amount, guild}
+          [] -> {:ok, info, 0, guild}
         end
     end
   end

@@ -3,7 +3,19 @@ defmodule InteractionsControllerTest.Info do
   import InteractionsControllerTest.Info.Helper
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
+  defmodule TestDiscordAPi do
+    # @behaviour Discord.Api.Behavior
+
+    def get_guild(guild_id) do
+      %{"id" => to_string(guild_id), "name" => "TestGuild"}
+    end
+  end
+
   setup :setup_money
+
+  setup %{conn: conn} = d do
+    Map.put(d, :conn, VirtualCryptoWeb.Plug.DiscordApiService.set_service(conn, TestDiscordAPi))
+  end
 
   test "info in guild", %{conn: conn, guild: guild, unit: unit, name: name} = ctx do
     conn =
@@ -16,7 +28,7 @@ defmodule InteractionsControllerTest.Info do
              "data" => %{
                "embeds" => [
                  %{
-                   "author" => nil,
+                   "author" => %{"name" => "TestGuild"},
                    "color" => color_brand(),
                    "fields" => [
                      %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
@@ -44,7 +56,7 @@ defmodule InteractionsControllerTest.Info do
              "data" => %{
                "embeds" => [
                  %{
-                   "author" => nil,
+                   "author" => %{"name" => "TestGuild"},
                    "color" => color_brand(),
                    "fields" => [
                      %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
@@ -91,7 +103,7 @@ defmodule InteractionsControllerTest.Info do
              "data" => %{
                "embeds" => [
                  %{
-                   "author" => nil,
+                   "author" => %{"name" => "TestGuild"},
                    "color" => color_brand(),
                    "fields" => [
                      %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
@@ -138,7 +150,7 @@ defmodule InteractionsControllerTest.Info do
              "data" => %{
                "embeds" => [
                  %{
-                   "author" => nil,
+                   "author" => %{"name" => "TestGuild"},
                    "color" => color_brand(),
                    "fields" => [
                      %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
