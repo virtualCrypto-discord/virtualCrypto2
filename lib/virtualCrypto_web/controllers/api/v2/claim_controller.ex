@@ -6,6 +6,28 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
+  defp parse_user_argument(%{"related_discord_user" => _discord_user, "related_vc_user" => _user}) do
+    :error
+  end
+
+  defp parse_user_argument(%{"related_discord_user" => discord_user}) do
+    case Integer.parse(discord_user) do
+      {x, ""} -> {:ok, %DiscordUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{"related_vc_user" => vc_user}) do
+    case Integer.parse(vc_user) do
+      {x, ""} -> {:ok, %VCUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{}) do
+    {:ok,nil}
+  end
+
   defp get_discord_user(discord_user_id, service) do
     user = Discord.Api.Cached.get_user(discord_user_id, service)
 
@@ -55,27 +77,44 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_token, error_description: :permission_denied)
   end
 
-  def me(conn, params) do
-    all_status_sets = MapSet.new(["pending", "approved", "canceled", "denied"])
+  defp invalid_request(conn, desc) do
+    conn
+    |> put_status(400)
+    |> render("error.json", error: :invalid_request, error_description: desc)
+  end
 
+  def me(conn, params) do
     statuses =
-      case params
-           |> Map.keys()
-           |> MapSet.new()
-           |> MapSet.intersection(all_status_sets)
-           |> MapSet.to_list() do
-        [] -> ["pending"]
-        x -> x
+      case params do
+        %{"statuses" => []} -> ["pending"]
+        %{"statuses" => x} when is_list(x) -> x
+        %{} -> ["pending"]
       end
 
-    case Guardian.Plug.current_resource(conn) do
-      %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(%VCUser{id: user_id}, statuses)
+    related_user = parse_user_argument(params)
 
-        render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+    with {:valid_statuses, true} <-
+           {:valid_statuses,
+            statuses |> Enum.all?(fn v -> v in ["pending", "approved", "denied", "canceled"] end)},
+         {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
+           {:verify_user, Guardian.Plug.current_resource(conn)},
+         {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user} do
+      claims =
+        Money.get_claims(
+          %VCUser{id: user_id},
+          statuses,
+          :all,
+          related_user,
+          :desc_claim_id,
+          %{cursor: :first},
+          nil
+        )
 
-      _ ->
-        conn |> permission_denied()
+      render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+    else
+      {:valid_statuses, _} -> conn |> invalid_request(:invalid_statuses)
+      {:verify_user, _} -> conn |> permission_denied()
+      {:related_user_id, _} -> conn |> invalid_request(:invalid_related_user)
     end
   end
 
