@@ -1,31 +1,53 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
-  def render_error() do
-    "エラー: 通貨が見つかりませんでした。"
-  end
-
   def render_title(data) do
-    ~s/#{data.name} の情報\n\n/
+    data.name
   end
 
   def render_all_amount(data) do
-    ~s/総発行量: #{data.amount} #{data.unit}\n/
+    ~s/`#{data.amount}#{data.unit}`/
   end
 
   def render_pool_amount(data) do
-    ~s/発行枠: #{data.pool_amount} #{data.unit}(一日一回総発行量の0.5%増加。最大で総発行量の3.5%)\n/
+    ~s/`#{data.pool_amount}#{data.unit}`/
   end
 
   def render_guild(guild) do
     case guild do
-      nil -> "発行元サーバーの情報の取得に失敗しました。\n"
-      guild -> ~s/発行元サーバー: #{guild["name"]}\n/
+      nil ->
+        nil
+
+      guild ->
+        %{
+          name: ~s/#{guild["name"]}/
+        }
+        |> Map.merge(
+          case Map.fetch(guild, "icon") do
+            {:ok, hash} ->
+              format =
+                if String.starts_with?(hash, "a_") do
+                  "gif"
+                else
+                  "webp"
+                end
+
+              %{
+                icon_url:
+                  IO.inspect(
+                    ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
+                  )
+              }
+
+            :error ->
+              %{}
+          end
+        )
     end
   end
 
   def render_user_amount(data, user_amount) do
-    ~s/あなたが持っている量: #{user_amount} #{data.unit}\n/
+    ~s/`#{user_amount}#{data.unit}`/
   end
 
   def render(:error, _, _, _) do
@@ -33,7 +55,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: render_error(),
+        embeds: [
+          %{
+            title: "エラー",
+            color: color_error(),
+            description: "通貨が見つかりませんでした。"
+          }
+        ],
         allowed_mentions: %{
           parse: []
         }
@@ -46,10 +74,33 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content:
-          ~s/```\n#{render_title(data)}#{render_all_amount(data)}#{render_pool_amount(data)}#{
-            render_guild(guild)
-          }#{render_user_amount(data, user_amount)}```/
+        embeds: [
+          %{
+            title: render_title(data),
+            author: render_guild(guild),
+            color: color_brand(),
+            fields: [
+              %{
+                name: "総発行量",
+                value: render_all_amount(data),
+                inline: true
+              },
+              %{
+                name: "発行枠",
+                value: render_pool_amount(data),
+                inline: true
+              },
+              %{
+                name: "あなたの所持量",
+                value: render_user_amount(data, user_amount),
+                inline: true
+              }
+            ],
+            footer: %{
+              text: "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"
+            }
+          }
+        ]
       }
     }
   end
