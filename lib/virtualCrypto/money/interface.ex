@@ -281,7 +281,7 @@ defmodule VirtualCrypto.Money do
           UserResolvable.t(),
           :desc_claim_id,
           %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
-          pos_integer() | {pos_integer(), pos_integer()}
+          pos_integer() | {pos_integer(), pos_integer()} | nil
         ) ::
           %{
             claims: [

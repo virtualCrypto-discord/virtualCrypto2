@@ -6,6 +6,48 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
+  defp parse_user_argument(%{"related_discord_user" => _discord_user, "related_vc_user" => _user}) do
+    :error
+  end
+
+  defp parse_user_argument(%{"related_discord_user" => discord_user}) do
+    case Integer.parse(discord_user) do
+      {x, ""} -> {:ok, %DiscordUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{"related_vc_user" => vc_user}) do
+    case Integer.parse(vc_user) do
+      {x, ""} -> {:ok, %VCUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{}) do
+    {:ok, nil}
+  end
+
+  defp type(%{"type" => "received"}) do
+    {:ok, :received}
+  end
+
+  defp type(%{"type" => "claimed"}) do
+    {:ok, :claimed}
+  end
+
+  defp type(%{"type" => "all"}) do
+    {:ok, :all}
+  end
+
+  defp type(%{"type" => _}) do
+    :error
+  end
+
+  defp type(%{}) do
+    {:ok, :all}
+  end
+
   defp get_discord_user(discord_user_id, service) do
     user = Discord.Api.Cached.get_user(discord_user_id, service)
 
@@ -55,15 +97,47 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_token, error_description: :permission_denied)
   end
 
-  def me(conn, _) do
-    case Guardian.Plug.current_resource(conn) do
-      %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(%VCUser{id: user_id}, ["pending"])
+  defp invalid_request(conn, desc) do
+    conn
+    |> put_status(400)
+    |> render("error.json", error: :invalid_request, error_description: desc)
+  end
 
-        render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+  def me(conn, params) do
+    statuses =
+      case params do
+        %{"statuses" => []} -> ["pending"]
+        %{"statuses" => x} when is_list(x) -> x
+        %{} -> ["pending"]
+      end
 
-      _ ->
-        conn |> permission_denied()
+    related_user = parse_user_argument(params)
+    type = type(params)
+
+    with {:valid_statuses, true} <-
+           {:valid_statuses,
+            statuses |> Enum.all?(fn v -> v in ["pending", "approved", "denied", "canceled"] end)},
+         {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
+           {:verify_user, Guardian.Plug.current_resource(conn)},
+         {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user},
+         {:type, {:ok, type}} <- {:type, type} do
+      claims =
+        Money.get_claims(
+          %VCUser{id: user_id},
+          statuses,
+          type,
+          related_user,
+          :desc_claim_id,
+          %{cursor: :first},
+          nil
+        )
+
+      render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+    else
+      {:valid_statuses, _} -> conn |> invalid_request(:invalid_statuses)
+      {:verify_user, _} -> conn |> permission_denied()
+      {:related_user_id, _} -> conn |> invalid_request(:invalid_related_user)
+      {:type, _} -> conn |> invalid_request(:invalid_type)
     end
   end
 
