@@ -77,7 +77,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     int_permissions = String.to_integer(perms)
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
-      int_receiver = String.to_integer(receiver)
+      int_receiver = %DiscordUser{id: String.to_integer(receiver)}
       int_guild = String.to_integer(guild)
       int_amount = cast_int(amount)
 
