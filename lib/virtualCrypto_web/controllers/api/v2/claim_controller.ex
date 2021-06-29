@@ -48,6 +48,17 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     {:ok, :all}
   end
 
+  defp limit(%{"limit" => limit}) do
+    case Integer.parse(limit) do
+      {x, ""} -> {:ok, x}
+      _ -> :error
+    end
+  end
+
+  defp limit(%{}) do
+    {:ok, nil}
+  end
+
   defp get_discord_user(discord_user_id, service) do
     user = Discord.Api.Cached.get_user(discord_user_id, service)
 
@@ -113,6 +124,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
     related_user = parse_user_argument(params)
     type = type(params)
+    limit = limit(params)
 
     with {:valid_statuses, true} <-
            {:valid_statuses,
@@ -120,7 +132,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
          {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
            {:verify_user, Guardian.Plug.current_resource(conn)},
          {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user},
-         {:type, {:ok, type}} <- {:type, type} do
+         {:type, {:ok, type}} <- {:type, type},
+         {:limit, {:ok, limit}} <- {:limit, limit} do
       claims =
         Money.get_claims(
           %VCUser{id: user_id},
@@ -129,7 +142,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
           related_user,
           :desc_claim_id,
           %{cursor: :first},
-          nil
+          limit
         )
 
       render(conn, "data.json", params: format_claims(claims, get_service(conn)))
@@ -138,6 +151,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       {:verify_user, _} -> conn |> permission_denied()
       {:related_user_id, _} -> conn |> invalid_request(:invalid_related_user)
       {:type, _} -> conn |> invalid_request(:invalid_type)
+      {:limit, _ } -> conn |> invalid_request(:invalid_limit)
     end
   end
 
