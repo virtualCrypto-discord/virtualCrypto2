@@ -29,6 +29,18 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "この請求に対してこの操作を行うことは出来ません。"
   end
 
+  defp render_title("received") do
+    "請求一覧(received)"
+  end
+
+  defp render_title("sent") do
+    "請求一覧(sent)"
+  end
+
+  defp render_title("list") do
+    "請求一覧(all)"
+  end
+
   defp render_claim_name(me, claimant_discord_id, payer_discord_id)
        when me == claimant_discord_id and me == payer_discord_id do
     "📤📥"
@@ -60,18 +72,33 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
     "⌛未決定"
   end
 
-  defp render_claim(claims, me) do
+  defp render_user("received", claimant, _payer) do
+    ["請求元: #{mention(claimant.discord_id)}"]
+  end
+
+  defp render_user("sent", _claimant, payer) do
+    ["請求先: #{mention(payer.discord_id)}"]
+  end
+
+  defp render_user("list", claimant, payer) do
+    ["請求元: #{mention(claimant.discord_id)}", "請求先: #{mention(payer.discord_id)}"]
+  end
+
+  defp render_claim(subcommand, claims, me) do
     claims
     |> Enum.map(fn %{claim: claim, currency: currency, claimant: claimant, payer: payer} ->
       %{
         name: render_claim_name(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
-        value: """
-        状態　: #{render_status(claim.status)}
-        請求額: **#{claim.amount}** `#{currency.unit}`
-        請求元: #{mention(claimant.discord_id)}
-        請求先: #{mention(payer.discord_id)}
-        請求日: #{format_date_time(claim.inserted_at)}
-        """
+        value:
+          ([
+             "状態　: #{render_status(claim.status)}",
+             "請求額: **#{claim.amount}** `#{currency.unit}`"
+           ] ++
+             render_user(subcommand, claimant, payer) ++
+             [
+               "請求日: #{format_date_time(claim.inserted_at)}"
+             ])
+          |> Enum.join("\n")
       }
     end)
   end
@@ -125,9 +152,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
         flags: 64,
         embeds: [
           %{
-            title: "請求一覧",
+            title: render_title(subcommand),
             color: color_brand(),
-            fields: render_claim(claims, me),
+            fields: render_claim(subcommand, claims, me),
             description:
               case claims do
                 [] -> "表示する内容がありません。"
