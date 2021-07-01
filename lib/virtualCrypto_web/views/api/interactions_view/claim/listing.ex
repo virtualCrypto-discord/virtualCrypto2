@@ -95,19 +95,77 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     false
   end
 
+  defp page(subcommand, claims, me) do
+    %{
+      title: render_title(subcommand),
+      color: color_brand(),
+      fields: render_claim(subcommand, claims, me),
+      description:
+        case claims do
+          [] -> "表示する内容がありません。"
+          _ -> nil
+        end
+    }
+  end
+
+  defp pagination_row(subcommand, %{
+         first: first,
+         last: last,
+         prev: prev,
+         next: next,
+         page: page,
+         query: query
+       }) do
+    query = URI.encode_query(query)
+
+    %{
+      type: action_row(),
+      components: [
+        %{
+          type: button(),
+          style: button_style_secondary(),
+          emoji: %{name: "⏪"},
+          custom_id: custom_id(subcommand, first, query),
+          disabled: disabled(first)
+        },
+        %{
+          type: button(),
+          style: button_style_secondary(),
+          emoji: %{name: "⏮️"},
+          custom_id: custom_id(subcommand, prev, query),
+          disabled: disabled(prev)
+        },
+        %{
+          type: button(),
+          style: button_style_secondary(),
+          emoji: %{name: "⏭️"},
+          custom_id: custom_id(subcommand, next, query),
+          disabled: disabled(next)
+        },
+        %{
+          type: button(),
+          style: button_style_secondary(),
+          emoji: %{name: "⏩"},
+          custom_id: custom_id(subcommand, last, query),
+          disabled: disabled(last)
+        },
+        %{
+          type: button(),
+          style: button_style_secondary(),
+          custom_id: custom_id(subcommand, page, query),
+          emoji: %{name: "🔄"}
+        }
+      ]
+    }
+  end
+
   def render(
         subcommand,
         %{
           type: typ,
           claims: claims,
-          me: me,
-          first: first,
-          last: last,
-          prev: prev,
-          next: next,
-          page: page,
-          query: query
-        }
+          me: me
+        } = m
       )
       when subcommand in ["list", "received", "sent"] do
     typ =
@@ -116,64 +174,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
         :button -> update_message()
       end
 
-    query = URI.encode_query(query)
-
     %{
       type: typ,
       data: %{
         flags: ephemeral(),
-        embeds: [
-          %{
-            title: render_title(subcommand),
-            color: color_brand(),
-            fields: render_claim(subcommand, claims, me),
-            description:
-              case claims do
-                [] -> "表示する内容がありません。"
-                _ -> nil
-              end
-          }
-        ],
+        embeds: [page(subcommand, claims, me)],
         components: [
-          %{
-            type: action_row(),
-            components: [
-              %{
-                type: button(),
-                style: button_style_secondary(),
-                emoji: %{name: "⏪"},
-                custom_id: custom_id(subcommand, first, query),
-                disabled: disabled(first)
-              },
-              %{
-                type: button(),
-                style: button_style_secondary(),
-                emoji: %{name: "⏮️"},
-                custom_id: custom_id(subcommand, prev, query),
-                disabled: disabled(prev)
-              },
-              %{
-                type: button(),
-                style: button_style_secondary(),
-                emoji: %{name: "⏭️"},
-                custom_id: custom_id(subcommand, next, query),
-                disabled: disabled(next)
-              },
-              %{
-                type: button(),
-                style: button_style_secondary(),
-                emoji: %{name: "⏩"},
-                custom_id: custom_id(subcommand, last, query),
-                disabled: disabled(last)
-              },
-              %{
-                type: button(),
-                style: button_style_secondary(),
-                custom_id: custom_id(subcommand, page, query),
-                emoji: %{name: "🔄"}
-              }
-            ]
-          }
+          pagination_row(subcommand, m)
         ]
       }
     }
