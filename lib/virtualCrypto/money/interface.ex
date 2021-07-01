@@ -95,7 +95,7 @@ defmodule VirtualCrypto.Money do
   receiver must be discord user!
   """
   @spec give(
-          receiver: non_neg_integer(),
+          receiver: UserResolvable.t(),
           amount: non_neg_integer(),
           guild: non_neg_integer()
         ) ::
