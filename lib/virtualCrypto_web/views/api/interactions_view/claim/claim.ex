@@ -30,7 +30,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   end
 
   def render({:ok, subcommand, m})
-      when subcommand in ["list", "received", "sent"] do
+      when subcommand in [:all, :received, :sent, :select] do
     VirtualCryptoWeb.Api.InteractionsView.Claim.Listing.render(subcommand, m)
   end
 

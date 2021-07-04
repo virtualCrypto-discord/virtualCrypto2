@@ -5,15 +5,15 @@ defmodule VirtualCryptoWeb.IdempotencyLayer.Plug do
     options
   end
 
-  @spec call(conn :: %Plug.Conn{}, m :: [behavior: VirtualCryptoWeb.IdempotencyLayer]) ::
-          %Plug.Conn{}
-  def call(conn, behavior: behavior) do
-    with idempotency_keys <- get_req_header(conn, "idempotency-key"),
-         {:idempotency_key, 1} <- {:idempotency_key, length(idempotency_keys)},
-         idempotency_key <- hd(idempotency_keys),
-         {:interrupt, %Plug.Conn{} = conn} <-
-           {:interrupt, behavior.interrupt(conn, idempotency_key)} do
-      conn
+  @spec call(conn :: Plug.Conn.t(), m :: [behavior: VirtualCryptoWeb.IdempotencyLayer]) ::
+          Plug.Conn.t()
+  def call(conn, kw) do
+    behavior = Keyword.fetch!(kw, :behavior)
+    idempotency_keys = get_req_header(conn, "idempotency-key")
+
+    with {:idempotency_key, 1} <- {:idempotency_key, length(idempotency_keys)},
+         idempotency_key <- hd(idempotency_keys) do
+      %Plug.Conn{} = behavior.interrupt(conn, idempotency_key)
     else
       {:idempotency_key, 0} ->
         conn

@@ -186,7 +186,14 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         end
       )
 
-    case VirtualCryptoWeb.Interaction.Claim.List.page(user, subcommand, 1, options) do
+    subcommand =
+      case subcommand do
+        "list" -> :all
+        "received" -> :received
+        "sent" -> :sent
+      end
+
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, subcommand, 1, options, []) do
       {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
     end
   end

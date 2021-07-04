@@ -50,21 +50,21 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
     |> Map.new()
   end
 
-  def page(user, subcommand, page, nil) do
-    page(user, subcommand, page, %{})
+  def page(user, subcommand, page, nil, selected_claim_ids) do
+    page(user, subcommand, page, %{}, selected_claim_ids)
   end
 
-  def page(user, subcommand, page, options) do
+  def page(user, subcommand, page, options, selected_claim_ids) do
     sr_filter =
       case subcommand do
-        "list" -> :all
-        "received" -> :received
-        "sent" -> :claimed
+        :all -> :all
+        :received -> :received
+        :sent -> :claimed
       end
 
     int_user_id = String.to_integer(user["id"])
     statuses = statuses(options)
-    related_user_id = options.related_user_id
+    related_user_id = Map.get(options, :related_user_id)
 
     query = %{flags: encode_options(statuses)}
 
@@ -74,16 +74,28 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
         _ -> query |> Map.put(:user, related_user_id)
       end
 
+    claims =
+      Money.get_claims(
+        %DiscordUser{id: int_user_id},
+        statuses,
+        sr_filter,
+        related_user_id,
+        :desc_claim_id,
+        %{page: page},
+        5
+      )
+
+    claims = %{
+      claims
+      | claims:
+          claims.claims
+          |> Enum.map(fn %{claim: %{id: id}} = m ->
+            m |> Map.put(:selected, id in selected_claim_ids)
+          end)
+    }
+
     {:ok, subcommand,
-     Money.get_claims(
-       %DiscordUser{id: int_user_id},
-       statuses,
-       sr_filter,
-       related_user_id,
-       :desc_claim_id,
-       %{page: page},
-       5
-     )
+     claims
      |> Map.put(:me, int_user_id)
      |> Map.put(:query, query)}
   end

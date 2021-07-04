@@ -54,8 +54,8 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
     {:error, :invalid_amount}
   end
 
-  def transfer_bulk(sender_id, currency_unit_receiver_id_and_amount) do
-    time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+  def transfer_bulk(sender_id, currency_unit_receiver_id_and_amount, time \\ nil) do
+    time = (time || NaiveDateTime.utc_now()) |> NaiveDateTime.truncate(:second)
 
     with {:check_amount, true} <-
            {:check_amount,

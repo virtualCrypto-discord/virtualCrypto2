@@ -26,6 +26,11 @@ defmodule VirtualCrypto.Money.Query.Asset do
     Repo.insert_all(
       VirtualCrypto.Money.Asset,
       assets
+      |> Enum.group_by(
+        fn {currency_id, user_id, _amount} -> {currency_id, user_id} end,
+        fn {_currency_id, _user_id, amount} -> amount end
+      )
+      |> Enum.map(fn {{currency_id, user_id}, v} -> {currency_id, user_id, Enum.sum(v)} end)
       |> Enum.map(fn {currency_id, user_id, amount} ->
         [
           amount: amount,

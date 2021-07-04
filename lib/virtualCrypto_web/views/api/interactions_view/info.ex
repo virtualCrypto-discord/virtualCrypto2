@@ -33,10 +33,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
                 end
 
               %{
-                icon_url:
-                  IO.inspect(
-                    ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
-                  )
+                icon_url: ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
               }
 
             :error ->
