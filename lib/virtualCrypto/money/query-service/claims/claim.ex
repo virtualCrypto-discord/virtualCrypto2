@@ -23,6 +23,23 @@ defmodule VirtualCrypto.Money.Query.Claim do
     query |> Repo.one()
   end
 
+  def get_claim_by_ids(ids) do
+    query =
+      from(claim in Money.Claim,
+        join: currency in Money.Currency,
+        join: claimant in VirtualCrypto.User.User,
+        join: payer in VirtualCrypto.User.User,
+        on:
+          claim.payer_user_id == payer.id and claim.currency_id == currency.id and
+            claim.claimant_user_id == claimant.id,
+        where: claim.id in ^ids,
+        select: %{claim: claim, currency: currency, claimant: claimant, payer: payer}
+      )
+
+    result = query |> Repo.all() |> Map.new(fn %{claim: %{id: id}} = m -> {id, m} end)
+    ids |> Enum.map(fn id -> Map.get(result, id) end)
+  end
+
   def get_claims(
         operator,
         statuses \\ ["pending", "approved", "canceled", "denied"]
@@ -64,6 +81,19 @@ defmodule VirtualCrypto.Money.Query.Claim do
     [operator_id, related_user_id] = UserResolver.resolve_ids([operator, related_user])
 
     RawGet.get_claims(operator_id, statuses, sr_filter, related_user_id, order, pagination, limit)
+  end
+
+  def update_claims_status(claim_ids, new_status, time \\ nil) do
+    time = (time || NaiveDateTime.utc_now()) |> NaiveDateTime.truncate(:second)
+
+    {_, cs} =
+      Money.Claim
+      |> where([c], c.id in ^claim_ids and c.status == "pending")
+      |> update(set: [status: ^new_status, updated_at: ^time])
+      |> select([c], {c})
+      |> Repo.update_all([])
+
+    {:ok, cs |> Enum.map(&elem(&1, 0))}
   end
 
   defp update_claim_status(claim_id, new_status) do

@@ -119,8 +119,8 @@ defmodule Command do
     }
   end
 
-  def claim do
-    options_for_listing = [
+  defp options_for_listing(user_desc) do
+    [
       %{
         "name" => "pending",
         "description" => "未処理の請求を表示します。",
@@ -143,10 +143,14 @@ defmodule Command do
       },
       %{
         "name" => "user",
-        "description" => "ユーザーからの請求及びユーザーへの請求を表示します。",
+        "description" => user_desc,
         "type" => 6
       }
     ]
+  end
+
+  def claim do
+
     %{
       "name" => "claim",
       "description" => "請求に関するコマンドです。",
@@ -155,19 +159,19 @@ defmodule Command do
           "name" => "list",
           "description" => "請求の一覧を表示します。",
           "type" => 1,
-          "options" => options_for_listing
+          "options" => options_for_listing("ユーザーからの請求及びユーザーへの請求を表示します。")
         },
         %{
           "name" => "received",
           "description" => "受け取った請求の一覧を表示します。",
           "type" => 1,
-          "options" => options_for_listing
+          "options" => options_for_listing("請求元を指定します。")
         },
         %{
           "name" => "sent",
           "description" => "送信した請求の一覧を表示します。",
           "type" => 1,
-          "options" => options_for_listing
+          "options" => options_for_listing("請求先を指定します。")
         },
         %{
           "name" => "make",
@@ -239,10 +243,10 @@ defmodule Command do
 
   def post_command(url,command,headers) do
     {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
-    IO.inspect({command["name"],r.status_code})
+    IO.puts("#{command["name"]}:#{r.status_code}")
     if r.status_code == 429 do
       {_,retry_after} = r.headers|>Enum.find(fn {k,_v}->k=="retry-after" end)
-      IO.inspect("retrying after #{retry_after} sec")
+      IO.puts("retrying after #{retry_after} sec")
       Process.sleep(String.to_integer(retry_after)*1000)
 
       post_command(url,command,headers)
@@ -266,7 +270,7 @@ defmodule Command do
 end
 
 url = case System.argv() do
-  [] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/commands"
-  [guild] -> "https://discord.com/api/v8/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
+  [] -> "https://discord.com/api/v9/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/commands"
+  [guild] -> "https://discord.com/api/v9/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
 end
 Command.post_all(url)

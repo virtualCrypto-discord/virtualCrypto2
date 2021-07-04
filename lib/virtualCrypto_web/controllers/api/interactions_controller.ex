@@ -62,6 +62,56 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
     end
   end
 
+  defp handle_button(conn, [:claim, :action, :back] = path, data, params) do
+    {name, params} =
+      VirtualCryptoWeb.Interaction.Button.handle(
+        path,
+        data,
+        params,
+        conn
+      )
+
+    render(conn, "#{name}.json", params: params)
+  end
+
+  defp handle_button(
+         conn,
+         [:claim, :action, _] = path,
+         data,
+         %{"token" => token, "application_id" => application_id} = params
+       ) do
+    {{name, params}, webhook_body} =
+      VirtualCryptoWeb.Interaction.Button.handle(
+        path,
+        data,
+        params,
+        conn
+      )
+
+    conn = render(conn, "#{name}.json", params: params)
+
+    {200, _} =
+      Discord.Api.Raw.post_webhook_message(
+        application_id,
+        token,
+        webhook_body
+      )
+
+    conn
+  end
+
+  defp handle_button(conn, path, data, params) do
+    {name, params} =
+      VirtualCryptoWeb.Interaction.Button.handle(
+        path,
+        data,
+        params,
+        conn
+      )
+
+    render(conn, "#{name}.json", params: params)
+  end
+
   def verified(conn, %{"type" => 1}) do
     render(conn, "pong.json")
   end
@@ -76,16 +126,35 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
     )
   end
 
-  def verified(conn, %{"type" => 3, "data" => %{"custom_id" => custom_id}} = params) do
-    custom_id = URI.parse(custom_id)
+  def verified(
+        conn,
+        %{"type" => 3, "data" => %{"custom_id" => custom_id, "component_type" => 2}} = params
+      ) do
+    {path, data} =
+      custom_id |> VirtualCryptoWeb.CustomId.parse() |> VirtualCryptoWeb.CustomId.parse_button()
+
+    handle_button(conn, path, data, params)
+  end
+
+  def verified(
+        conn,
+        %{
+          "type" => 3,
+          "data" => %{"custom_id" => custom_id, "component_type" => 3} = d
+        } = params
+      ) do
+    {path, data} =
+      custom_id
+      |> VirtualCryptoWeb.CustomId.parse()
+      |> VirtualCryptoWeb.CustomId.parse_select_menu()
+
+    Map.get(d, "values", [])
 
     {name, params} =
-      VirtualCryptoWeb.Interaction.Button.handle(
-        custom_id.path |> String.split("/"),
-        case custom_id.query do
-          nil -> nil
-          q -> q |> URI.query_decoder() |> Enum.to_list()
-        end,
+      VirtualCryptoWeb.Interaction.SelectMenu.handle(
+        path,
+        data,
+        Map.get(d, "values", []),
         params,
         conn
       )
