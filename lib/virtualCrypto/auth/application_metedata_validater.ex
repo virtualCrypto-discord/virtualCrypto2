@@ -3,10 +3,14 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
     {:ok, nil}
   end
 
+  @spec validate_response_types(list(String.t())) ::
+          nil
+          | {:ok, list(String.t())}
+          | {:error, {:invalid_client_metadata, :response_types_must_constructed_from_code}}
   def validate_response_types(response_types) do
     response_type_set = MapSet.new(response_types)
 
-    if MapSet.subset?(response_type_set, ["code"]) do
+    if MapSet.subset?(response_type_set, MapSet.new(["code"])) do
       {:ok, MapSet.to_list(response_type_set)}
     else
       {:error, {:invalid_client_metadata, :response_types_must_constructed_from_code}}
@@ -20,7 +24,7 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
   def validate_grant_types(grant_types) do
     grant_type_set = MapSet.new(grant_types)
 
-    if MapSet.subset?(grant_type_set, ["authorization_code", "refresh_token"]) do
+    if MapSet.subset?(grant_type_set, MapSet.new(["authorization_code", "refresh_token"])) do
       {:ok, MapSet.to_list(grant_type_set)}
     else
       {:error,
@@ -57,6 +61,13 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
     {:ok, nil}
   end
 
+  @spec validate_logo_uri(String.t()) ::
+          {:ok, String.t()}
+          | {:error,
+             {:invalid_client_metadata,
+              :logo_uri_mime_type_must_be_image
+              | :logo_uri_must_not_bigger_than_2048_bytes
+              | :logo_uri_scheme_must_be_data_or_https}}
   def validate_logo_uri(icon_uri) do
     url = URL.parse(icon_uri)
 
@@ -65,9 +76,9 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
         {:ok, URL.to_string(url)}
 
       "data" ->
-        rebuilded_url = URL.to_string(url)
+        rebuilt_url = URL.to_string(url)
 
-        case {url.parsed_path.mediatype in @allowed_media_type, byte_size(rebuilded_url) <= 2048} do
+        case {url.parsed_path.mediatype in @allowed_media_type, byte_size(rebuilt_url) <= 2048} do
           {false, _} ->
             {:error, {:invalid_client_metadata, :logo_uri_mime_type_must_be_image}}
 
@@ -75,7 +86,7 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
             {:error, {:invalid_client_metadata, :logo_uri_must_not_bigger_than_2048_bytes}}
 
           _ ->
-            {:ok, URL.to_string(rebuilded_url)}
+            {:ok, rebuilt_url}
         end
 
       _ ->

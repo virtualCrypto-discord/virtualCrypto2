@@ -33,10 +33,6 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
     conn |> put_status(404)
   end
 
-  defp response_code(conn, _) do
-    conn |> put_status(500)
-  end
-
   def index(conn, params) do
     m = Map.take(params, ["id", "guild", "name", "unit"])
 
@@ -66,9 +62,6 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
         conn
         |> response_code(error)
         |> render("error.json", error: error, error_description: error_description)
-
-      {:error, error} ->
-        conn |> response_code(error) |> render("error.json", "error.json", error: error)
     end
   end
 end
