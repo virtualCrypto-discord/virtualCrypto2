@@ -2,10 +2,10 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCryptoWeb.Interaction.Claim.Helper
   alias VirtualCryptoWeb.Interaction.Claim.Component
+  alias VirtualCryptoWeb.Interaction.Claim.List.Options
 
-  defp handle_listing(subcommand, data, user) do
-    query = data |> Helper.drop_tail_0() |> URI.decode_query()
-    Component.page(subcommand, query, user)
+  defp handle_listing(user, %Options{} = options) do
+    Component.page(user, options)
   end
 
   defp action_str(:approve), do: "支払いました。"
@@ -14,7 +14,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
 
   defp handle_patch(
          subcommand,
-         <<num::integer, rest::binary>>,
+         binary,
          user
        ) do
     new_status =
@@ -24,10 +24,9 @@ defmodule VirtualCryptoWeb.Interaction.Button do
         :cancel -> "canceled"
       end
 
+    {options, <<num::integer, rest::binary>>} = Options.parse(binary)
     size = num * 8
-    <<claim_ids::binary-size(size), rest::binary>> = rest
-
-    query = rest |> Helper.drop_tail_0() |> URI.decode_query()
+    <<claim_ids::binary-size(size), _rest::binary>> = rest
 
     claim_ids = Helper.destructuring_claim_ids(claim_ids)
 
@@ -56,35 +55,37 @@ defmodule VirtualCryptoWeb.Interaction.Button do
       end
 
     webhook_body = webhook_body |> Map.put(:flags, 64)
-    {Component.page(String.to_atom(Map.fetch!(query, "sc")), query, user), webhook_body}
+    {Component.page(user, options), webhook_body}
   end
 
   def handle(
         [:claim, :list, subcommand],
-        data,
+        binary,
         %{
           "member" => %{"user" => user}
         },
         _conn
       )
       when subcommand in [:sent, :received, :all] do
-    handle_listing(subcommand, data, user)
+    {options, <<>>} = Options.parse(binary)
+    handle_listing(user, options)
   end
 
   def handle(
         [:claim, :action, :back],
-        <<num::integer, rest::binary>>,
+        binary,
         %{
           "member" => %{"user" => user}
         },
         _conn
       ) do
+    {options, <<num::integer, rest::binary>>} = Options.parse(binary)
+
     size = num * 8
-    <<_claim_ids::binary-size(size), rest::binary>> = rest
+    <<_claim_ids::binary-size(size), _rest::binary>> = rest
 
-    query = rest |> Helper.drop_tail_0() |> URI.decode_query()
 
-    Component.page(String.to_atom(Map.fetch!(query, "sc")), query, user)
+    Component.page(user, options)
   end
 
   def handle(

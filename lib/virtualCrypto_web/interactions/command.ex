@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCryptoWeb.Interaction.Claim.List.Options
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -28,6 +29,15 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       true
     else
       _ -> false
+    end
+  end
+
+  defp resolve_status_filter(sub_options) do
+    sub_options = Map.take(sub_options, ["approved", "canceled", "denied", "pending"])
+
+    case map_size(sub_options) do
+      0 -> %{pending: true}
+      _ -> sub_options |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end) |> Map.new()
     end
   end
 
@@ -174,17 +184,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         _conn
       )
       when subcommand in ["list", "received", "sent"] do
-    options = Map.get(options, "sub_options", %{})
-
-    options =
-      options
-      |> Map.put(
-        :related_user_id,
-        case options["user"] do
-          nil -> nil
-          user_id -> String.to_integer(user_id)
-        end
-      )
+    sub_options = Map.get(options, "sub_options", %{})
 
     subcommand =
       case subcommand do
@@ -193,7 +193,25 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         "sent" -> :sent
       end
 
-    case VirtualCryptoWeb.Interaction.Claim.List.page(user, subcommand, 1, options, []) do
+    status_filter = resolve_status_filter(sub_options)
+
+    related_user =
+      case Map.get(sub_options, "related_user") do
+        nil -> nil
+        x -> %DiscordUser{id: String.to_integer(x)}
+      end
+
+    options = %Options{
+      approved: Map.get(status_filter, :approved, false),
+      canceled: Map.get(status_filter, :canceled, false),
+      denied: Map.get(status_filter, :denied, false),
+      pending: Map.get(status_filter, :pending, false),
+      page: 1,
+      position: subcommand,
+      related_user: related_user
+    }
+
+    case VirtualCryptoWeb.Interaction.Claim.List.page(user, options, []) do
       {a, b, c} -> {a, b, c |> Map.put(:type, :command)}
     end
   end

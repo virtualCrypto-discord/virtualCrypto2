@@ -1,12 +1,16 @@
 defmodule VirtualCryptoWeb.Interaction.SelectMenu do
   alias VirtualCryptoWeb.Interaction.Claim.Helper
   alias VirtualCryptoWeb.Interaction.Claim.Component
+  alias VirtualCryptoWeb.Interaction.Claim.List.Options
+
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
-  defp handle_(<<num::integer, rest::binary>>, user, selected_claim_ids) do
-    size = num * 8
-    <<claim_ids::binary-size(size), rest::binary>> = rest
+  defp handle_(binary, user, selected_claim_ids) do
+    {options, rest} = Options.parse(binary)
 
+    <<num::integer, rest::binary>> = rest
+    size = num * 8
+    <<claim_ids::binary-size(size),_::binary>> = rest
     claim_ids = Helper.destructuring_claim_ids(claim_ids)
 
     claims =
@@ -17,28 +21,26 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
 
     int_discord_user_id = String.to_integer(user["id"])
     assets = VirtualCrypto.Money.balance(user: %DiscordUser{id: int_discord_user_id})
-    q = Helper.drop_tail_0(rest)
 
     {"claim",
-     {:ok, :select,
-      %{claims: claims, assets: assets, query: q |> URI.decode_query(), me: int_discord_user_id}}}
+     {:ok, :select, %{claims: claims, assets: assets, options: options, me: int_discord_user_id}}}
   end
 
   def handle(
         [:claim, :select],
-        <<num::integer, rest::binary>>,
+        binary,
         [],
         %{
           "member" => %{"user" => user}
         },
         _conn
       ) do
+    {options, <<num::integer, rest::binary>>} = Options.parse(binary)
     size = num * 8
-    <<_claim_ids::binary-size(size), rest::binary>> = rest
 
-    query = Helper.drop_tail_0(rest) |> URI.decode_query()
+    <<_claim_ids::binary-size(size),_::binary>> = rest
 
-    Component.page(String.to_atom(Map.fetch!(query, "sc")), query, user)
+    Component.page(user, options)
   end
 
   def handle(
