@@ -1,6 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   import VirtualCryptoWeb.Api.InteractionsView.Util
-  alias VirtualCryptoWeb.CustomId
+  alias VirtualCryptoWeb.Interaction.CustomId
+  alias VirtualCryptoWeb.Interaction.Claim.List.Options
 
   defp render_title(:received) do
     "請求一覧(received)"
@@ -120,11 +121,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   end
 
   defp custom_id(subcommand, :last, query) do
-    CustomId.encode(CustomId.claim_list(subcommand) <> "#{query}&page=-1")
+    CustomId.encode(CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query|page: :last}))
   end
 
   defp custom_id(subcommand, n, query) do
-    CustomId.encode(CustomId.claim_list(subcommand) <> "#{query}&page=#{n}")
+    CustomId.encode(CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query|page: n}))
   end
 
   defp disabled(nil) do
@@ -154,10 +155,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
          prev: prev,
          next: next,
          page: page,
-         query: query
+         options: options
        }) do
-    query = URI.encode_query(query)
-
     %{
       type: action_row(),
       components: [
@@ -165,34 +164,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏪"},
-          custom_id: custom_id(subcommand, first, query),
+          custom_id: custom_id(subcommand, first, options),
           disabled: disabled(first)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏮️"},
-          custom_id: custom_id(subcommand, prev, query),
+          custom_id: custom_id(subcommand, prev, options),
           disabled: disabled(prev)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏭️"},
-          custom_id: custom_id(subcommand, next, query),
+          custom_id: custom_id(subcommand, next, options),
           disabled: disabled(next)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏩"},
-          custom_id: custom_id(subcommand, last, query),
+          custom_id: custom_id(subcommand, last, options),
           disabled: disabled(last)
         },
         %{
           type: button(),
           style: button_style_secondary(),
-          custom_id: custom_id(subcommand, page, query),
+          custom_id: custom_id(subcommand, page, options),
           emoji: %{name: "🔄"}
         }
       ]
@@ -203,9 +202,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     []
   end
 
-  defp selection_select_row(subcommand, claims, me, query) do
-    query = URI.encode_query(query)
-
+  defp selection_select_row(subcommand, claims, me, options) do
     [
       %{
         type: action_row(),
@@ -214,8 +211,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
             type: select_menu(),
             custom_id:
               CustomId.encode(
-                CustomId.claim_select() <>
-                  encode_claims(claims) <> query
+                CustomId.UI.SelectMenu.claim_select() <>
+                  Options.encode(options) <>
+                  encode_claims(claims)
               ),
             max_values: claims |> Enum.count(),
             min_values: 0,
@@ -247,9 +245,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     }
   end
 
-  defp action_custom_id(action, claims, query) do
+  defp action_custom_id(action, claims, options) do
     CustomId.encode(
-      CustomId.claim_action(action) <> encode_claims(claims) <> (query |> URI.encode_query())
+      CustomId.UI.Button.claim_action(action) <>
+        Options.encode(options) <>
+        encode_claims(claims)
     )
   end
 
@@ -335,12 +335,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
         %{
           type: typ,
           claims: claims,
-          page: page,
-          query: query,
+          options: options,
           me: me
         } = m
       )
-      when subcommand in [:all, :received, :sent] do
+      when subcommand in [:all, :received, :claimed] do
     typ =
       case typ do
         :command -> channel_message_with_source()
@@ -367,13 +366,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
               subcommand,
               pending_claims,
               me,
-              Map.merge(query, %{page: page, sc: subcommand})
+              options
             ) ++
             selection_execute_row(
               selected_claims,
               [],
               me,
-              Map.merge(query, %{page: page, sc: subcommand})
+              options
             )
       }
     }
@@ -384,7 +383,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
         %{
           claims: claims,
           assets: assets,
-          query: query,
+          options: options,
           me: me
         }
       ) do
@@ -392,8 +391,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
       claims |> Enum.filter(fn %{claim: %{status: status}} -> status == "pending" end)
 
     selected_claims = pending_claims |> Enum.filter(fn %{selected: s} -> s end)
-    subcommand = String.to_atom(query["sc"])
-    page = String.to_integer(query["page"])
+    position = options.position
     assets = assets |> Map.new(fn %{currency: %{id: id}} = v -> {id, v} end)
     grouped_claims = selected_claims |> Enum.group_by(fn %{currency: %{id: id}} -> id end)
 
@@ -419,20 +417,20 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
         flags: ephemeral(),
         embeds:
           [
-            page(subcommand, claims, me)
+            page(position, claims, me)
           ] ++ selected_claim_embed(quotations),
         components:
           selection_select_row(
-            subcommand,
+            position,
             pending_claims,
             me,
-            Map.merge(query, %{page: page, sc: subcommand})
+            options
           ) ++
             selection_execute_row(
               selected_claims,
               quotations,
               me,
-              Map.merge(query, %{page: page, sc: subcommand})
+              options
             )
       }
     }

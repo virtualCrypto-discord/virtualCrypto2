@@ -1,5 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
+  alias VirtualCryptoWeb.Interaction.CustomId
+
 
   defp parse_options(options) do
     options
@@ -131,7 +133,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         %{"type" => 3, "data" => %{"custom_id" => custom_id, "component_type" => 2}} = params
       ) do
     {path, data} =
-      custom_id |> VirtualCryptoWeb.CustomId.parse() |> VirtualCryptoWeb.CustomId.parse_button()
+      custom_id |> CustomId.parse() |> CustomId.UI.Button.parse()
 
     handle_button(conn, path, data, params)
   end
@@ -145,8 +147,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       ) do
     {path, data} =
       custom_id
-      |> VirtualCryptoWeb.CustomId.parse()
-      |> VirtualCryptoWeb.CustomId.parse_select_menu()
+      |> CustomId.parse()
+      |> CustomId.UI.SelectMenu.parse()
 
     Map.get(d, "values", [])
 
