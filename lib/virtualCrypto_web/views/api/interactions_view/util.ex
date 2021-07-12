@@ -29,6 +29,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
 
   def action_row(), do: 1
   def button(), do: 2
+  def select_menu(), do: 3
   def button_style_primary(), do: 1
   def button_style_secondary(), do: 2
   def button_style_success(), do: 3

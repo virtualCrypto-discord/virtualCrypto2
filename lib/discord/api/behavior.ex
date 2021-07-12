@@ -31,4 +31,9 @@ defmodule Discord.Api.Behavior do
               webhook_message_id(),
               message()
             ) :: {status_code(), message()}
+  @callback post_webhook_message(
+              application_id(),
+              interaction_token(),
+              message()
+            ) :: {status_code(), message()}
 end

@@ -24,8 +24,20 @@ defmodule Discord.Api.Raw do
     HTTPoison.get(@base_url <> Enum.join(paths, "/") <> make_params(params), base_headers())
   end
 
-  defp patch(paths, body) do
-    HTTPoison.patch(@base_url <> Enum.join(paths, "/"), Jason.encode!(body), base_headers())
+  defp patch(paths, params \\ [], body) do
+    HTTPoison.patch(
+      @base_url <> Enum.join(paths, "/") <> make_params(params),
+      Jason.encode!(body),
+      base_headers()
+    )
+  end
+
+  defp post(paths, params \\ [], body) do
+    HTTPoison.post(
+      @base_url <> Enum.join(paths, "/") <> make_params(params),
+      Jason.encode!(body),
+      base_headers()
+    )
   end
 
   @impl Behavior
@@ -91,6 +103,22 @@ defmodule Discord.Api.Raw do
             id -> to_string(id)
           end
         ],
+        body
+      )
+
+    {response.status_code, Jason.decode!(response.body)}
+  end
+
+  @impl Behavior
+  def post_webhook_message(application_id, interaction_token, body) do
+    {:ok, response} =
+      post(
+        [
+          "webhooks",
+          to_string(application_id),
+          interaction_token
+        ],
+        %{"wait" => "true"},
         body
       )
 

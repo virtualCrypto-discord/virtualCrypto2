@@ -26,14 +26,16 @@ defmodule InteractionsControllerTest.Claim.List do
   def generate_claim_field(me) do
     fn %{claim: claim, currency: currency, claimant: claimant, payer: payer} ->
       %{
-        "name" => "#{render_claim_name(me, claimant.discord_id, payer.discord_id)}#{claim.id}",
-        "value" => """
-        状態　: ⌛未決定
-        請求額: **#{claim.amount}** `#{currency.unit}`
-        請求元: #{mention(claimant.discord_id)}
-        請求先: #{mention(payer.discord_id)}
-        請求日: #{format_date_time(claim.inserted_at)}
-        """
+        "name" => "◻️#{render_claim_name(me, claimant.discord_id, payer.discord_id)}#{claim.id}",
+        "value" =>
+          [
+            "状態　: ⌛未決定",
+            "請求額: **#{claim.amount}** `#{currency.unit}`",
+            "請求元: #{mention(claimant.discord_id)}",
+            "請求先: #{mention(payer.discord_id)}",
+            "請求日: #{format_date_time(claim.inserted_at)}"
+          ]
+          |> Enum.join("\n")
       }
     end
   end
@@ -94,7 +96,7 @@ defmodule InteractionsControllerTest.Claim.List do
                    "color" => color_brand(),
                    "description" => "表示する内容がありません。",
                    "fields" => [],
-                   "title" => "請求一覧"
+                   "title" => "請求一覧(all)"
                  }
                ]
              },
@@ -153,13 +155,35 @@ defmodule InteractionsControllerTest.Claim.List do
                      }
                    ],
                    "type" => 1
+                 },
+                 %{
+                   "components" => [
+                     %{
+                       "custom_id" => "claim/select?flags=1&page=1&sc=list",
+                       "max_values" => 3,
+                       "min_values" => 0,
+                       "options" => [
+                         %{
+                           "default" => false
+                         },
+                         %{
+                           "default" => false
+                         },
+                         %{
+                           "default" => false
+                         }
+                       ],
+                       "type" => 3
+                     }
+                   ],
+                   "type" => 1
                  }
                ],
                "embeds" => [
                  %{
                    "color" => ^color,
                    "fields" => fields,
-                   "title" => "請求一覧"
+                   "title" => "請求一覧(all)"
                  }
                ]
              },

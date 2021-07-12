@@ -1,7 +1,7 @@
 defmodule VirtualCrypto.Money.Claim do
   use Ecto.Schema
   import Ecto.Changeset
-
+  @type status_t() :: String.t()
   schema "claims" do
     field :amount, :integer
     field :status, :string

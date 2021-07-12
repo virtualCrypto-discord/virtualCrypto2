@@ -75,6 +75,15 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
     end
   end
 
+  @spec get_claims_m(
+          non_neg_integer(),
+          [String.t()],
+          atom(),
+          non_neg_integer(),
+          :desc_claim_id,
+          any(),
+          nil | non_neg_integer() | {non_neg_integer(), non_neg_integer()}
+        ) :: list(Money.claim_t())
   defmacrop get_claims_m(
               operator_id,
               statuses,
