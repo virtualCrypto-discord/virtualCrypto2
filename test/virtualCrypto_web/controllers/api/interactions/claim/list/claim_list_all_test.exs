@@ -1,4 +1,4 @@
-defmodule InteractionsControllerTest.Claim.List do
+defmodule InteractionsControllerTest.Claim.List.All do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Claim.Helper
   alias VirtualCryptoWeb.Interaction.CustomId
