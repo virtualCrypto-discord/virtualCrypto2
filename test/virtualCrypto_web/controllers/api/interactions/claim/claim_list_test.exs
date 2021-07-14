@@ -1,6 +1,11 @@
 defmodule InteractionsControllerTest.Claim.List do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Claim.Helper
+  alias VirtualCryptoWeb.Interaction.CustomId
+  alias VirtualCryptoWeb.Interaction.CustomId.UI.Button
+  alias VirtualCryptoWeb.Interaction.CustomId.UI.SelectMenu
+  alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
+  alias VirtualCryptoWeb.Interaction.Claim.Helper
 
   import VirtualCryptoWeb.Api.InteractionsView.Util,
     only: [format_date_time: 1, color_brand: 0, mention: 1]
@@ -82,7 +87,19 @@ defmodule InteractionsControllerTest.Claim.List do
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "claim/list/1?flags=1",
+                       "custom_id" =>
+                         CustomId.encode(
+                           Button.claim_list(:all) <>
+                             ListOptions.encode(%ListOptions{
+                               approved: false,
+                               canceled: false,
+                               denied: false,
+                               pending: true,
+                               page: 1,
+                               position: :all,
+                               related_user: 0
+                             })
+                         ),
                        "emoji" => %{"name" => "🔄"},
                        "style" => 2,
                        "type" => 2
@@ -112,6 +129,47 @@ defmodule InteractionsControllerTest.Claim.List do
       )
 
     color = color_brand()
+
+    custom_id_reload =
+      CustomId.encode(
+        Button.claim_list(:all) <>
+          ListOptions.encode(%ListOptions{
+            approved: false,
+            canceled: false,
+            denied: false,
+            pending: true,
+            page: 1,
+            position: :all,
+            related_user: 0
+          })
+      )
+
+    claims =
+      VirtualCrypto.Money.get_claims(
+        %DiscordUser{id: user1},
+        ["pending"],
+        :all,
+        nil,
+        :desc_claim_id,
+        %{page: 1},
+        5
+      )
+
+    custom_id_select =
+      CustomId.encode(
+        SelectMenu.claim_select() <>
+          ListOptions.encode(%ListOptions{
+            approved: false,
+            canceled: false,
+            denied: false,
+            pending: true,
+            page: 1,
+            position: :all,
+            related_user: 0
+          }) <> Helper.encode_claim_ids(claims.claims)
+      )
+
+    res = json_response(conn, 200)
 
     assert %{
              "data" => %{
@@ -148,7 +206,7 @@ defmodule InteractionsControllerTest.Claim.List do
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "claim/list/1?flags=1",
+                       "custom_id" => ^custom_id_reload,
                        "emoji" => %{"name" => "🔄"},
                        "style" => 2,
                        "type" => 2
@@ -159,7 +217,7 @@ defmodule InteractionsControllerTest.Claim.List do
                  %{
                    "components" => [
                      %{
-                       "custom_id" => "claim/select?flags=1&page=1&sc=list",
+                       "custom_id" => ^custom_id_select,
                        "max_values" => 3,
                        "min_values" => 0,
                        "options" => [
@@ -188,7 +246,7 @@ defmodule InteractionsControllerTest.Claim.List do
                ]
              },
              "type" => 4
-           } = json_response(conn, 200)
+           } = res
 
     claims =
       VirtualCrypto.Money.get_claims(

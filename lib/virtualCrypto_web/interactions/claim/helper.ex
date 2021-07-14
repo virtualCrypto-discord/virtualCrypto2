@@ -7,12 +7,13 @@ defmodule VirtualCryptoWeb.Interaction.Claim.Helper do
     |> Enum.to_list()
   end
 
-  def drop_tail_0(bytes) do
-    bytes
-    |> String.codepoints()
-    |> Enum.reverse()
-    |> Enum.drop_while(&(&1 == "\u0000"))
-    |> Enum.reverse()
-    |> List.to_string()
+
+  defp join_bytes(enum) do
+    Enum.reduce(enum, <<>>, fn elem, acc -> acc <> elem end)
+  end
+
+  def encode_claim_ids(claims) do
+    claim_count = claims |> Enum.count()
+    <<claim_count::8>> <> (claims |> Enum.map(&<<&1.claim.id::64>>) |> join_bytes)
   end
 end

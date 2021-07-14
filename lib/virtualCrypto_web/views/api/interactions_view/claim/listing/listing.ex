@@ -2,6 +2,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   import VirtualCryptoWeb.Api.InteractionsView.Util
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
+  alias VirtualCryptoWeb.Interaction.Claim.Helper
+
 
   defp render_title(:received) do
     "請求一覧(received)"
@@ -107,14 +109,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     end)
   end
 
-  defp join_bytes(enum) do
-    Enum.reduce(enum, <<>>, fn elem, acc -> acc <> elem end)
-  end
-
-  defp encode_claims(claims) do
-    claim_count = claims |> Enum.count()
-    <<claim_count::8>> <> (claims |> Enum.map(&<<&1.claim.id::64>>) |> join_bytes)
-  end
 
   defp custom_id(_subcommand, nil, _flags) do
     "disabled"
@@ -217,7 +211,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
               CustomId.encode(
                 CustomId.UI.SelectMenu.claim_select() <>
                   Options.encode(options) <>
-                  encode_claims(claims)
+                  Helper.encode_claim_ids(claims)
               ),
             max_values: claims |> Enum.count(),
             min_values: 0,
@@ -253,7 +247,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     CustomId.encode(
       CustomId.UI.Button.claim_action(action) <>
         Options.encode(options) <>
-        encode_claims(claims)
+        Helper.encode_claim_ids(claims)
     )
   end
 
