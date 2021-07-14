@@ -20,6 +20,10 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
       end)
 
     int_discord_user_id = String.to_integer(user["id"])
+    unless claims |> Enum.all?(fn claim -> int_discord_user_id in [claim.payer.discord_id,claim.claimant.discord_id] end) do
+      raise ArgumentError, message: "Illegal request"
+    end
+
     assets = VirtualCrypto.Money.balance(user: %DiscordUser{id: int_discord_user_id})
 
     {"claim",

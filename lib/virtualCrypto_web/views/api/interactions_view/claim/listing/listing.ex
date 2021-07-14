@@ -40,7 +40,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     "◻️"
   end
 
-  defp render_selection(_, false) do
+  defp render_selection(_, _) do
     ""
   end
 
