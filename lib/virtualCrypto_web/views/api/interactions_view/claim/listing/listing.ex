@@ -4,7 +4,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
   alias VirtualCryptoWeb.Interaction.Claim.Helper
 
-
   defp render_title(:received) do
     "請求一覧(received)"
   end
@@ -108,7 +107,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
       }
     end)
   end
-
 
   defp custom_id(_subcommand, nil, _flags) do
     "disabled"

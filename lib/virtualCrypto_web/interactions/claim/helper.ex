@@ -7,7 +7,6 @@ defmodule VirtualCryptoWeb.Interaction.Claim.Helper do
     |> Enum.to_list()
   end
 
-
   defp join_bytes(enum) do
     Enum.reduce(enum, <<>>, fn elem, acc -> acc <> elem end)
   end
