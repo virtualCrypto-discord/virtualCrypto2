@@ -6,6 +6,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
     |> Enum.map(fn
       %{"name" => name, "options" => options} ->
         [{"subcommand", name}, {"sub_options", parse_options(options)}]
+      # FIXME: #294
+      %{"name" => name, "value" => value} when is_binary(value) ->
+        {name, value |> String.trim()}
 
       %{"name" => name, "value" => value} ->
         {name, value}
