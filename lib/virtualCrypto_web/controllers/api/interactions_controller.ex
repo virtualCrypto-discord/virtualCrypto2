@@ -2,7 +2,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
   alias VirtualCryptoWeb.Interaction.CustomId
 
-
   defp parse_options(options) do
     options
     |> Enum.map(fn
@@ -132,8 +131,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn,
         %{"type" => 3, "data" => %{"custom_id" => custom_id, "component_type" => 2}} = params
       ) do
-    {path, data} =
-      custom_id |> CustomId.parse() |> CustomId.UI.Button.parse()
+    {path, data} = custom_id |> CustomId.parse() |> CustomId.UI.Button.parse()
 
     handle_button(conn, path, data, params)
   end

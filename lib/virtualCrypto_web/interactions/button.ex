@@ -84,7 +84,6 @@ defmodule VirtualCryptoWeb.Interaction.Button do
     size = num * 8
     <<_claim_ids::binary-size(size), _rest::binary>> = rest
 
-
     Component.page(user, options)
   end
 

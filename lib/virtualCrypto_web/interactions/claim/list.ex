@@ -9,7 +9,7 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
 
     case m |> Enum.filter(fn {_k, v} -> v end) |> Enum.map(fn {k, _v} -> k end) do
       [] -> ["pending"]
-      x -> x|>Enum.map(&to_string/1)
+      x -> x |> Enum.map(&to_string/1)
     end
   end
 

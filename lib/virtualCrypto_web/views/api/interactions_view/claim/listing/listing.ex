@@ -121,11 +121,15 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   end
 
   defp custom_id(subcommand, :last, query) do
-    CustomId.encode(CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query|page: :last}))
+    CustomId.encode(
+      CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query | page: :last})
+    )
   end
 
   defp custom_id(subcommand, n, query) do
-    CustomId.encode(CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query|page: n}))
+    CustomId.encode(
+      CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query | page: n})
+    )
   end
 
   defp disabled(nil) do

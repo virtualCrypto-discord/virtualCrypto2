@@ -10,7 +10,7 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
 
     <<num::integer, rest::binary>> = rest
     size = num * 8
-    <<claim_ids::binary-size(size),_::binary>> = rest
+    <<claim_ids::binary-size(size), _::binary>> = rest
     claim_ids = Helper.destructuring_claim_ids(claim_ids)
 
     claims =
@@ -38,7 +38,7 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
     {options, <<num::integer, rest::binary>>} = Options.parse(binary)
     size = num * 8
 
-    <<_claim_ids::binary-size(size),_::binary>> = rest
+    <<_claim_ids::binary-size(size), _::binary>> = rest
 
     Component.page(user, options)
   end
