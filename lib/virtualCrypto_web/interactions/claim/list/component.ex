@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Interaction.Claim.Component do
+defmodule VirtualCryptoWeb.Interaction.Claim.List.Component do
   def page(user, options) do
     {a, b, options} =
       VirtualCryptoWeb.Interaction.Claim.List.page(

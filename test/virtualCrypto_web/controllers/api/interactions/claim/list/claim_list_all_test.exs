@@ -5,7 +5,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
   alias VirtualCryptoWeb.Interaction.CustomId.UI.Button
   alias VirtualCryptoWeb.Interaction.CustomId.UI.SelectMenu
   alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
-  alias VirtualCryptoWeb.Interaction.Claim.Helper
+  alias VirtualCryptoWeb.Interaction.Claim.List.Helper
 
   import VirtualCryptoWeb.Api.InteractionsView.Util,
     only: [format_date_time: 1, color_brand: 0, mention: 1]

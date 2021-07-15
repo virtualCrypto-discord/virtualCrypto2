@@ -2,7 +2,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   import VirtualCryptoWeb.Api.InteractionsView.Util
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
-  alias VirtualCryptoWeb.Interaction.Claim.Helper
+  alias VirtualCryptoWeb.Interaction.Claim.List.Helper
 
   defp render_title(:received) do
     "請求一覧(received)"

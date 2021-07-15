@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.Interaction.Claim.Helper do
+defmodule VirtualCryptoWeb.Interaction.Claim.List.Helper do
   def destructuring_claim_ids(claim_ids) do
     Stream.unfold(claim_ids, fn
       <<>> -> nil

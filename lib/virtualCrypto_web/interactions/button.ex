@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.Interaction.Button do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
-  alias VirtualCryptoWeb.Interaction.Claim.Helper
-  alias VirtualCryptoWeb.Interaction.Claim.Component
+  alias VirtualCryptoWeb.Interaction.Claim.List.Component
+  alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
 
   defp handle_listing(user, %Options{} = options) do

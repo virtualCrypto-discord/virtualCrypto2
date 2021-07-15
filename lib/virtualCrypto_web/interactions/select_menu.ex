@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.Interaction.SelectMenu do
-  alias VirtualCryptoWeb.Interaction.Claim.Helper
-  alias VirtualCryptoWeb.Interaction.Claim.Component
+  alias VirtualCryptoWeb.Interaction.Claim.List.Helper
+  alias VirtualCryptoWeb.Interaction.Claim.List.Component
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
 
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
