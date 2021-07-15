@@ -241,7 +241,7 @@ defmodule Command do
     }
   end
 
-  def post_command(url,command,headers) do
+  def execute_interaction(url,command,headers) do
     {:ok, r} = HTTPoison.post(url, Jason.encode!(command), headers)
     IO.puts("#{command["name"]}:#{r.status_code}")
     if r.status_code == 429 do
@@ -249,7 +249,7 @@ defmodule Command do
       IO.puts("retrying after #{retry_after} sec")
       Process.sleep(String.to_integer(retry_after)*1000)
 
-      post_command(url,command,headers)
+      execute_interaction(url,command,headers)
     end
   end
 
@@ -265,7 +265,7 @@ defmodule Command do
     commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
 
     commands
-    |> Enum.each(fn command -> post_command(url,command,headers) end)
+    |> Enum.each(fn command -> execute_interaction(url,command,headers) end)
   end
 end
 

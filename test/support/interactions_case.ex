@@ -32,7 +32,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
       # The default endpoint for testing
       @endpoint VirtualCryptoWeb.Endpoint
 
-      def post_command(conn, body) do
+      def execute_interaction(conn, body) do
         body = Jason.encode!(body)
 
         conn
@@ -56,7 +56,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
 
       def test_invalid_operator(conn, action, claim, user) do
         conn =
-          post_command(
+          execute_interaction(
             conn,
             InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )
@@ -66,7 +66,7 @@ defmodule VirtualCryptoWeb.InteractionsCase do
 
       def test_invalid_status(conn, action, claim, user) do
         conn =
-          post_command(
+          execute_interaction(
             conn,
             InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )

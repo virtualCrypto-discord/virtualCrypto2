@@ -43,7 +43,7 @@ defmodule InteractionsControllerTest.Claim.Make do
     amount = 100
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         make_from_guild(%{claimant: user2, payer: user1, unit: unit, amount: amount})
       )
@@ -66,7 +66,7 @@ defmodule InteractionsControllerTest.Claim.Make do
     amount = -100
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         make_from_guild(%{claimant: user2, payer: user1, unit: unit, amount: amount})
       )
@@ -81,7 +81,7 @@ defmodule InteractionsControllerTest.Claim.Make do
     amount = 100
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         make_from_guild(%{claimant: user2, payer: user1, unit: "void", amount: amount})
       )

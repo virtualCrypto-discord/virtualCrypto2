@@ -13,7 +13,7 @@ defmodule InteractionsControllerTest.Common do
 
   test "nothing type field", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         %{}
       )
@@ -23,7 +23,7 @@ defmodule InteractionsControllerTest.Common do
 
   test "type be string", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         %{type: "1"}
       )
@@ -33,7 +33,7 @@ defmodule InteractionsControllerTest.Common do
 
   test "type be nil", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         %{type: nil}
       )
@@ -43,7 +43,7 @@ defmodule InteractionsControllerTest.Common do
 
   test "type be ping", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         %{"type" => 1}
       )
@@ -53,7 +53,7 @@ defmodule InteractionsControllerTest.Common do
 
   test "out of range type", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         %{"type" => -21}
       )

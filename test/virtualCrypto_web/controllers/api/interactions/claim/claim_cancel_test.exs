@@ -9,7 +9,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
     claim_id_str = to_string(claim_id)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("cancel", claim_id, user1)
       )
@@ -79,7 +79,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
   test "cancel invalid id claim",
        %{conn: conn, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("cancel", -1, user1)
       )

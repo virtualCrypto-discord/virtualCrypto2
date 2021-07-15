@@ -47,7 +47,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
 
   test "list nothing", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         list_from_guild(-1)
       )
@@ -123,7 +123,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
 
   test "list user1", %{conn: conn, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         list_from_guild(user1)
       )

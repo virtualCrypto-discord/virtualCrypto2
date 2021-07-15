@@ -9,7 +9,7 @@ defmodule InteractionsControllerTest.Claim.Deny do
     claim_id_str = to_string(claim_id)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("deny", claim_id, user2)
       )
@@ -79,7 +79,7 @@ defmodule InteractionsControllerTest.Claim.Deny do
   test "deny invalid id claim",
        %{conn: conn, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("deny", -1, user1)
       )
