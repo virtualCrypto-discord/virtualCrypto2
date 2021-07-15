@@ -5,13 +5,15 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
 
   defp validate_executor(conn, guild) do
     guild_id = guild["id"]
-    user_id = conn.private.plug_session["user"].id
 
-    with {200, member} <-
-           Discord.Api.Raw.get_guild_member_with_status_code(
-             guild_id,
-             user_id
-           ),
+    with user when user != nil <- get_session(conn, :user),
+         user_id when user_id != nil <- user.id,
+         {:guild_id, {200, member}} <-
+           {:guild_id,
+            Discord.Api.Raw.get_guild_member_with_status_code(
+              guild_id,
+              user_id
+            )},
          roles <-
            Discord.Api.Raw.get_roles(guild_id)
            |> Enum.map(fn %{"id" => id} = m -> {id, m} end)
@@ -28,7 +30,8 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
       :ok
     else
       {:perms, _} -> {:error, {:invalid_request, :permission_denied}}
-      _ -> {:error, {:invalid_request, :invalid_guild_id}}
+      {:guild_id, _} -> {:error, {:invalid_request, :invalid_guild_id}}
+      _ -> raise "session validation error!"
     end
   end
 
