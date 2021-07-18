@@ -11,12 +11,14 @@ defmodule VirtualCryptoWeb.Interaction.CustomId do
       <<a::8-integer>> -> {[a <<< 12], <<>>}
     end)
     |> Enum.flat_map(&Function.identity/1)
+    |> Enum.map(&(&1 + 65536))
     |> List.to_string()
   end
 
   def parse(bytes) do
     bytes
     |> String.to_charlist()
+    |> Enum.map(&(&1 - 65536))
     |> Stream.chunk_every(2)
     |> Stream.map(fn
       [a, b] ->
