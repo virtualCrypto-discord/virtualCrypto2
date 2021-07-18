@@ -36,4 +36,19 @@ defmodule InteractionsControllerTest.Claim.Helper do
       user
     )
   end
+
+  def render_claim_name(me, claimant_discord_id, payer_discord_id)
+      when me == claimant_discord_id and me == payer_discord_id do
+    "📤📥"
+  end
+
+  def render_claim_name(me, claimant_discord_id, _payer_discord_id)
+      when me == claimant_discord_id do
+    "📤"
+  end
+
+  def render_claim_name(me, _claimant_discord_id, payer_discord_id)
+      when me == payer_discord_id do
+    "📥"
+  end
 end

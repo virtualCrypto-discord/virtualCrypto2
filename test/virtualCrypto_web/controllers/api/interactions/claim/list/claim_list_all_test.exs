@@ -1,32 +1,18 @@
 defmodule InteractionsControllerTest.Claim.List.All do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Claim.Helper
+
+  import VirtualCryptoWeb.Api.InteractionsView.Util,
+    only: [format_date_time: 1, color_brand: 0, mention: 1]
+
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.CustomId.UI.Button
   alias VirtualCryptoWeb.Interaction.CustomId.UI.SelectMenu
   alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
 
-  import VirtualCryptoWeb.Api.InteractionsView.Util,
-    only: [format_date_time: 1, color_brand: 0, mention: 1]
-
-  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_claim
-
-  defp render_claim_name(me, claimant_discord_id, payer_discord_id)
-       when me == claimant_discord_id and me == payer_discord_id do
-    "📤📥"
-  end
-
-  defp render_claim_name(me, claimant_discord_id, _payer_discord_id)
-       when me == claimant_discord_id do
-    "📤"
-  end
-
-  defp render_claim_name(me, _claimant_discord_id, payer_discord_id)
-       when me == payer_discord_id do
-    "📥"
-  end
 
   def generate_claim_field(me) do
     fn %{claim: claim, currency: currency, claimant: claimant, payer: payer} ->

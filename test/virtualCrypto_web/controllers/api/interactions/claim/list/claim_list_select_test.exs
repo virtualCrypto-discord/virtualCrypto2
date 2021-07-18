@@ -7,30 +7,16 @@ defmodule InteractionsControllerTest.Claim.List.Select do
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import InteractionsControllerTest.Helper.Common
+  import InteractionsControllerTest.Claim.Helper
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
   setup :setup_claim
-
-  defp render_rs_icon(me, claimant_discord_id, payer_discord_id)
-       when me == claimant_discord_id and me == payer_discord_id do
-    "📤📥"
-  end
-
-  defp render_rs_icon(me, claimant_discord_id, _payer_discord_id)
-       when me == claimant_discord_id do
-    "📤"
-  end
-
-  defp render_rs_icon(me, _claimant_discord_id, payer_discord_id)
-       when me == payer_discord_id do
-    "📥"
-  end
 
   defp render_claim(me, %{claim: claim, claimant: claimant, payer: payer, currency: currency}) do
     %{
       "name" =>
         "☑" <>
-          render_rs_icon(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
+          render_claim_name(me, claimant.discord_id, payer.discord_id) <> to_string(claim.id),
       "value" =>
         [
           "状態　: ⌛未決定",
@@ -92,7 +78,7 @@ defmodule InteractionsControllerTest.Claim.List.Select do
           "default" => true,
           "description" => "#{claim.amount} #{unit}",
           "label" =>
-            render_rs_icon(user1, claimant.discord_id, payer.discord_id) <> "#{claim.id}",
+            render_claim_name(user1, claimant.discord_id, payer.discord_id) <> "#{claim.id}",
           "value" => "#{claim.id}"
         }
       end)
