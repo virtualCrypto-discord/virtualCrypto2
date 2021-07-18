@@ -1,5 +1,4 @@
-defmodule VirtualCryptoWeb.CustomIdText do
-  # Use the module
+defmodule VirtualCryptoWeb.CustomIdTest do
   use ExUnit.Case, async: true
 
   test "custom_id" do
