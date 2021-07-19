@@ -6,6 +6,6 @@ defmodule VirtualCryptoWeb.CustomIdTest do
       assert <<a,b,c,0,0>> == CustomId.parse(CustomId.encode(<<a, b, c>>))
     end
 
-    assert <<255,255,255,255,255>> == CustomId.encode(<<255, 255, 255, 255, 255>>)
+    assert <<255,255,255,255,255>> == CustomId.parse(CustomId.encode(<<255, 255, 255, 255, 255>>))
   end
 end
