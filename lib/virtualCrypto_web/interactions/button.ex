@@ -8,7 +8,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
     Component.page(user, options)
   end
 
-  defp action_str(:approve), do: "支払いました。"
+  defp action_str(:approve), do: "承諾し、支払いました。"
   defp action_str(:deny), do: "拒否しました。"
   defp action_str(:cancel), do: "キャンセルしました。"
 
@@ -45,7 +45,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
           claim_id_str = claims |> Enum.map(& &1.id) |> Enum.map(&"`#{&1}`") |> Enum.join(",")
 
           %{
-            content: "請求id #{claim_id_str} の請求を" <> action_str(subcommand)
+            content: "id: #{claim_id_str} の請求を" <> action_str(subcommand)
           }
 
         {:error, :invalid_current_status} ->

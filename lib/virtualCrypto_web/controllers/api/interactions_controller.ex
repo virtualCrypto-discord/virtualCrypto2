@@ -90,9 +90,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       )
 
     conn = render(conn, "#{name}.json", params: params)
+    adapter = VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn)
 
     {200, _} =
-      Discord.Api.Raw.post_webhook_message(
+      adapter.post_webhook_message(
         application_id,
         token,
         webhook_body
