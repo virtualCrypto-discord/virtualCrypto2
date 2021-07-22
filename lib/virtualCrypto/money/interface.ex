@@ -487,6 +487,9 @@ defmodule VirtualCrypto.Money do
                             } ->
               UserResolvable.is?(sender, payer)
             end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status,
+            approving_claims |> Enum.all?(&(&1.claim.status == "pending"))},
          sender_id <- (approving_claims |> hd()).payer.id,
          {:transfer, {:ok, _}} <-
            {:transfer,
@@ -519,6 +522,7 @@ defmodule VirtualCrypto.Money do
       {:ok, cs}
     else
       {:verify_claim_payer, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
       {:transfer, {:error, err}} -> {:error, err}
     end
   end
@@ -536,6 +540,8 @@ defmodule VirtualCrypto.Money do
                             } ->
               UserResolvable.is?(operator, payer)
             end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status, denying_claims |> Enum.all?(&(&1.claim.status == "pending"))},
          {:ok, cs} <-
            VirtualCrypto.Money.Query.Claim.update_claims_status(
              denying_claims |> Enum.map(& &1.claim.id),
@@ -545,6 +551,7 @@ defmodule VirtualCrypto.Money do
       {:ok, cs}
     else
       {:verify_claim_payer, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
     end
   end
 
@@ -561,6 +568,9 @@ defmodule VirtualCrypto.Money do
                             } ->
               UserResolvable.is?(operator, claimant)
             end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status,
+            canceling_claims |> Enum.all?(&(&1.claim.status == "pending"))},
          {:ok, cs} <-
            VirtualCrypto.Money.Query.Claim.update_claims_status(
              canceling_claims |> Enum.map(& &1.claim.id),
@@ -570,6 +580,7 @@ defmodule VirtualCrypto.Money do
       {:ok, cs}
     else
       {:verify_claim_claimant, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
     end
   end
 
@@ -605,12 +616,14 @@ defmodule VirtualCrypto.Money do
               partial_claims_grouped
               |> Map.keys()
               |> Enum.all?(&(&1 in ["approved", "denied", "canceled"]))},
-           claims <-
+           claim_list <-
              partial_claims
              |> Enum.map(& &1.id)
-             |> VirtualCrypto.Money.Query.Claim.get_claim_by_ids()
+             |> VirtualCrypto.Money.Query.Claim.get_claim_by_ids(),
+           {:is_exists, true} <- {:is_exists, claim_list |> Enum.all?(&(&1 != nil))},
+           claims <-
+             claim_list
              |> Map.new(&{&1.claim.id, &1}),
-           {:is_exists, true} <- {:is_exists, claims |> Map.values() |> Enum.all?(&(&1 != nil))},
            {:validate_operator, true} <-
              {:validate_operator,
               claims
@@ -619,9 +632,6 @@ defmodule VirtualCrypto.Money do
                 &(UserResolvable.is?(operator, &1.payer) or
                     UserResolvable.is?(operator, &1.claimant))
               )},
-           {:verify_current_status, true} <-
-             {:verify_current_status,
-              claims |> Map.values() |> Enum.all?(&(&1.claim.status == "pending"))},
            {:approve_claims, {:ok, approved}} <-
              {:approve_claims,
               approve_claims(
@@ -659,9 +669,6 @@ defmodule VirtualCrypto.Money do
 
         {:validate_operator, _} ->
           Repo.rollback(:invalid_operator)
-
-        {:verify_current_status, _} ->
-          Repo.rollback(:invalid_current_status)
 
         {:approve_claims, {:error, err}} ->
           Repo.rollback(err)

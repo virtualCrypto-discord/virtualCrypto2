@@ -2,12 +2,9 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.CustomId.UI.Button
-  alias VirtualCryptoWeb.Interaction.CustomId.UI.SelectMenu
   alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
-  import InteractionsControllerTest.Helper.Common
-  import InteractionsControllerTest.Claim.Helper
   import VirtualCryptoWeb.Api.InteractionsView.Util
   import Enum, only: [at: 2]
 
@@ -16,7 +13,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
   setup :fake_api
 
   defmodule FakeApi do
-    def post_webhook_message(_application_id, _interaction_token, body) do
+    def post_webhook_message("1234578901234567", "discord_interaction_token", body) do
       send(self(), {:webhook, body})
       {200, nil}
     end
@@ -44,6 +41,48 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
       application_id: "1234578901234567",
       guild_id: to_string(494_780_225_280_802_817)
     }
+  end
+
+  defp test_common(conn, claims, user_id) do
+    encoded_claims_ids = Helper.encode_claim_ids(claims)
+
+    options = %ListOptions{
+      approved: false,
+      canceled: false,
+      denied: false,
+      pending: true,
+      page: 1,
+      position: :all,
+      related_user: 0
+    }
+
+    custom_id =
+      CustomId.encode(
+        Button.claim_action(:approve) <>
+          ListOptions.encode(options) <> encoded_claims_ids
+      )
+
+    conn =
+      execute_interaction(
+        conn,
+        action_data(
+          %{
+            custom_id: custom_id
+          },
+          user_id
+        )
+      )
+
+    assert %{} = json_response(conn, 200)
+    assert_received {:webhook, body}
+    body
+  end
+
+  defp test_invalid_operator(conn, claims, user_id) do
+    assert %{
+             content: "エラー: この請求に対してこの操作を行う権限がありません。",
+             flags: 64
+           } == test_common(conn, claims, user_id)
   end
 
   test "approve pending claim by payer", %{
@@ -219,24 +258,24 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
 
     assert after_payer == nil || before_payer.asset.amount - 500 == after_payer.asset.amount
   end
+
   # TODO: working!
   test "approve pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> at(0) |> Map.fetch!(:claim), user1)
+    test_invalid_operator(conn, [claims |> at(0)], user1)
   end
 
   test "approve pending claim by not related user", %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> at(0) |> Map.fetch!(:claim), -1)
+    test_invalid_operator(conn, [claims |> at(0)], -1)
   end
 
   test "approve claim by payer but not_enough_amount",
        %{conn: conn, claims: claims, user1: user1} do
-    conn =
-      execute_interaction(
-        conn,
-        patch_from_guild("approve", (claims |> at(1) |> Map.fetch!(:claim)).id, user1)
-      )
+    claim = claims |> at(1)
 
-    assert_discord_message(conn, "エラー: お金が足りません。")
+    assert %{
+             content: "エラー: お金が足りません。",
+             flags: 64
+           } == test_common(conn, [claim], user1)
   end
 
   test "approve pending claim by claimant not_enough_amount", %{
@@ -244,79 +283,95 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
     claims: claims,
     user2: user2
   } do
-    test_invalid_operator(conn, "approve", claims |> at(1) |> Map.fetch!(:claim), user2)
+    claim = claims |> at(1)
+    test_invalid_operator(conn, [claim], user2)
   end
 
   test "approve pending claim by not related user not_enough_amount", %{
     conn: conn,
     claims: claims
   } do
-    test_invalid_operator(conn, "approve", claims |> at(1) |> Map.fetch!(:claim), -1)
+    claim = claims |> at(1)
+    test_invalid_operator(conn, [claim], -1)
   end
 
   test "approve approved claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> approved_claim() |> Map.fetch!(:claim), user2)
+    claim = claims |> approved_claim()
+
+    assert %{
+             content: "エラー: 処理しようとした請求はすでに処理済みです。",
+             flags: 64
+           } == test_common(conn, [claim], user2)
   end
 
   test "approve approved claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(
-      conn,
-      "approve",
-      claims |> approved_claim() |> Map.fetch!(:claim),
-      user1
-    )
+    claim = claims |> approved_claim()
+
+    test_invalid_operator(conn, [claim], user1)
   end
 
   test "approve approved claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> approved_claim() |> Map.fetch!(:claim), -1)
+    claim = claims |> approved_claim()
+
+    test_invalid_operator(conn, [claim], -1)
   end
 
   test "approve denied claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), user2)
+    claim = claims |> denied_claim()
+
+    assert %{
+             content: "エラー: 処理しようとした請求はすでに処理済みです。",
+             flags: 64
+           } == test_common(conn, [claim], user2)
   end
 
   test "approve denied claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), user1)
+    claim = claims |> denied_claim()
+
+    test_invalid_operator(conn, [claim], user1)
   end
 
   test "approve denied claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> denied_claim() |> Map.fetch!(:claim), -1)
+    claim = claims |> denied_claim()
+
+    test_invalid_operator(conn, [claim], -1)
   end
 
   test "approve canceled claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
-    test_invalid_status(conn, "approve", claims |> canceled_claim() |> Map.fetch!(:claim), user2)
+    claim = claims |> canceled_claim()
+
+    assert %{
+             content: "エラー: 処理しようとした請求はすでに処理済みです。",
+             flags: 64
+           } == test_common(conn, [claim], user2)
   end
 
   test "approve canceled claim by claimant",
        %{conn: conn, claims: claims, user1: user1} do
-    test_invalid_operator(
-      conn,
-      "approve",
-      claims |> canceled_claim() |> Map.fetch!(:claim),
-      user1
-    )
+    claim = claims |> canceled_claim()
+
+    test_invalid_operator(conn, [claim], user1)
   end
 
   test "approve canceled claim by not related user",
        %{conn: conn, claims: claims} do
-    test_invalid_operator(conn, "approve", claims |> canceled_claim() |> Map.fetch!(:claim), -1)
+    claim = claims |> canceled_claim()
+
+    test_invalid_operator(conn, [claim], -1)
   end
 
   test "approve invalid id claim",
        %{conn: conn, user1: user1} do
-    conn =
-      execute_interaction(
-        conn,
-        patch_from_guild("approve", -1, user1)
-      )
-
-    assert_discord_message(conn, "エラー: そのidの請求は見つかりませんでした。")
+    assert %{
+             content: "エラー: そのidの請求は見つかりませんでした。",
+             flags: 64
+           } == test_common(conn, [%{claim: %{id: 0}}], user1)
   end
 end

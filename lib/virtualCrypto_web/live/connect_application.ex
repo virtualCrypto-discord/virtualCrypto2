@@ -103,9 +103,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
               {200, %{"name" => name}} ->
                 failed(
                   socket,
-                  "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。サーバー、#{name}にBot、#{username}##{
-                    discriminator
-                  }が導入されていることを確認してください。",
+                  "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。サーバー、#{name}にBot、#{username}##{discriminator}が導入されていることを確認してください。",
                   edit: true
                 )
             end

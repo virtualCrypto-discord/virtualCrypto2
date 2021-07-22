@@ -77,9 +77,7 @@ defmodule VirtualCrypto.Money.Query.Asset do
 
     Ecto.Adapters.SQL.query!(
       Repo,
-      "UPDATE assets SET amount = assets.amount + tmp.amount, updated_at = $1 FROM (VALUES ($2::bigint,$3::integer),#{
-        q
-      }) as tmp (id, amount) WHERE assets.id=tmp.id;",
+      "UPDATE assets SET amount = assets.amount + tmp.amount, updated_at = $1 FROM (VALUES ($2::bigint,$3::integer),#{q}) as tmp (id, amount) WHERE assets.id=tmp.id;",
       [time | list |> Enum.flat_map(fn {a, b} -> [a, b] end)]
     )
 

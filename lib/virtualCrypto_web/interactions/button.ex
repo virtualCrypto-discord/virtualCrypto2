@@ -50,7 +50,22 @@ defmodule VirtualCryptoWeb.Interaction.Button do
 
         {:error, :invalid_current_status} ->
           %{
-            content: "処理しようとした請求はすでに処理済みです。"
+            content: "エラー: 処理しようとした請求はすでに処理済みです。"
+          }
+
+        {:error, err} when err in [:permission_denied, :invalid_operator] ->
+          %{
+            content: "エラー: この請求に対してこの操作を行う権限がありません。"
+          }
+
+        {:error, :not_enough_amount} ->
+          %{
+            content: "エラー: お金が足りません。"
+          }
+
+        {:error, :not_found} ->
+          %{
+            content: "エラー: そのidの請求は見つかりませんでした。"
           }
       end
 

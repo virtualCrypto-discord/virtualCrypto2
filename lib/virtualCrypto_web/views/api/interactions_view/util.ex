@@ -22,9 +22,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
       |> DateTime.from_naive!("Etc/UTC")
       |> DateTime.shift_zone!("Asia/Tokyo", Tzdata.TimeZoneDatabase)
 
-    ~s/#{d.year}\/#{d.month |> padding}\/#{d.day |> padding} #{d.hour |> padding}:#{
-      d.minute |> padding
-    }(#{d.zone_abbr})/
+    ~s/#{d.year}\/#{d.month |> padding}\/#{d.day |> padding} #{d.hour |> padding}:#{d.minute |> padding}(#{d.zone_abbr})/
   end
 
   def action_row(), do: 1
