@@ -1,5 +1,6 @@
 defmodule InteractionsControllerTest.Claim.List.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
+  use InteractionsControllerTest.Claim.List.Helper, action: :approve
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.CustomId.UI.Button
   alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
@@ -11,79 +12,6 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
   setup :setup_claim
 
   setup :fake_api
-
-  defmodule FakeApi do
-    def post_webhook_message("1234578901234567", "discord_interaction_token", body) do
-      send(self(), {:webhook, body})
-      {200, nil}
-    end
-  end
-
-  defp fake_api(%{conn: conn} = ctx) do
-    conn = VirtualCryptoWeb.Plug.DiscordApiService.set_service(conn, FakeApi)
-    %{ctx | conn: conn}
-  end
-
-  def action_data(
-        data,
-        user
-      ) do
-    %{
-      type: 3,
-      data: data |> Map.put(:component_type, 2),
-      member: %{
-        user: %{
-          id: to_string(user)
-        },
-        permissions: to_string(0xFFFFFFFFFFFFFFFF)
-      },
-      token: "discord_interaction_token",
-      application_id: "1234578901234567",
-      guild_id: to_string(494_780_225_280_802_817)
-    }
-  end
-
-  defp test_common(conn, claims, user_id) do
-    encoded_claims_ids = Helper.encode_claim_ids(claims)
-
-    options = %ListOptions{
-      approved: false,
-      canceled: false,
-      denied: false,
-      pending: true,
-      page: 1,
-      position: :all,
-      related_user: 0
-    }
-
-    custom_id =
-      CustomId.encode(
-        Button.claim_action(:approve) <>
-          ListOptions.encode(options) <> encoded_claims_ids
-      )
-
-    conn =
-      execute_interaction(
-        conn,
-        action_data(
-          %{
-            custom_id: custom_id
-          },
-          user_id
-        )
-      )
-
-    assert %{} = json_response(conn, 200)
-    assert_received {:webhook, body}
-    body
-  end
-
-  defp test_invalid_operator(conn, claims, user_id) do
-    assert %{
-             content: "エラー: この請求に対してこの操作を行う権限がありません。",
-             flags: 64
-           } == test_common(conn, claims, user_id)
-  end
 
   test "approve pending claim by payer", %{
     conn: conn,
@@ -259,7 +187,6 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
     assert after_payer == nil || before_payer.asset.amount - 500 == after_payer.asset.amount
   end
 
-  # TODO: working!
   test "approve pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
     test_invalid_operator(conn, [claims |> at(0)], user1)
   end
@@ -298,11 +225,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
   test "approve approved claim by payer",
        %{conn: conn, claims: claims, user2: user2} do
     claim = claims |> approved_claim()
-
-    assert %{
-             content: "エラー: 処理しようとした請求はすでに処理済みです。",
-             flags: 64
-           } == test_common(conn, [claim], user2)
+    test_invalid_status(conn, [claim], user2)
   end
 
   test "approve approved claim by claimant",
@@ -323,10 +246,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
        %{conn: conn, claims: claims, user2: user2} do
     claim = claims |> denied_claim()
 
-    assert %{
-             content: "エラー: 処理しようとした請求はすでに処理済みです。",
-             flags: 64
-           } == test_common(conn, [claim], user2)
+    test_invalid_status(conn, [claim], user2)
   end
 
   test "approve denied claim by claimant",
@@ -347,10 +267,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
        %{conn: conn, claims: claims, user2: user2} do
     claim = claims |> canceled_claim()
 
-    assert %{
-             content: "エラー: 処理しようとした請求はすでに処理済みです。",
-             flags: 64
-           } == test_common(conn, [claim], user2)
+    test_invalid_status(conn, [claim], user2)
   end
 
   test "approve canceled claim by claimant",
