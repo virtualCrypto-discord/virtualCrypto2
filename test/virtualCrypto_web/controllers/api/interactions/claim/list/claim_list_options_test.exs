@@ -10,7 +10,7 @@ defmodule InteractionsControllerTest.Claim.List.Options do
         denied <- boolean,
         canceled <- boolean,
         position <- [:all, :received, :claimed],
-        page <- [:last,1,2,3],
+        page <- [:last, 1, 2, 3],
         related_user <- [nil, 123_456_789_012_345_678] do
       options = %ListOptions{
         # 1bit
