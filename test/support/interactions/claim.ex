@@ -1,6 +1,42 @@
 defmodule InteractionsControllerTest.Claim.Helper do
   import InteractionsControllerTest.Helper.Common
 
+  defmacro __using__(_opts) do
+    quote do
+      import InteractionsControllerTest.Claim.Helper
+
+      def assert_discord_message(conn, message) do
+        assert %{
+                 "data" => %{
+                   "content" => ^message,
+                   "flags" => 64
+                 },
+                 "type" => 4
+               } = json_response(conn, 200)
+      end
+
+      def test_invalid_operator(conn, action, claim, user) do
+        conn =
+          execute_interaction(
+            conn,
+            InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
+          )
+
+        assert_discord_message(conn, "エラー: この請求に対してこの操作を行う権限がありません。")
+      end
+
+      def test_invalid_status(conn, action, claim, user) do
+        conn =
+          execute_interaction(
+            conn,
+            InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
+          )
+
+        assert_discord_message(conn, "エラー: この請求に対してこの操作を行うことは出来ません。")
+      end
+    end
+  end
+
   defp claim_data(action, id) do
     %{
       name: "claim",

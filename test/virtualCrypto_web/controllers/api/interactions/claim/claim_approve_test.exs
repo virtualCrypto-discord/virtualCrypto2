@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Helper
+  use InteractionsControllerTest.Claim.Helper
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_claim
 

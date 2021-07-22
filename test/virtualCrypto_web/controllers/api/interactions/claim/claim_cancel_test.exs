@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Cancel do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Helper
+  use InteractionsControllerTest.Claim.Helper
   setup :setup_claim
 
   test "cancel pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
