@@ -11,18 +11,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
     ~s/<@#{id}>/
   end
 
-  defp padding(d) do
-    d |> Integer.to_string() |> String.pad_leading(2, "0")
-  end
-
   @spec format_date_time(NaiveDateTime.t()) :: String.t()
   def format_date_time(naive_date_time) do
-    d =
-      naive_date_time
-      |> DateTime.from_naive!("Etc/UTC")
-      |> DateTime.shift_zone!("Asia/Tokyo", Tzdata.TimeZoneDatabase)
-
-    ~s/#{d.year}\/#{d.month |> padding}\/#{d.day |> padding} #{d.hour |> padding}:#{d.minute |> padding}(#{d.zone_abbr})/
+    timestamp = naive_date_time |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
+    # https://discord.com/developers/docs/reference#message-formatting-formats
+    "<t:#{timestamp}>"
   end
 
   def action_row(), do: 1
