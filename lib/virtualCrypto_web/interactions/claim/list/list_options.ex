@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.Interaction.Claim.List.Options do
   use Bitwise
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
-  @typep position_t :: :all | :received | :sent
+  @typep position_t :: :all | :received | :claimed
   @type t :: %Options{
           # 1bit
           pending: boolean(),
