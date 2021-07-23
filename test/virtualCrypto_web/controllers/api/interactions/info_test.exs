@@ -19,7 +19,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info in guild", %{conn: conn, guild: guild, unit: unit, name: name} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(ctx.user1, guild)
       )
@@ -47,7 +47,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info in guild not hold", %{conn: conn, guild: guild, unit: unit, name: name} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(-1, guild)
       )
@@ -75,7 +75,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info in guild error", %{conn: conn} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(ctx.user1, -1)
       )
@@ -94,7 +94,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info by unit", %{conn: conn, unit: unit, name: name} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild_unit(unit, ctx.user1, -1)
       )
@@ -122,7 +122,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info by unit error", %{conn: conn} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild_unit("gao", ctx.user1, -1)
       )
@@ -141,7 +141,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info by name", %{conn: conn, unit: unit, name: name} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild_name(name, ctx.user1, -1)
       )
@@ -169,7 +169,7 @@ defmodule InteractionsControllerTest.Info do
 
   test "info by name error", %{conn: conn} = ctx do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild_name("fuwafuwa", ctx.user1, -1)
       )

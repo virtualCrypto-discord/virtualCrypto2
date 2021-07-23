@@ -5,7 +5,7 @@ defmodule InteractionsControllerTest.Invite do
 
   test "invite", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         execute_from_guild(
           %{

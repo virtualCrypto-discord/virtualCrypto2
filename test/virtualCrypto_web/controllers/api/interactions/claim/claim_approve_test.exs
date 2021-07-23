@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Approve do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Helper
+  use InteractionsControllerTest.Claim.Helper
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_claim
 
@@ -28,7 +28,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
       )
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("approve", claim_id, user2)
       )
@@ -71,7 +71,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
   test "approve claim by payer but not_enough_amount",
        %{conn: conn, claims: claims, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("approve", (claims |> at(1) |> Map.fetch!(:claim)).id, user1)
       )
@@ -152,7 +152,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
   test "approve invalid id claim",
        %{conn: conn, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("approve", -1, user1)
       )

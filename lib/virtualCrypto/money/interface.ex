@@ -13,6 +13,10 @@ defmodule VirtualCrypto.Money do
           claimant: %VirtualCrypto.User.User{},
           payer: %VirtualCrypto.User.User{}
         }
+  @type partial_claim_t :: %{
+          id: non_neg_integer(),
+          status: VirtualCrypto.Money.Claim.status_t()
+        }
   @type page :: pos_integer() | :last
   # FIXME: rename to create_payment and take map
   @moduledoc """
@@ -49,6 +53,32 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  defp create_payments_(sender, partial_payments) do
+    {receivers, partial_payments} =
+      partial_payments |> Enum.map(fn m -> Map.pop!(m, :receiver) end) |> Enum.unzip()
+
+    [sender_id | receiver_ids] = UserResolver.resolve_ids([sender | receivers])
+
+    partial_payments =
+      receiver_ids
+      |> Enum.zip(partial_payments)
+      |> Enum.map(fn {receiver_id, partial_payment} ->
+        Map.put_new(partial_payment, :receiver_id, receiver_id)
+      end)
+
+    VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
+      sender_id,
+      partial_payments
+      |> Enum.map(fn %{
+                       receiver_id: receiver_id,
+                       unit: unit,
+                       amount: amount
+                     } ->
+        {unit, receiver_id, amount}
+      end)
+    )
+  end
+
   @spec create_payments(UserResolvable.t(), [
           %{
             receiver: UserResolvable.t(),
@@ -59,30 +89,7 @@ defmodule VirtualCrypto.Money do
           {:ok, nil} | {:error, :invalid_amount} | {:error, :not_enough_amount} | {:error, atom()}
   def create_payments(sender, partial_payments, _kw \\ []) do
     Repo.transaction(fn ->
-      {receivers, partial_payments} =
-        partial_payments |> Enum.map(fn m -> Map.pop!(m, :receiver) end) |> Enum.unzip()
-
-      [sender_id | receiver_ids] = UserResolver.resolve_ids([sender | receivers])
-
-      partial_payments =
-        receiver_ids
-        |> Enum.zip(partial_payments)
-        |> Enum.map(fn {receiver_id, partial_payment} ->
-          Map.put_new(partial_payment, :receiver_id, receiver_id)
-        end)
-
-      r =
-        VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
-          sender_id,
-          partial_payments
-          |> Enum.map(fn %{
-                           receiver_id: receiver_id,
-                           unit: unit,
-                           amount: amount
-                         } ->
-            {unit, receiver_id, amount}
-          end)
-        )
+      r = create_payments_(sender, partial_payments)
 
       case r do
         {:ok, _} -> nil
@@ -207,29 +214,34 @@ defmodule VirtualCrypto.Money do
             }
           | nil
   def balance(kw) do
-    case Keyword.fetch(kw, :currency) do
-      {:ok, currency} ->
-        case Query.Balance.get_balances(Keyword.fetch!(kw, :user))
-             |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
-          {asset, currency} ->
-            %{
-              asset: asset,
-              currency: currency
-            }
+    {:ok, x} =
+      Repo.transaction(fn ->
+        case Keyword.fetch(kw, :currency) do
+          {:ok, currency} ->
+            case Query.Balance.get_balances(Keyword.fetch!(kw, :user))
+                 |> Enum.find(fn {_asset, currency_} -> currency_.id == currency end) do
+              {asset, currency} ->
+                %{
+                  asset: asset,
+                  currency: currency
+                }
 
-          nil ->
-            nil
+              nil ->
+                nil
+            end
+
+          :error ->
+            Query.Balance.get_balances(Keyword.fetch!(kw, :user))
+            |> Enum.map(fn {asset, currency} ->
+              %{
+                asset: asset,
+                currency: currency
+              }
+            end)
         end
+      end)
 
-      :error ->
-        Query.Balance.get_balances(Keyword.fetch!(kw, :user))
-        |> Enum.map(fn {asset, currency} ->
-          %{
-            asset: asset,
-            currency: currency
-          }
-        end)
-    end
+    x
   end
 
   @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer(), id: non_neg_integer()) ::
@@ -460,6 +472,216 @@ defmodule VirtualCrypto.Money do
     end
   end
 
+  @spec approve_claims(UserResolvable.t(), list(claim_t()), NaiveDateTime.t()) ::
+          {:ok, list()} | {:error, :permission_denied | :invalid_amount | :not_enough_amount}
+  defp approve_claims(_sender, [], _) do
+    {:ok, []}
+  end
+
+  defp approve_claims(sender, approving_claims, time) do
+    with {:verify_claim_payer, true} <-
+           {:verify_claim_payer,
+            approving_claims
+            |> Enum.all?(fn %{
+                              payer: payer
+                            } ->
+              UserResolvable.is?(sender, payer)
+            end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status,
+            approving_claims |> Enum.all?(&(&1.claim.status == "pending"))},
+         sender_id <- (approving_claims |> hd()).payer.id,
+         {:transfer, {:ok, _}} <-
+           {:transfer,
+            VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk(
+              sender_id,
+              approving_claims
+              |> Enum.map(fn %{
+                               claim: %{
+                                 amount: amount
+                               },
+                               payer: %{
+                                 id: ^sender_id
+                               },
+                               claimant: %{
+                                 id: receiver_id
+                               },
+                               currency: %{
+                                 unit: unit
+                               }
+                             } ->
+                {unit, receiver_id, amount}
+              end)
+            )},
+         {:ok, cs} <-
+           VirtualCrypto.Money.Query.Claim.update_claims_status(
+             approving_claims |> Enum.map(& &1.claim.id),
+             "approved",
+             time
+           ) do
+      {:ok, cs}
+    else
+      {:verify_claim_payer, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
+      {:transfer, {:error, err}} -> {:error, err}
+    end
+  end
+
+  defp deny_claims(_operator, [], _time) do
+    {:ok, []}
+  end
+
+  defp deny_claims(operator, denying_claims, time) do
+    with {:verify_claim_payer, true} <-
+           {:verify_claim_payer,
+            denying_claims
+            |> Enum.all?(fn %{
+                              payer: payer
+                            } ->
+              UserResolvable.is?(operator, payer)
+            end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status, denying_claims |> Enum.all?(&(&1.claim.status == "pending"))},
+         {:ok, cs} <-
+           VirtualCrypto.Money.Query.Claim.update_claims_status(
+             denying_claims |> Enum.map(& &1.claim.id),
+             "denied",
+             time
+           ) do
+      {:ok, cs}
+    else
+      {:verify_claim_payer, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
+    end
+  end
+
+  defp cancel_claims(_operator, [], _time) do
+    {:ok, []}
+  end
+
+  defp cancel_claims(operator, canceling_claims, time) do
+    with {:verify_claim_claimant, true} <-
+           {:verify_claim_claimant,
+            canceling_claims
+            |> Enum.all?(fn %{
+                              claimant: claimant
+                            } ->
+              UserResolvable.is?(operator, claimant)
+            end)},
+         {:verify_current_status, true} <-
+           {:verify_current_status,
+            canceling_claims |> Enum.all?(&(&1.claim.status == "pending"))},
+         {:ok, cs} <-
+           VirtualCrypto.Money.Query.Claim.update_claims_status(
+             canceling_claims |> Enum.map(& &1.claim.id),
+             "canceled",
+             time
+           ) do
+      {:ok, cs}
+    else
+      {:verify_claim_claimant, _} -> {:error, :permission_denied}
+      {:verify_current_status, _} -> {:error, :invalid_current_status}
+    end
+  end
+
+  @typep update_claims_errors_t ::
+           :not_found
+           | :duplicated_claims
+           | :permission_denied
+           | :invalid_status
+           | :invalid_amount
+           | :not_enough_amount
+           | :invalid_operator
+           | :invalid_current_status
+  @spec update_claims(list(partial_claim_t()), UserResolvable.t()) ::
+          {:ok, list(claim_t)} | {:error, update_claims_errors_t()}
+  def update_claims(partial_claims, operator) do
+    Repo.transaction(fn ->
+      time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+      with {:prevent_duplicated_claims, x} when x != nil <-
+             {:prevent_duplicated_claims,
+              partial_claims
+              |> Enum.map(& &1.id)
+              |> Enum.reduce_while(MapSet.new(), fn elem, acc ->
+                if MapSet.member?(acc, elem) do
+                  {:halt, nil}
+                else
+                  {:cont, MapSet.put(acc, elem)}
+                end
+              end)},
+           partial_claims_grouped <- partial_claims |> Enum.group_by(& &1.status),
+           {:validate_status, true} <-
+             {:validate_status,
+              partial_claims_grouped
+              |> Map.keys()
+              |> Enum.all?(&(&1 in ["approved", "denied", "canceled"]))},
+           claim_list <-
+             partial_claims
+             |> Enum.map(& &1.id)
+             |> VirtualCrypto.Money.Query.Claim.get_claim_by_ids(),
+           {:is_exists, true} <- {:is_exists, claim_list |> Enum.all?(&(&1 != nil))},
+           claims <-
+             claim_list
+             |> Map.new(&{&1.claim.id, &1}),
+           {:validate_operator, true} <-
+             {:validate_operator,
+              claims
+              |> Map.values()
+              |> Enum.all?(
+                &(UserResolvable.is?(operator, &1.payer) or
+                    UserResolvable.is?(operator, &1.claimant))
+              )},
+           {:approve_claims, {:ok, approved}} <-
+             {:approve_claims,
+              approve_claims(
+                operator,
+                Map.get(partial_claims_grouped, "approved", [])
+                |> Enum.map(fn e -> claims[e.id] end),
+                time
+              )},
+           {:deny_claims, {:ok, denied}} <-
+             {:deny_claims,
+              deny_claims(
+                operator,
+                Map.get(partial_claims_grouped, "denied", [])
+                |> Enum.map(fn e -> claims[e.id] end),
+                time
+              )},
+           {:cancel_claims, {:ok, canceled}} <-
+             {:cancel_claims,
+              cancel_claims(
+                operator,
+                Map.get(partial_claims_grouped, "canceled", [])
+                |> Enum.map(fn e -> claims[e.id] end),
+                time
+              )} do
+        approved ++ denied ++ canceled
+      else
+        {:prevent_duplicated_claims, _} ->
+          Repo.rollback(:duplicated_claims)
+
+        {:validate_status, _} ->
+          Repo.rollback(:invalid_status)
+
+        {:is_exists, _} ->
+          Repo.rollback(:not_found)
+
+        {:validate_operator, _} ->
+          Repo.rollback(:invalid_operator)
+
+        {:approve_claims, {:error, err}} ->
+          Repo.rollback(err)
+
+        {:deny_claims, {:error, err}} ->
+          Repo.rollback(err)
+
+        {:cancel_claims, {:error, err}} ->
+          Repo.rollback(err)
+      end
+    end)
+  end
+
   @doc """
   payer must be discord user
   """
@@ -481,6 +703,16 @@ defmodule VirtualCrypto.Money do
     {:ok, x} =
       Repo.transaction(fn ->
         VirtualCrypto.Money.Query.Claim.get_claim_by_id(id)
+      end)
+
+    x
+  end
+
+  @spec get_claim_by_ids(list(non_neg_integer())) :: list(claim_t | nil)
+  def get_claim_by_ids(ids) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        VirtualCrypto.Money.Query.Claim.get_claim_by_ids(ids)
       end)
 
     x

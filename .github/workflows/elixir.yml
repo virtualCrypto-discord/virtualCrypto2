@@ -2,22 +2,21 @@ name: Elixir CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
   pull_request:
-    branches: [ develop ]
+    branches: [develop]
 
 jobs:
   build:
-
     name: Build and test and Format
     runs-on: ubuntu-latest
     env:
       MIX_ENV: test
-    
+
     services:
       db:
         image: postgres:11
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         env:
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -27,29 +26,28 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Elixir
-      uses: erlef/setup-beam@v1
-      with:
-        elixir-version: '1.11.x' # Define the elixir version [required]
-        otp-version: '23.x' # Define the OTP version [required]
-        experimental-otp: true
-    - name: Restore dependencies cache
-      uses: actions/cache@v2
-      with:
-        path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: ${{ runner.os }}-mix-
+      - uses: actions/checkout@v2
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.12.x" # Define the elixir version [required]
+          otp-version: "23.x" # Define the OTP version [required]
+          experimental-otp: true
+      - name: Restore dependencies cache
+        uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
 
-    - name: Install dependencies
-      run: |
-        mix local.rebar --force
-        mix local.hex --force
-        mix deps.get
+      - name: Install dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
 
-    - name: Run tests
-      run: mix test
+      - name: Run tests
+        run: mix test
 
-    - name: Check Format
-      run: mix format --check-formatted
-  
+      - name: Check Format
+        run: mix format --check-formatted

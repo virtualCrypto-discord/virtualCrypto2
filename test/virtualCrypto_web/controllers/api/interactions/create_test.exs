@@ -28,7 +28,7 @@ defmodule InteractionsControllerTest.Create do
     name = "funyu#{encode()}"
 
     conn =
-      post_command(
+      execute_interaction(
         ctx.conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
       )
@@ -71,7 +71,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -103,7 +103,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -135,7 +135,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -167,7 +167,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818, 0)
       )
@@ -199,7 +199,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, ctx.currency_guild)
       )
@@ -231,7 +231,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
       )
@@ -263,7 +263,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
       )

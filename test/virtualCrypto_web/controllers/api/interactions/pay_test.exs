@@ -11,7 +11,7 @@ defmodule InteractionsControllerTest.Pay do
     amount = get_amount(sender, ctx.currency)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: "void"}, sender)
       )
@@ -31,7 +31,7 @@ defmodule InteractionsControllerTest.Pay do
     sender = ctx.user1
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: -1, unit: ctx.unit}, sender)
       )
@@ -59,7 +59,7 @@ defmodule InteractionsControllerTest.Pay do
     b2 = get_amount(receiver, ctx.currency)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: unit}, sender)
       )
@@ -98,7 +98,7 @@ defmodule InteractionsControllerTest.Pay do
     b2 = 0
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: unit}, sender)
       )
@@ -131,7 +131,7 @@ defmodule InteractionsControllerTest.Pay do
     sender = ctx.user1
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: ctx.unit}, sender)
       )
@@ -161,7 +161,7 @@ defmodule InteractionsControllerTest.Pay do
     amount_str = to_string(b1)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: unit}, sender)
       )
@@ -193,7 +193,7 @@ defmodule InteractionsControllerTest.Pay do
     amount = get_amount(sender, ctx.currency) + 1
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: amount, unit: ctx.unit}, sender)
       )
@@ -213,7 +213,7 @@ defmodule InteractionsControllerTest.Pay do
     sender = ctx.user1
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(%{receiver: receiver, amount: "9007199254740992", unit: ctx.unit}, sender)
       )

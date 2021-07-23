@@ -22,13 +22,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Util do
       |> DateTime.from_naive!("Etc/UTC")
       |> DateTime.shift_zone!("Asia/Tokyo", Tzdata.TimeZoneDatabase)
 
-    ~s/#{d.year}\/#{d.month |> padding}\/#{d.day |> padding} #{d.hour |> padding}:#{
-      d.minute |> padding
-    }(#{d.zone_abbr})/
+    ~s/#{d.year}\/#{d.month |> padding}\/#{d.day |> padding} #{d.hour |> padding}:#{d.minute |> padding}(#{d.zone_abbr})/
   end
 
   def action_row(), do: 1
   def button(), do: 2
+  def select_menu(), do: 3
   def button_style_primary(), do: 1
   def button_style_secondary(), do: 2
   def button_style_success(), do: 3

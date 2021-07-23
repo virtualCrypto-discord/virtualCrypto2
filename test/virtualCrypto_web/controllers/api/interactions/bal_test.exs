@@ -7,7 +7,7 @@ defmodule InteractionsControllerTest.Bal do
     sender = ctx.user1
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(sender)
       )
@@ -30,7 +30,7 @@ defmodule InteractionsControllerTest.Bal do
     sender = ctx.user2
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(sender)
       )
@@ -52,7 +52,7 @@ defmodule InteractionsControllerTest.Bal do
 
   test "bal nothing user", %{conn: conn} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         from_guild(-1)
       )

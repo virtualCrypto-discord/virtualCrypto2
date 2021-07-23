@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Cancel do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import Enum, only: [at: 2]
-  import InteractionsControllerTest.Claim.Helper
+  use InteractionsControllerTest.Claim.Helper
   setup :setup_claim
 
   test "cancel pending claim by claimant", %{conn: conn, claims: claims, user1: user1} do
@@ -9,7 +9,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
     claim_id_str = to_string(claim_id)
 
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("cancel", claim_id, user1)
       )
@@ -79,7 +79,7 @@ defmodule InteractionsControllerTest.Claim.Cancel do
   test "cancel invalid id claim",
        %{conn: conn, user1: user1} do
     conn =
-      post_command(
+      execute_interaction(
         conn,
         patch_from_guild("cancel", -1, user1)
       )
