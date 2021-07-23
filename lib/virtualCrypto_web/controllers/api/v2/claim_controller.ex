@@ -59,6 +59,22 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     {:ok, nil}
   end
 
+  defp parse_cursor(%{"before" => _before, "after" => _after}) do
+    :error
+  end
+
+  defp parse_cursor(%{"before" => value}) do
+    {:ok, %{cursor: {:before, value}}}
+  end
+
+  defp parse_cursor(%{"after" => value}) do
+    {:ok, %{cursor: {:after, value}}}
+  end
+
+  defp parse_cursor(%{}) do
+    {:ok, %{cursor: :first}}
+  end
+
   defp get_discord_user(discord_user_id, service) do
     user = Discord.Api.Cached.get_user(discord_user_id, service)
 
@@ -125,6 +141,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     related_user = parse_user_argument(params)
     type = type(params)
     limit = limit(params)
+    cursor = parse_cursor(params)
 
     with {:valid_statuses, true} <-
            {:valid_statuses,
@@ -133,7 +150,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
            {:verify_user, Guardian.Plug.current_resource(conn)},
          {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user},
          {:type, {:ok, type}} <- {:type, type},
-         {:limit, {:ok, limit}} <- {:limit, limit} do
+         {:limit, {:ok, limit}} <- {:limit, limit},
+         {:cursor, {:ok, cursor}} <- {:cursor, cursor} do
       claims =
         Money.get_claims(
           %VCUser{id: user_id},
@@ -141,7 +159,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
           type,
           related_user,
           :desc_claim_id,
-          %{cursor: :first},
+          cursor,
           limit
         )
 
@@ -151,7 +169,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       {:verify_user, _} -> conn |> permission_denied()
       {:related_user_id, _} -> conn |> invalid_request(:invalid_related_user)
       {:type, _} -> conn |> invalid_request(:invalid_type)
-      {:limit, _ } -> conn |> invalid_request(:invalid_limit)
+      {:limit, _} -> conn |> invalid_request(:invalid_limit)
+      {:cursor, _} -> conn |> invalid_request(:invalid_cursor)
     end
   end
 
