@@ -394,7 +394,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     quotations =
       grouped_claims
       |> Enum.map(fn {k, v} ->
-        %{currency: currency, asset: asset} = assets[k]
+        %{currency: currency} = v |> hd()
+
+        amount =
+          case Map.fetch(assets, k) do
+            {:ok, %{asset: asset}} -> asset.amount
+            :error -> 0
+          end
 
         quoted =
           v
@@ -404,7 +410,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
           |> Enum.map(fn %{claim: %{amount: amount}} -> amount end)
           |> Enum.sum()
 
-        %{currency: currency, current: asset.amount, quoted: quoted}
+        %{currency: currency, current: amount, quoted: quoted}
       end)
 
     %{
