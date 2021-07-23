@@ -38,17 +38,17 @@ defmodule VirtualCrypto.Auth.InternalAction.RefreshToken do
   end
 
   def replace_refresh_token(old_refresh_token, now \\ NaiveDateTime.utc_now()) do
-    new_token = make_secure_random_code()
+    new_token_id = Ecto.UUID.generate()
 
     q =
       from refresh_tokens in Auth.RefreshToken,
         select: [refresh_tokens.grant_id],
-        where: refresh_tokens.token == ^old_refresh_token and refresh_tokens.expires >= ^now,
-        update: [set: [token: ^new_token]]
+        where: refresh_tokens.token_id == ^old_refresh_token and refresh_tokens.expires >= ^now,
+        update: [set: [token_id: ^new_token_id]]
 
     case Repo.update_all(q, []) do
       {0, _} -> {:error, :invalid_token}
-      {1, [[grant_id]]} -> {:ok, %{grant_id: grant_id, token: new_token}}
+      {1, [[grant_id]]} -> {:ok, %{grant_id: grant_id, token_id: new_token_id}}
     end
   end
 end

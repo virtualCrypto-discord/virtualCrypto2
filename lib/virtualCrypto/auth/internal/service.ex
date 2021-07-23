@@ -60,9 +60,14 @@ defmodule VirtualCrypto.Auth.InternalAction do
 
       {:validate_application_grant_type, false} ->
         {:error, {:invalid_request, :unauthorized_client}}
+
+      {:validate_scopes, false} ->
+        {:error, :invalid_scope}
     end
   end
 
+  @spec token_unbound_authorization_code(String.t(), String.t(), String.t(), NaiveDateTime.t()) ::
+          {:ok, map()} | {:error, any()}
   def token_unbound_authorization_code(
         client_id,
         client_secret,
@@ -81,7 +86,8 @@ defmodule VirtualCrypto.Auth.InternalAction do
              client_secret
            ),
          {:validate_application_grant_type, true} <-
-           application.grant_types |> Enum.member?("unbound_authorization_code"),
+           {:validate_application_grant_type,
+            application.grant_types |> Enum.member?("unbound_authorization_code")},
          {:ok, grant} <-
            Action.Grant.get_or_create_grant_if_not_reused(
              application.id,
@@ -91,26 +97,30 @@ defmodule VirtualCrypto.Auth.InternalAction do
          _ <- Action.Grant.create_grant_scopes(grant.id, authorization_code.scopes),
          {:ok, access_token} <- Action.AccessToken.create_access_token(grant.id),
          {:ok, refresh_token} <- create_refresh_token_if_application_use(application, grant) do
-      if refresh_token == nil do
-        %{
-          access_token: access_token.token,
-          token_type: "Bearer",
-          expires_in: 3600,
-          scopes: authorization_code.scopes
-        }
-      else
-        %{
-          access_token: access_token.token,
-          token_type: "Bearer",
-          expires_in: 3600,
-          refresh_token: refresh_token.token,
-          scopes: authorization_code.scopes
-        }
-      end
+      v =
+        if refresh_token == nil do
+          %{
+            access_token: access_token.token,
+            token_type: "Bearer",
+            expires_in: 3600,
+            scopes: authorization_code.scopes
+          }
+        else
+          %{
+            access_token: access_token.token,
+            token_type: "Bearer",
+            expires_in: 3600,
+            refresh_token: refresh_token.token,
+            scopes: authorization_code.scopes
+          }
+        end
+
+      {:ok, v}
     else
-      {:get_and_delete_unbound_authorization_code, nil} -> {:error, :invalid_code}
-      {:code_expiration, false} -> {:error, :invalid_code}
-      {:validate_application_grant_type, false} -> {:error, :invalid_grant_type}
+      {:get_and_delete_unbound_authorization_code, _} -> {:error, :invalid_code}
+      {:code_expiration, _} -> {:error, :invalid_code}
+      {:validate_application_grant_type, _} -> {:error, :invalid_grant_type}
+      {:error, _} = err -> err
     end
   end
 
@@ -174,7 +184,7 @@ defmodule VirtualCrypto.Auth.InternalAction do
             }
           end
         else
-          {:code_expiration, false} ->
+          {:code_expiration, _} ->
             {:error, {:invalid_grant, :invalid_code}}
 
           {:get_application, nil} ->
@@ -188,6 +198,9 @@ defmodule VirtualCrypto.Auth.InternalAction do
 
           {:get_or_create_grant_if_not_reused, {:error, :invalid_code}} ->
             {:commit, {:error, {:invalid_grant, :used_code}}}
+
+          {:error, _} = err ->
+            err
         end
     end
   end
@@ -201,11 +214,12 @@ defmodule VirtualCrypto.Auth.InternalAction do
           access_token: access_token.token,
           token_type: "Bearer",
           expires_in: 3600,
-          refresh_token: new_refresh_token.token
+          refresh_token: new_refresh_token.token_id
         }
       }
     else
       {:error, :invalid_token} -> {:error, {:invalid_grant, :invalid_refresh_token}}
+      {:error, :retry_limit} = err -> err
     end
   end
 
@@ -226,13 +240,16 @@ defmodule VirtualCrypto.Auth.InternalAction do
         refresh_token =
           case Repo.get_by(Auth.RefreshToken, grant_id: grant.id) do
             nil ->
-              Action.RefreshToken.create_refresh_token(grant.id).token
+              case Action.RefreshToken.create_refresh_token(grant.id) do
+                {:ok, token} -> token.token_id
+                {:error, :retry_limit} -> raise "UNEXPECTED!"
+              end
 
             old_refresh_token ->
               {:ok, new_refresh_token} =
-                Action.RefreshToken.replace_refresh_token(old_refresh_token.token)
+                Action.RefreshToken.replace_refresh_token(old_refresh_token.token_id)
 
-              new_refresh_token.token
+              new_refresh_token.token_id
           end
 
         {

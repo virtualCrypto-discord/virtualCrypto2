@@ -31,11 +31,6 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
         conn
         |> put_status(403)
         |> render("error.register.json", error: :invalid_token, error_description: more)
-
-      {:error, {error, error_description}} ->
-        conn
-        |> put_status(400)
-        |> render("error.register.json", error: error, error_description: error_description)
     end
   end
 

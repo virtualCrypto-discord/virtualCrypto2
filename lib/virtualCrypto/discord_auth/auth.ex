@@ -74,7 +74,7 @@ defmodule VirtualCrypto.DiscordAuth do
           update_token(discord_user_id, client)
         else
           false -> user
-          _ -> :error
+          {:error, _} -> :error
         end
     end
   end

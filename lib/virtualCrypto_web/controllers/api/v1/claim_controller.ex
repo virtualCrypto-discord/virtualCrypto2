@@ -214,9 +214,6 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
         conn
         |> put_status(404)
         |> render("error.json", error: :not_found, error_description: :not_found)
-
-      _ ->
-        conn |> permission_denied()
     end
   end
 

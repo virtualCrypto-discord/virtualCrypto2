@@ -114,6 +114,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
     render(conn, "error.authorize.html", error: :invalid_request, desc: :invalid_response_type)
   end
 
+  @spec post(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def post(conn, %{"response_type" => "code", "action" => "approve"} = params) do
     props =
       with {:client_id, %{"client_id" => client_id}} <- {:client_id, params},
@@ -141,6 +142,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
         {:redirect_uri, _} -> {:error, :invalid_redirect_uri}
         {:scope, _} -> {:error, :invalid_scope}
         {:guild_id, _} -> {:error, :invalid_guild_id}
+        {:error, _} = err -> err
       end
 
     case props do
@@ -161,11 +163,8 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
             redirect_uri |> URI.parse() |> Map.put(:query, URI.encode_query(q)) |> URI.to_string()
         )
 
-      {:error, x} ->
-        case x do
-          err when err in [:invalid_client_id, :invalid_redirect_uri] ->
-            render(conn, "authorize.html", error: err)
-        end
+      {:error, err} ->
+        render(conn, "authorize.html", error: err)
     end
   end
 end
