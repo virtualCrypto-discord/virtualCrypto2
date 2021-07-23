@@ -8,7 +8,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     "請求一覧(received)"
   end
 
-  defp render_title(:sent) do
+  defp render_title(:claimed) do
     "請求一覧(sent)"
   end
 
@@ -63,7 +63,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     ["請求元: #{mention(claimant.discord_id)}"]
   end
 
-  defp render_user(:sent, _claimant, payer) do
+  defp render_user(:claimed, _claimant, payer) do
     ["請求先: #{mention(payer.discord_id)}"]
   end
 

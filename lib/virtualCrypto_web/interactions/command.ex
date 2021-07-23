@@ -190,7 +190,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       case subcommand do
         "list" -> :all
         "received" -> :received
-        "sent" -> :sent
+        "sent" -> :claimed
       end
 
     status_filter = resolve_status_filter(sub_options)
