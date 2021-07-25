@@ -5,18 +5,25 @@ localforage.setDriver(localforage.INDEXEDDB);
 
 function onFetchCallbackPage(ev) {
   async function asyncAction() {
-    const res = await fetch(ev.request.url);
-    const headers = res.headers;
-    const access_token = headers.get("x-access-token");
-    const expires_in = headers.get("x-expires-in");
+    const res = await fetch(ev.request.url, {
+      redirect: "manual"
+    });
+    if (res.status === 200) {
+      const headers = res.headers;
+      const access_token = headers.get("x-access-token");
+      const expires_in = headers.get("x-expires-in");
 
-    if (!access_token || !expires_in) {
+      if (!access_token || !expires_in) {
+        return res;
+      }
+      await localforage.setItem("credential", { access_token, expires: Date.now() + Number(expires_in) * 1000 });
+      const redirect_to = new URL(headers.get("x-redirect-to") || "/");
+      const url = new URL(redirect_to, new URL(ev.request.url).origin);
+      return Response.redirect(url, 302);
+    } else {
       return res;
     }
-    await localforage.setItem("credential", { access_token, expires: Date.now() + Number(expires_in) * 1000 });
-    const redirect_to = new URL(headers.get("x-redirect-to") || "/");
-    const url = new URL(redirect_to, new URL(ev.request.url).origin);
-    return Response.redirect(url, 302);
+
   }
   ev.respondWith(asyncAction());
 }
