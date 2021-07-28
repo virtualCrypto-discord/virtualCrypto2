@@ -146,12 +146,12 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     with {:valid_statuses, true} <-
            {:valid_statuses,
             statuses |> Enum.all?(fn v -> v in ["pending", "approved", "denied", "canceled"] end)},
-         {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
-           {:verify_user, Guardian.Plug.current_resource(conn)},
          {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user},
          {:type, {:ok, type}} <- {:type, type},
          {:limit, {:ok, limit}} <- {:limit, limit},
-         {:cursor, {:ok, cursor}} <- {:cursor, cursor} do
+         {:cursor, {:ok, cursor}} <- {:cursor, cursor},
+         {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
+           {:verify_user, Guardian.Plug.current_resource(conn)} do
       claims =
         Money.get_claims(
           %VCUser{id: user_id},
