@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Api
 import Url.Builder exposing (absolute)
-import Types.Transcations exposing (transactionsEncoder)
+import Types.Transactions exposing (transactionsEncoder)
 
 
 type alias Model =
@@ -120,6 +120,7 @@ payViewSubmitValidation model =
         else True
 
 
+payViewSubmitButton : Model -> Html Msg
 payViewSubmitButton model =
     if payViewSubmitValidation model
         then button [class "button has-background-info has-text-white", onClick Submit] [text "送金"]
