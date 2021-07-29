@@ -24,6 +24,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
         }
         |> Map.merge(
           case Map.fetch(guild, "icon") do
+            {:ok, nil} ->
+              %{}
+
             {:ok, hash} ->
               format =
                 if String.starts_with?(hash, "a_") do
