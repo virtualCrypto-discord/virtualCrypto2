@@ -3,6 +3,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
+main : Html msg
 main =
   div [] [
     div [class "hero mt-5 is-medium is-info"] [

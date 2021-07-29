@@ -3,8 +3,6 @@ import Json.Decode as Decode exposing (field, Decoder, string, int, succeed, lis
 import Json.Encode as Encode
 import Json.Decode.Extra exposing (andMap)
 import Json.Encode.Extra exposing (maybe)
-import Dict
-import Base64
 
 type GrantType =
       AuthorizationCode

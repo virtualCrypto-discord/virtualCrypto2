@@ -3,6 +3,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
+main : Html msg
 main =
   div [] [
     section [class "hero", style "margin-top" "80px"] [

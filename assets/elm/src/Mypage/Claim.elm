@@ -284,6 +284,7 @@ unitText s =
     span [class "ml-1"] [text s]
 
 
+compareString : { a | id : String } -> { b | id : String } -> Order
 compareString l r =
     compare (String.toInt l.id |> Maybe.withDefault 0) (String.toInt r.id |> Maybe.withDefault 0)
 

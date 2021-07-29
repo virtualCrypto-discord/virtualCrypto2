@@ -1,4 +1,4 @@
-module Types.Transcations exposing (..)
+module Types.Transactions exposing (..)
 
 import Json.Encode as Encode
 
