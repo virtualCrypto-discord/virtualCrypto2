@@ -292,7 +292,7 @@ defmodule VirtualCrypto.Money do
           :all | :received | :claimed,
           UserResolvable.t(),
           :desc_claim_id | :asc_claim_id,
-          %{page: page()} | %{cursor: {:next, any()} | :first},
+          %{page: page()} | %{cursor: {:next, any()} | {:on_next, any()} | :first},
           pos_integer() | {pos_integer(), pos_integer()} | nil
         ) ::
           %{

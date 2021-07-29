@@ -59,6 +59,14 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     {:ok, nil}
   end
 
+  defp parse_cursor(%{"on_next" => _, "next" => _}) do
+    :error
+  end
+
+  defp parse_cursor(%{"on_next" => value}) do
+    {:ok, %{cursor: {:on_next, value}}}
+  end
+
   defp parse_cursor(%{"next" => value}) do
     {:ok, %{cursor: {:next, value}}}
   end
@@ -143,7 +151,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       related_user: related_user,
       type: type,
       limit: limit,
-      next: next
+      next: next,
+      order: order
     } = options
 
     related_user =
@@ -161,7 +170,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
     query =
       URI.encode_query(
-        [{"type", to_string(type)}, {"next", next}] ++
+        [{"type", to_string(type)}, {"order", order}, {"next", next}] ++
           limit ++ related_user ++ (statuses |> Enum.map(&{"statuses[]", &1}))
       )
 

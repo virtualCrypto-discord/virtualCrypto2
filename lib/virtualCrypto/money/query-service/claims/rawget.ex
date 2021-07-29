@@ -278,6 +278,26 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
         statuses,
         sr_filter,
         related_user_id,
+        :desc_claim_id,
+        %{cursor: {:on_next, x}},
+        limit
+      ) do
+    get_claims_m(
+      operator_id,
+      statuses,
+      sr_filter,
+      related_user_id,
+      [desc: claim.id],
+      claim.id <= ^x,
+      limit
+    )
+  end
+
+  def get_claims(
+        operator_id,
+        statuses,
+        sr_filter,
+        related_user_id,
         :asc_claim_id,
         %{cursor: :first},
         limit
@@ -309,6 +329,26 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
       related_user_id,
       [asc: claim.id],
       claim.id > ^x,
+      limit
+    )
+  end
+
+  def get_claims(
+        operator_id,
+        statuses,
+        sr_filter,
+        related_user_id,
+        :asc_claim_id,
+        %{cursor: {:on_next, x}},
+        limit
+      ) do
+    get_claims_m(
+      operator_id,
+      statuses,
+      sr_filter,
+      related_user_id,
+      [asc: claim.id],
+      claim.id >= ^x,
       limit
     )
   end
