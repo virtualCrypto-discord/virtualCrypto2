@@ -130,6 +130,93 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_request, error_description: desc)
   end
 
+  defp compute_direction(%{cursor: :first}) do
+    :forward
+  end
+
+  defp compute_direction(%{cursor: {:after, _}}) do
+    :forward
+  end
+
+  defp compute_direction(%{cursor: {:before, _}}) do
+    :backward
+  end
+
+  defp build_url_from_options(
+         %{host: host, request_path: request_path, port: port, scheme: scheme},
+         options
+       ) do
+    %{
+      statuses: statuses,
+      related_user: related_user,
+      type: type,
+      limit: limit
+    } = options
+
+    related_user =
+      case related_user do
+        %DiscordUser{id: x} -> [{"related_discord_user", x}]
+        %VCUser{id: x} -> [{"related_vc_user", x}]
+        nil -> []
+      end
+
+    cursor =
+      case options do
+        %{before: v} -> {"before", v}
+        %{after: v} -> {"after", v}
+      end
+
+    limit =
+      case limit do
+        nil -> []
+        limit -> [{"limit", limit}]
+      end
+
+    query =
+      URI.encode_query(
+        [{"type", to_string(type)}, cursor] ++
+          limit ++ related_user ++ (statuses |> Enum.map(&{"statuses[]", &1}))
+      )
+
+    %URI{
+      authority: host,
+      fragment: nil,
+      host: host,
+      path: request_path,
+      port: port,
+      query: query,
+      scheme: scheme |> to_string(),
+      userinfo: nil
+    }
+  end
+
+  @spec generate_link_header(Plug.Conn.t(), [VirtualCrypto.Money.claim_t()], map()) ::
+          nil | binary()
+  defp generate_link_header(_conn, _, %{limit: nil}) do
+    nil
+  end
+
+  defp generate_link_header(conn, claims, %{limit: limit} = options) do
+    next =
+      case {claims |> length(), compute_direction(options.cursor)} do
+        {^limit, :forward} ->
+          v = claims |> List.last()
+          build_url_from_options(conn, Map.put(options, :after, v.claim.id))
+
+        {^limit, :backward} ->
+          v = claims |> hd()
+          build_url_from_options(conn, Map.put(options, :before, v.claim.id))
+
+        _ ->
+          nil
+      end
+
+    case next do
+      nil -> nil
+      _ -> "<#{next}>; rel=\"next\""
+    end
+  end
+
   def me(conn, params) do
     statuses =
       case params do
@@ -152,18 +239,37 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
          {:cursor, {:ok, cursor}} <- {:cursor, cursor},
          {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
            {:verify_user, Guardian.Plug.current_resource(conn)} do
+      order = :desc_claim_id
+
       claims =
         Money.get_claims(
           %VCUser{id: user_id},
           statuses,
           type,
           related_user,
-          :desc_claim_id,
+          order,
           cursor,
           limit
         )
 
-      render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+      conn =
+        case generate_link_header(
+               conn,
+               claims,
+               %{
+                 statuses: statuses,
+                 related_user: related_user,
+                 type: type,
+                 limit: limit,
+                 order: order,
+                 cursor: cursor
+               }
+             ) do
+          nil -> conn
+          link_header -> conn |> Plug.Conn.put_resp_header("Link", link_header)
+        end
+
+      conn |> render("data.json", params: format_claims(claims, get_service(conn)))
     else
       {:valid_statuses, _} -> conn |> invalid_request(:invalid_statuses)
       {:verify_user, _} -> conn |> permission_denied()

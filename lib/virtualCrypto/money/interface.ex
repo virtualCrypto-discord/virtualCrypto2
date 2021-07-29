@@ -305,6 +305,7 @@ defmodule VirtualCrypto.Money do
             first: page(),
             page: pos_integer()
           }
+          | [claim_t()]
 
   def get_claims(
         user_id,
