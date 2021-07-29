@@ -59,20 +59,24 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     {:ok, nil}
   end
 
-  defp parse_cursor(%{"before" => _before, "after" => _after}) do
-    :error
-  end
-
-  defp parse_cursor(%{"before" => value}) do
-    {:ok, %{cursor: {:before, value}}}
-  end
-
-  defp parse_cursor(%{"after" => value}) do
-    {:ok, %{cursor: {:after, value}}}
+  defp parse_cursor(%{"next" => value}) do
+    {:ok, %{cursor: {:next, value}}}
   end
 
   defp parse_cursor(%{}) do
     {:ok, %{cursor: :first}}
+  end
+
+  defp parse_order(nil) do
+    {:ok, :desc_claim_id}
+  end
+
+  defp parse_order("desc_claim_id") do
+    {:ok, :desc_claim_id}
+  end
+
+  defp parse_order("asc_claim_id") do
+    {:ok, :asc_claim_id}
   end
 
   defp get_discord_user(discord_user_id, service) do
@@ -130,18 +134,6 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_request, error_description: desc)
   end
 
-  defp compute_direction(%{cursor: :first}) do
-    :forward
-  end
-
-  defp compute_direction(%{cursor: {:after, _}}) do
-    :forward
-  end
-
-  defp compute_direction(%{cursor: {:before, _}}) do
-    :backward
-  end
-
   defp build_url_from_options(
          %{host: host, request_path: request_path, port: port, scheme: scheme},
          options
@@ -150,7 +142,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       statuses: statuses,
       related_user: related_user,
       type: type,
-      limit: limit
+      limit: limit,
+      next: next
     } = options
 
     related_user =
@@ -158,12 +151,6 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
         %DiscordUser{id: x} -> [{"related_discord_user", x}]
         %VCUser{id: x} -> [{"related_vc_user", x}]
         nil -> []
-      end
-
-    cursor =
-      case options do
-        %{before: v} -> {"before", v}
-        %{after: v} -> {"after", v}
       end
 
     limit =
@@ -174,7 +161,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
     query =
       URI.encode_query(
-        [{"type", to_string(type)}, cursor] ++
+        [{"type", to_string(type)}, {"next", next}] ++
           limit ++ related_user ++ (statuses |> Enum.map(&{"statuses[]", &1}))
       )
 
@@ -197,18 +184,13 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   end
 
   defp generate_link_header(conn, claims, %{limit: limit} = options) do
+    v = claims |> List.last()
+
     next =
-      case {claims |> length(), compute_direction(options.cursor)} do
-        {^limit, :forward} ->
-          v = claims |> List.last()
-          build_url_from_options(conn, Map.put(options, :after, v.claim.id))
-
-        {^limit, :backward} ->
-          v = claims |> hd()
-          build_url_from_options(conn, Map.put(options, :before, v.claim.id))
-
-        _ ->
-          nil
+      if limit == claims |> length() do
+        build_url_from_options(conn, Map.put(options, :next, v.claim.id))
+      else
+        nil
       end
 
     case next do
@@ -229,6 +211,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     type = type(params)
     limit = limit(params)
     cursor = parse_cursor(params)
+    order = parse_order(params["order"])
 
     with {:valid_statuses, true} <-
            {:valid_statuses,
@@ -237,10 +220,9 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
          {:type, {:ok, type}} <- {:type, type},
          {:limit, {:ok, limit}} <- {:limit, limit},
          {:cursor, {:ok, cursor}} <- {:cursor, cursor},
+         {:order, {:ok, order}} <- {:order, order},
          {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
            {:verify_user, Guardian.Plug.current_resource(conn)} do
-      order = :desc_claim_id
-
       claims =
         Money.get_claims(
           %VCUser{id: user_id},
@@ -266,7 +248,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
                }
              ) do
           nil -> conn
-          link_header -> conn |> Plug.Conn.put_resp_header("Link", link_header)
+          link_header -> conn |> Plug.Conn.put_resp_header("link", link_header)
         end
 
       conn |> render("data.json", params: format_claims(claims, get_service(conn)))

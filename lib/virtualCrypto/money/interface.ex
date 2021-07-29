@@ -291,8 +291,8 @@ defmodule VirtualCrypto.Money do
           [String.t()],
           :all | :received | :claimed,
           UserResolvable.t(),
-          :desc_claim_id,
-          %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
+          :desc_claim_id | :asc_claim_id,
+          %{page: page()} | %{cursor: {:next, any()} | :first},
           pos_integer() | {pos_integer(), pos_integer()} | nil
         ) ::
           %{
