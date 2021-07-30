@@ -25,6 +25,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
     "不正な金額です。1以上4294967295以下である必要があります。"
   end
 
+  defp render_error(:run_in_dm, _) do
+    "DMでは実行できません。"
+  end
+
   defp render_error(_, _) do
     "不明なエラーが発生しました。時間を開けてもう一度実行してください。"
   end

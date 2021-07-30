@@ -18,7 +18,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Give do
   end
 
   defp render_error(:invalid_amount) do
-    "エラー: 不正な金額です"
+    "エラー: 不正な金額です。"
+  end
+
+  defp render_error(:run_in_dm) do
+    "エラー: DMでは実行できません。"
   end
 
   def render(:ok, {receiver, amount, unit, pool_amount}) do

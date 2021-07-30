@@ -2,6 +2,8 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
+  import VirtualCryptoWeb.Interaction.Util, only: [get_user: 1]
+
   @moduledoc false
   @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
   @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
@@ -44,11 +46,10 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "bal",
         _options,
-        %{
-          "member" => %{"user" => %{"id" => executor}}
-        },
+        payload,
         _conn
       ) do
+    %{"id" => executor} = get_user(payload)
     int_executor = String.to_integer(executor)
     Money.balance(user: %DiscordUser{id: int_executor})
   end
@@ -56,11 +57,10 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "pay",
         %{"unit" => unit, "user" => receiver, "amount" => amount},
-        %{
-          "member" => %{"user" => %{"id" => sender}}
-        },
+        payload,
         _conn
       ) do
+    %{"id" => sender} = get_user(payload)
     int_receiver = String.to_integer(receiver)
     int_sender = String.to_integer(sender)
 
@@ -110,10 +110,21 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "give",
         %{"user" => _receiver} = m,
-        ctx,
+        %{
+          "guild_id" => _
+        } = payload,
         conn
       ) do
-    handle("give", Map.merge(%{"amount" => :all}, m), ctx, conn)
+    handle("give", Map.merge(%{"amount" => :all}, m), payload, conn)
+  end
+
+  def handle(
+        "give",
+        _,
+        _payload,
+        _conn
+      ) do
+    {:error, :run_in_dm}
   end
 
   def handle(
@@ -151,10 +162,26 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     end
   end
 
-  def handle("info", options, %{"guild_id" => guild_id, "member" => %{"user" => user}}, conn) do
+  def handle(
+        "create",
+        _options,
+        _,
+        _conn
+      ) do
+    {:error, :run_in_dm, %{}}
+  end
+
+  def handle("info", options, payload, conn) do
+    user = get_user(payload)
     int_user_id = String.to_integer(user["id"])
 
-    case VirtualCrypto.Money.info(name: options["name"], unit: options["unit"], guild: guild_id) do
+    guild_query =
+      case payload do
+        %{"guild_id" => guild_id} -> [guild: guild_id]
+        _ -> []
+      end
+
+    case VirtualCrypto.Money.info([name: options["name"], unit: options["unit"]] ++ guild_query) do
       nil ->
         {:error, nil, nil, nil}
 
@@ -180,10 +207,12 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "claim",
         %{"subcommand" => subcommand} = options,
-        %{"member" => %{"user" => user}},
+        payload,
         _conn
       )
       when subcommand in ["list", "received", "sent"] do
+    user = get_user(payload)
+
     sub_options = Map.get(options, "sub_options", %{})
 
     subcommand =
@@ -219,10 +248,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "claim",
         %{"subcommand" => "make"} = options,
-        %{"member" => %{"user" => user}},
+        payload,
         _conn
       ) do
     int_payer_id = options["sub_options"]["user"] |> String.to_integer()
+    user = get_user(payload)
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.create_claim(
@@ -240,10 +270,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "claim",
         %{"subcommand" => "approve"} = options,
-        %{"member" => %{"user" => user}},
+        payload,
         _conn
       ) do
     id = options["sub_options"]["id"]
+    user = get_user(payload)
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.approve_claim(id, %DiscordUser{id: int_user_id}) do
@@ -255,10 +286,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "claim",
         %{"subcommand" => "deny"} = options,
-        %{"member" => %{"user" => user}},
+        payload,
         _conn
       ) do
     id = options["sub_options"]["id"]
+    user = get_user(payload)
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.deny_claim(id, %DiscordUser{id: int_user_id}) do
@@ -270,10 +302,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   def handle(
         "claim",
         %{"subcommand" => "cancel"} = options,
-        %{"member" => %{"user" => user}},
+        payload,
         _conn
       ) do
     id = options["sub_options"]["id"]
+    user = get_user(payload)
     int_user_id = user["id"] |> String.to_integer()
 
     case Money.cancel_claim(id, %DiscordUser{id: int_user_id}) do

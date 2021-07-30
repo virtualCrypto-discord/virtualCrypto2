@@ -2,8 +2,8 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCryptoWeb.Interaction.Claim.List.Component
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
-
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  import VirtualCryptoWeb.Interaction.Util, only: [get_user: 1]
 
   defp handle_(binary, user, selected_claim_ids) do
     {options, rest} = Options.parse(binary)
@@ -38,9 +38,7 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
         [:claim, :select],
         binary,
         [],
-        %{
-          "member" => %{"user" => user}
-        },
+        payload,
         _conn
       ) do
     {options, <<num::integer, rest::binary>>} = Options.parse(binary)
@@ -48,18 +46,16 @@ defmodule VirtualCryptoWeb.Interaction.SelectMenu do
 
     <<_claim_ids::binary-size(size), _::binary>> = rest
 
-    Component.page(user, options)
+    Component.page(get_user(payload), options)
   end
 
   def handle(
         [:claim, :select],
         data,
         values,
-        %{
-          "member" => %{"user" => user}
-        },
+        payload,
         _conn
       ) do
-    handle_(data, user, values |> Enum.map(&String.to_integer/1))
+    handle_(data, get_user(payload), values |> Enum.map(&String.to_integer/1))
   end
 end
