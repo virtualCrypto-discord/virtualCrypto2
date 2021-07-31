@@ -6,18 +6,18 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
-  defp parse_user_argument(%{"related_discord_user" => _discord_user, "related_vc_user" => _user}) do
+  defp parse_user_argument(%{"related_discord_user_id" => _discord_user, "related_vc_user_id" => _user}) do
     :error
   end
 
-  defp parse_user_argument(%{"related_discord_user" => discord_user}) do
+  defp parse_user_argument(%{"related_discord_user_id" => discord_user}) do
     case Integer.parse(discord_user) do
       {x, ""} -> {:ok, %DiscordUser{id: x}}
       _ -> :error
     end
   end
 
-  defp parse_user_argument(%{"related_vc_user" => vc_user}) do
+  defp parse_user_argument(%{"related_vc_user_id" => vc_user}) do
     case Integer.parse(vc_user) do
       {x, ""} -> {:ok, %VCUser{id: x}}
       _ -> :error
@@ -157,8 +157,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
 
     related_user =
       case related_user do
-        %DiscordUser{id: x} -> [{"related_discord_user", x}]
-        %VCUser{id: x} -> [{"related_vc_user", x}]
+        %DiscordUser{id: x} -> [{"related_discord_user_id", x}]
+        %VCUser{id: x} -> [{"related_vc_user_id", x}]
         nil -> []
       end
 
