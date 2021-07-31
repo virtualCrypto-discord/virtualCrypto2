@@ -6,7 +6,10 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
-  defp parse_user_argument(%{"related_discord_user_id" => _discord_user, "related_vc_user_id" => _user}) do
+  defp parse_user_argument(%{
+         "related_discord_user_id" => _discord_user,
+         "related_vc_user_id" => _user
+       }) do
     :error
   end
 
