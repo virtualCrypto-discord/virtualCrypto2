@@ -5,8 +5,8 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
   import Ecto.Query
   import VirtualCrypto.Auth.InternalAction.Util
 
-  defp common2_q(k, q, v, validater) do
-    case validater.(v) do
+  defp common2_q(k, q, v, validator) do
+    case validator.(v) do
       {:ok, v} -> {:ok, update(q, set: [{^k, ^v}])}
       {:error, _} = err -> err
     end
@@ -16,20 +16,20 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
     err
   end
 
-  defp common2(k, {:ok, q}, {:ok, v}, validater) do
-    common2_q(k, q, v, validater)
+  defp common2(k, {:ok, q}, {:ok, v}, validator) do
+    common2_q(k, q, v, validator)
   end
 
-  defp common2(k, {:nop, q}, {:ok, v}, validater) do
-    common2_q(k, q, v, validater)
+  defp common2(k, {:nop, q}, {:ok, v}, validator) do
+    common2_q(k, q, v, validator)
   end
 
-  defp common2(_k, x, :error, _validater) do
+  defp common2(_k, x, :error, _validator) do
     x
   end
 
-  defp common(k, q, map, validater) do
-    common2(k, q, Map.fetch(map, to_string(k)), validater)
+  defp common(k, q, map, validator) do
+    common2(k, q, Map.fetch(map, to_string(k)), validator)
   end
 
   defp logo_uri(q, map) do
