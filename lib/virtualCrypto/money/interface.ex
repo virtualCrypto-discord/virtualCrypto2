@@ -291,9 +291,9 @@ defmodule VirtualCrypto.Money do
           [String.t()],
           :all | :received | :claimed,
           UserResolvable.t(),
-          :desc_claim_id,
-          %{page: page()} | %{cursor: {:after | :before, any()} | :first | :last},
-          pos_integer() | {pos_integer(), pos_integer()}
+          :desc_claim_id | :asc_claim_id,
+          %{page: page()} | %{cursor: {:next, any()} | {:on_next, any()} | :first},
+          pos_integer() | {pos_integer(), pos_integer()} | nil
         ) ::
           %{
             claims: [
@@ -305,6 +305,7 @@ defmodule VirtualCrypto.Money do
             first: page(),
             page: pos_integer()
           }
+          | [claim_t()]
 
   def get_claims(
         user_id,

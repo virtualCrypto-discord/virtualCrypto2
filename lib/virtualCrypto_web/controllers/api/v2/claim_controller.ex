@@ -6,6 +6,90 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
 
+  defp parse_user_argument(%{
+         "related_discord_user_id" => _discord_user,
+         "related_vc_user_id" => _user
+       }) do
+    :error
+  end
+
+  defp parse_user_argument(%{"related_discord_user_id" => discord_user}) do
+    case Integer.parse(discord_user) do
+      {x, ""} -> {:ok, %DiscordUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{"related_vc_user_id" => vc_user}) do
+    case Integer.parse(vc_user) do
+      {x, ""} -> {:ok, %VCUser{id: x}}
+      _ -> :error
+    end
+  end
+
+  defp parse_user_argument(%{}) do
+    {:ok, nil}
+  end
+
+  defp type(%{"type" => "received"}) do
+    {:ok, :received}
+  end
+
+  defp type(%{"type" => "claimed"}) do
+    {:ok, :claimed}
+  end
+
+  defp type(%{"type" => "all"}) do
+    {:ok, :all}
+  end
+
+  defp type(%{"type" => _}) do
+    :error
+  end
+
+  defp type(%{}) do
+    {:ok, :all}
+  end
+
+  defp limit(%{"limit" => limit}) do
+    case Integer.parse(limit) do
+      {x, ""} -> {:ok, x}
+      _ -> :error
+    end
+  end
+
+  defp limit(%{}) do
+    {:ok, nil}
+  end
+
+  defp parse_cursor(%{"on_next" => _, "next" => _}) do
+    :error
+  end
+
+  defp parse_cursor(%{"on_next" => value}) do
+    {:ok, %{cursor: {:on_next, value}}}
+  end
+
+  defp parse_cursor(%{"next" => value}) do
+    {:ok, %{cursor: {:next, value}}}
+  end
+
+  defp parse_cursor(%{}) do
+    {:ok, %{cursor: :first}}
+  end
+
+  defp parse_order(nil) do
+    {:ok, :desc_claim_id}
+  end
+
+  defp parse_order("desc_claim_id") do
+    {:ok, :desc_claim_id}
+  end
+
+  defp parse_order("asc_claim_id") do
+    {:ok, :asc_claim_id}
+  end
+
   defp get_discord_user(discord_user_id, service) do
     user = Discord.Api.Cached.get_user(discord_user_id, service)
 
@@ -55,15 +139,138 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     |> render("error.json", error: :invalid_token, error_description: :permission_denied)
   end
 
-  def me(conn, _) do
-    case Guardian.Plug.current_resource(conn) do
-      %{"sub" => user_id, "vc.claim" => true} ->
-        claims = Money.get_claims(%VCUser{id: user_id}, ["pending"])
+  defp invalid_request(conn, desc) do
+    conn
+    |> put_status(400)
+    |> render("error.json", error: :invalid_request, error_description: desc)
+  end
 
-        render(conn, "data.json", params: format_claims(claims, get_service(conn)))
+  defp build_url_from_options(
+         %{host: host, request_path: request_path, port: port, scheme: scheme},
+         options
+       ) do
+    %{
+      statuses: statuses,
+      related_user: related_user,
+      type: type,
+      limit: limit,
+      next: next,
+      order: order
+    } = options
 
-      _ ->
-        conn |> permission_denied()
+    related_user =
+      case related_user do
+        %DiscordUser{id: x} -> [{"related_discord_user_id", x}]
+        %VCUser{id: x} -> [{"related_vc_user_id", x}]
+        nil -> []
+      end
+
+    limit =
+      case limit do
+        nil -> []
+        limit -> [{"limit", limit}]
+      end
+
+    query =
+      URI.encode_query(
+        [{"type", to_string(type)}, {"order", order}, {"next", next}] ++
+          limit ++ related_user ++ (statuses |> Enum.map(&{"statuses[]", &1}))
+      )
+
+    %URI{
+      authority: host,
+      fragment: nil,
+      host: host,
+      path: request_path,
+      port: port,
+      query: query,
+      scheme: scheme |> to_string(),
+      userinfo: nil
+    }
+  end
+
+  @spec generate_link_header(Plug.Conn.t(), [VirtualCrypto.Money.claim_t()], map()) ::
+          nil | binary()
+  defp generate_link_header(_conn, _, %{limit: nil}) do
+    nil
+  end
+
+  defp generate_link_header(conn, claims, %{limit: limit} = options) do
+    v = claims |> List.last()
+
+    next =
+      if limit == claims |> length() do
+        build_url_from_options(conn, Map.put(options, :next, v.claim.id))
+      else
+        nil
+      end
+
+    case next do
+      nil -> nil
+      _ -> "<#{next}>; rel=\"next\""
+    end
+  end
+
+  def me(conn, params) do
+    statuses =
+      case params do
+        %{"statuses" => []} -> ["pending"]
+        %{"statuses" => x} when is_list(x) -> x
+        %{} -> ["pending"]
+      end
+
+    related_user = parse_user_argument(params)
+    type = type(params)
+    limit = limit(params)
+    cursor = parse_cursor(params)
+    order = parse_order(params["order"])
+
+    with {:valid_statuses, true} <-
+           {:valid_statuses,
+            statuses |> Enum.all?(fn v -> v in ["pending", "approved", "denied", "canceled"] end)},
+         {:related_user_id, {:ok, related_user}} <- {:related_user_id, related_user},
+         {:type, {:ok, type}} <- {:type, type},
+         {:limit, {:ok, limit}} <- {:limit, limit},
+         {:cursor, {:ok, cursor}} <- {:cursor, cursor},
+         {:order, {:ok, order}} <- {:order, order},
+         {:verify_user, %{"sub" => user_id, "vc.claim" => true}} <-
+           {:verify_user, Guardian.Plug.current_resource(conn)} do
+      claims =
+        Money.get_claims(
+          %VCUser{id: user_id},
+          statuses,
+          type,
+          related_user,
+          order,
+          cursor,
+          limit
+        )
+
+      conn =
+        case generate_link_header(
+               conn,
+               claims,
+               %{
+                 statuses: statuses,
+                 related_user: related_user,
+                 type: type,
+                 limit: limit,
+                 order: order,
+                 cursor: cursor
+               }
+             ) do
+          nil -> conn
+          link_header -> conn |> Plug.Conn.put_resp_header("link", link_header)
+        end
+
+      conn |> render("data.json", params: format_claims(claims, get_service(conn)))
+    else
+      {:valid_statuses, _} -> conn |> invalid_request(:invalid_statuses)
+      {:verify_user, _} -> conn |> permission_denied()
+      {:related_user_id, _} -> conn |> invalid_request(:invalid_related_user)
+      {:type, _} -> conn |> invalid_request(:invalid_type)
+      {:limit, _} -> conn |> invalid_request(:invalid_limit)
+      {:cursor, _} -> conn |> invalid_request(:invalid_cursor)
     end
   end
 
