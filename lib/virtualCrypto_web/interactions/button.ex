@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   alias VirtualCryptoWeb.Interaction.Claim.List.Component
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
+  import VirtualCryptoWeb.Interaction.Util, only: [get_user: 1]
 
   defp handle_listing(user, %Options{} = options) do
     Component.page(user, options)
@@ -76,24 +77,23 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   def handle(
         [:claim, :list, subcommand],
         binary,
-        %{
-          "member" => %{"user" => user}
-        },
+        payload,
         _conn
       )
       when subcommand in [:claimed, :received, :all] do
     {options, <<>>} = Options.parse(binary)
+    user = get_user(payload)
     handle_listing(user, options)
   end
 
   def handle(
         [:claim, :action, :back],
         binary,
-        %{
-          "member" => %{"user" => user}
-        },
+        payload,
         _conn
       ) do
+    user = get_user(payload)
+
     {options, <<num::integer, rest::binary>>} = Options.parse(binary)
 
     size = num * 8
@@ -105,12 +105,12 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   def handle(
         [:claim, :action, subcommand],
         data,
-        %{
-          "member" => %{"user" => user}
-        },
+        payload,
         _conn
       )
       when subcommand in [:approve, :deny, :cancel] do
+    user = get_user(payload)
+
     handle_patch(subcommand, data, user)
   end
 end
