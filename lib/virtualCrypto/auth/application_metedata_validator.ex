@@ -1,4 +1,6 @@
 defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
+  alias VirtualCrypto.Repo
+
   def validate_response_types(nil) do
     {:ok, nil}
   end
@@ -44,6 +46,20 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
       "https" -> {:ok, client_uri}
       "http" -> {:ok, client_uri}
       _ -> {:error, {:invalid_client_metadata, :client_uri_scheme_must_be_http_or_https}}
+    end
+  end
+
+  def validate_webhook_url(nil) do
+    {:ok, nil}
+  end
+
+  def validate_webhook_url(webhook_url) do
+    parsed_uri = URI.parse(webhook_url)
+
+    case parsed_uri.scheme do
+      "https" -> {:ok, webhook_url}
+      "http" -> {:ok, webhook_url}
+      _ -> {:error, {:invalid_client_metadata, :webhook_url_scheme_must_be_http_or_https}}
     end
   end
 
@@ -113,6 +129,41 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
       {:ok, application_type}
     else
       {:error, {:invalid_client_metadata, :application_type_must_be_web_or_native}}
+    end
+  end
+
+  def verify_webhook_url(_requester, nil, _application_id) do
+    :ok
+  end
+
+  def verify_webhook_url(requester, webhook_url, application_id) do
+    case Repo.get(VirtualCrypto.Auth.Application, application_id) do
+      %{webhook_url: ^webhook_url} ->
+        :ok
+
+      nil ->
+        {:error, {:invalid_client_metadata, :client_not_found}}
+
+      d ->
+        case VirtualCrypto.Notification.Webhook.verify(
+               requester,
+               webhook_url,
+               d.public_key,
+               d.private_key
+             ) do
+          :ok ->
+            :ok
+
+          {:error, {:rate_limit_exceeded, _}} = x ->
+            x
+
+          {:error, :verification_failed} ->
+            {:error, {:invalid_client_metadata, :webhook_verification_failed}}
+
+          _ ->
+            {:error,
+             {:internal_server_error_verifying_webhook, :retry_again_or_contact_developer}}
+        end
     end
   end
 end

@@ -3,29 +3,6 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
-  alias VirtualCrypto.Auth.Application.Metadata.Validator, as: Validator
-
-  defp fetch(m, k, e) do
-    case Map.fetch(m, k) do
-      :error -> {:error, e}
-      {:ok, v} -> v
-    end
-  end
-
-  defp get_and_compute(req) do
-    fn km, validater ->
-      case Map.fetch(req, to_string(km)) do
-        {:ok, v} ->
-          case validater.(v) do
-            {:ok, v} -> %{km => v}
-            {:error, _} = err -> err
-          end
-
-        :error ->
-          %{}
-      end
-    end
-  end
 
   def get(conn, %{"user" => "@me"}) do
     with cr <- Guardian.Plug.current_resource(conn),
@@ -63,8 +40,6 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   end
 
   def post(conn, req) do
-    f = get_and_compute(req)
-
     params =
       with cr <- Guardian.Plug.current_resource(conn),
            {{:validate_token, :token_verification_failed}, %{"sub" => user_id, "kind" => "user"}} <-
@@ -79,36 +54,13 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
               DiscordAuth.refresh_user(owner_discord_id)},
            {{:validate_token, :user_verification_failed}, false} <-
              {{:validate_token, :user_verification_failed},
-              Map.get(Discord.Api.V8.OAuth2.get_user_info(discord_access_token), "bot", false)},
-           %{} = response_types <- f.(:response_types, &Validator.validate_response_types/1),
-           %{} = grant_types <- f.(:grant_types, &Validator.validate_grant_types/1),
-           %{} = application_type <-
-             f.(:application_type, &Validator.validate_application_type/1),
-           %{} = client_name <- f.(:client_name, &{:ok, &1}),
-           %{} = client_uri <- f.(:client_uri, &Validator.validate_client_uri/1),
-           %{} = logo_uri <- f.(:logo_uri, &Validator.validate_logo_uri/1),
-           %{} = discord_support_server_invite_slug <-
-             f.(
-               :discord_support_server_invite_slug,
-               &Validator.validate_discord_support_server_invite_slug/1
-             ),
-           redirect_uris when is_list(redirect_uris) <-
-             fetch(req, "redirect_uris", {:invalid_redirect_uri, :redirect_uris_must_be_array}),
-           {:validate_redirect_uris, true} <-
-             {:validate_redirect_uris,
-              redirect_uris |> Enum.all?(&(URI.parse(&1).scheme in ["http", "https"]))} do
+              Map.get(Discord.Api.V8.OAuth2.get_user_info(discord_access_token), "bot", false)} do
         Auth.register_application(
+          user_id,
           %{
-            redirect_uris: redirect_uris,
             owner_discord_id: owner_discord_id
           }
-          |> Map.merge(response_types)
-          |> Map.merge(application_type)
-          |> Map.merge(client_name)
-          |> Map.merge(grant_types)
-          |> Map.merge(client_uri)
-          |> Map.merge(logo_uri)
-          |> Map.merge(discord_support_server_invite_slug)
+          |> Map.merge(req)
         )
       else
         {{:validate_token, more}, _} ->
@@ -119,6 +71,9 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
 
         {:validate_redirect_uris, _} ->
           {:error, {:invalid_redirect_uri, :redirect_uri_scheme_must_be_http_or_https}}
+
+        {:verify_webhook_url, {:err, x}} ->
+          {:error, {:webhook_verification_failed, x}}
 
         err ->
           err

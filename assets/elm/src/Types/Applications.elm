@@ -1,16 +1,20 @@
 module Types.Applications exposing (..)
-import Json.Decode as Decode exposing (field, Decoder, string, int, succeed, list, andThen, fail, nullable, map5)
-import Json.Encode as Encode
+
+import Json.Decode as Decode exposing (Decoder, andThen, fail, field, int, list, map2, map5, nullable, string, succeed)
 import Json.Decode.Extra exposing (andMap)
+import Json.Encode as Encode
 import Json.Encode.Extra exposing (maybe)
 
-type GrantType =
-      AuthorizationCode
+
+type GrantType
+    = AuthorizationCode
     | RefreshToken
     | ClientCredentials
 
-type ResponseType =
-    Code
+
+type ResponseType
+    = Code
+
 
 type alias Application =
     { redirect_uris : List String
@@ -27,7 +31,10 @@ type alias Application =
     , discord_user_id : Maybe String
     , owner_discord_id : String
     , user_id : String
+    , webhook_url : Maybe String
+    , public_key : String
     }
+
 
 type alias ApplicationInfo =
     { client_id : String
@@ -40,33 +47,53 @@ type alias ApplicationInfo =
     , discord_support_server_invite_slug : Maybe String
     , grant_types : List String
     , logo_uri : Maybe String
+    , webhook_url : Maybe String
+    , public_key : String
     }
 
-type alias Applications = List Application
+
+type alias Applications =
+    List Application
+
 
 grantTypeDecoder : Decoder GrantType
 grantTypeDecoder =
     string
-        |> andThen (\str ->
-            case str of
-                "authorization_code" -> succeed AuthorizationCode
-                "refresh_token" -> succeed RefreshToken
-                "client_credentials" -> succeed ClientCredentials
-                _ -> fail "unknown type"
-        )
+        |> andThen
+            (\str ->
+                case str of
+                    "authorization_code" ->
+                        succeed AuthorizationCode
+
+                    "refresh_token" ->
+                        succeed RefreshToken
+
+                    "client_credentials" ->
+                        succeed ClientCredentials
+
+                    _ ->
+                        fail "unknown type"
+            )
+
 
 grantTypesDecoder : Decoder (List GrantType)
 grantTypesDecoder =
     list grantTypeDecoder
 
+
 responseTypeDecoder : Decoder ResponseType
 responseTypeDecoder =
     string
-        |> andThen (\str ->
-            case str of
-                "code" -> succeed Code
-                _ -> fail "unknown type"
-        )
+        |> andThen
+            (\str ->
+                case str of
+                    "code" ->
+                        succeed Code
+
+                    _ ->
+                        fail "unknown type"
+            )
+
 
 responseTypesDecoder : Decoder (List ResponseType)
 responseTypesDecoder =
@@ -90,10 +117,14 @@ applicationDecoder =
         |> andMap (field "discord_user_id" (nullable string))
         |> andMap (field "owner_discord_id" string)
         |> andMap (field "user_id" string)
+        |> andMap (field "webhook_url" (nullable string))
+        |> andMap (field "public_key" string)
+
 
 applicationsDecoder : Decoder Applications
 applicationsDecoder =
     applicationDecoder |> Decode.list
+
 
 type alias ClientRegistrationResponse =
     { client_id : String
@@ -102,6 +133,7 @@ type alias ClientRegistrationResponse =
     , registration_client_uri : String
     , client_secret_expires_at : Int
     }
+
 
 clientRegistrationResponseDecoder : Decoder ClientRegistrationResponse
 clientRegistrationResponseDecoder =
@@ -112,28 +144,46 @@ clientRegistrationResponseDecoder =
         (field "registration_client_uri" string)
         (field "client_secret_expires_at" int)
 
+
+type alias ClientRegistrationPatchErrorResponse =
+    { error : String
+    , error_description : Maybe String
+    }
+
+
+clientRegistrationPatchErrorResponseDecoder : Decoder ClientRegistrationPatchErrorResponse
+clientRegistrationPatchErrorResponseDecoder =
+    map2 ClientRegistrationPatchErrorResponse
+        (field "error" string)
+        (field "error_description" (nullable string))
+
+
 clientRegistrationResponseEncoder : String -> Encode.Value
 clientRegistrationResponseEncoder name =
     Encode.object
-    [ ("client_name", Encode.string name)
-    , ("redirect_uris", Encode.list Encode.string [])
-    ]
+        [ ( "client_name", Encode.string name )
+        , ( "redirect_uris", Encode.list Encode.string [] )
+        ]
+
 
 type alias TokenEndpointResponse =
     { access_token : String }
+
 
 tokenEndpointDecoder : Decoder TokenEndpointResponse
 tokenEndpointDecoder =
     Decode.map TokenEndpointResponse
         (field "access_token" string)
 
+
 clientConfigurationRequestEncoder : ApplicationInfo -> Bool -> Encode.Value
 clientConfigurationRequestEncoder application refresh_secret =
     Encode.object
-    [ ("redirect_uris", Encode.list Encode.string application.redirect_uris)
-    , ("client_secret", Encode.bool refresh_secret)
-    , ("client_name", maybe Encode.string application.client_name)
-    , ("client_uri", maybe Encode.string application.client_uri)
-    , ("logo_uri", maybe Encode.string application.logo_uri)
-    , ("discord_support_server_invite_slug", maybe Encode.string application.discord_support_server_invite_slug)
-    ]
+        [ ( "redirect_uris", Encode.list Encode.string application.redirect_uris )
+        , ( "client_secret", Encode.bool refresh_secret )
+        , ( "client_name", maybe Encode.string application.client_name )
+        , ( "client_uri", maybe Encode.string application.client_uri )
+        , ( "logo_uri", maybe Encode.string application.logo_uri )
+        , ( "discord_support_server_invite_slug", maybe Encode.string application.discord_support_server_invite_slug )
+        , ( "webhook_url", maybe Encode.string application.webhook_url )
+        ]

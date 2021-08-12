@@ -45,3 +45,8 @@ config :virtualCrypto, :discord_ua_website, "https://vcrypto.sumidora.com"
 config :virtualCrypto, :discord_ua_version, "1"
 
 config :phoenix, :template_engines, leex: Phoenix.LiveView.Engine
+
+config :hammer,
+  backend:
+    {Hammer.Backend.ETS,
+     [expiry_ms: 4 * 24 * 60 * 60 * 1000, cleanup_interval_ms: 10 * 60 * 1000]}
