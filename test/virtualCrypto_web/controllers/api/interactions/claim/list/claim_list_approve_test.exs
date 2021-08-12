@@ -170,7 +170,8 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
              "type" => 7
            } == json_response(conn, 200)
 
-    assert VirtualCrypto.Money.get_claim_by_id(claim.claim.id).claim.status == "approved"
+    assert VirtualCrypto.Money.Query.Claim.get_claim_by_id(claim.claim.id).claim.status ==
+             "approved"
 
     after_claimant =
       VirtualCrypto.Money.balance(

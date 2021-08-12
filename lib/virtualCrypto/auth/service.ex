@@ -3,7 +3,7 @@ defmodule VirtualCrypto.Auth do
   alias VirtualCrypto.Repo
   import Ecto.Query
 
-  @spec register_application(%{
+  @spec register_application(non_neg_integer(), %{
           optional(:application_type) => String.t(),
           optional(:grant_types) => [String.t()],
           optional(:client_name) => String.t(),
@@ -11,21 +11,18 @@ defmodule VirtualCrypto.Auth do
           optional(:logo_uri) => String.t(),
           required(:owner_discord_id) => non_neg_integer(),
           optional(:discord_support_server_invite_slug) => String.t(),
-          required(:redirect_uris) => [String.t()]
+          required(:redirect_uris) => [String.t()],
+          optional(:webhook_url) => String.t()
         }) ::
           {:ok, Ecto.Schema.t()}
           | {:error, any()}
-  def register_application(info) do
+  def register_application(requester, info) do
     {:ok, data} =
       Action.Application.register_client(
-        Map.get(info, :application_type, "web"),
-        Map.get(info, :grant_types, []),
-        Map.get(info, :client_name),
-        Map.get(info, :client_uri),
-        Map.get(info, :logo_uri),
-        info.owner_discord_id,
-        Map.get(info, :discord_support_server_invite_slug),
-        info.redirect_uris
+        requester,
+        info
+        |> Map.put_new(:application_type, "web")
+        |> Map.put_new(:grant_types, [])
       )
 
     {:ok, user} = Repo.insert(%VirtualCrypto.User.User{application_id: data.application.id})
@@ -108,7 +105,7 @@ defmodule VirtualCrypto.Auth do
     end)
   end
 
-  @spec exchange_token_by_unbound_authroization_code(%{
+  @spec exchange_token_by_unbound_authorization_code(%{
           client_id: String.t(),
           client_secret: String.t(),
           code: String.t()
@@ -124,7 +121,7 @@ defmodule VirtualCrypto.Auth do
           | {:error, :invalid_client_id}
           | {:error, :invalid_secret}
           | {:error, :invalid_grant_type}
-  def exchange_token_by_unbound_authroization_code(info) do
+  def exchange_token_by_unbound_authorization_code(info) do
     run(fn ->
       Action.token_unbound_authorization_code(
         info.client_id,
@@ -135,7 +132,7 @@ defmodule VirtualCrypto.Auth do
     end)
   end
 
-  @spec exchange_token_by_authroization_code(%{
+  @spec exchange_token_by_authorization_code(%{
           client_id: String.t(),
           redirect_uri: String.t(),
           code: String.t()
@@ -150,7 +147,7 @@ defmodule VirtualCrypto.Auth do
           | {:error, :invalid_code}
           | {:error, :invalid_client_id}
           | {:error, :invalid_redirect_uri}
-  def exchange_token_by_authroization_code(info) do
+  def exchange_token_by_authorization_code(info) do
     run(fn ->
       Action.token_authorization_code(
         info.client_id,

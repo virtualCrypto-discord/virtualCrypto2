@@ -1,6 +1,6 @@
 defmodule Discord.Api.Raw do
-  alias Discord.Api.Behavior
-  @behaviour Behavior
+  alias Discord.Api.Behaviour
+  @behaviour Behaviour
   @base_url "https://discord.com/api/v9/"
   def base_headers,
     do: [
@@ -30,7 +30,7 @@ defmodule Discord.Api.Raw do
     )
   end
 
-  defp post(paths, params \\ [], body) do
+  defp post(paths, params, body) do
     HTTPoison.post(
       @base_url <> Enum.join(paths, "/") <> make_params(params),
       Jason.encode!(body),
@@ -38,19 +38,19 @@ defmodule Discord.Api.Raw do
     )
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_guild_member_with_status_code(guild_id, user_id) do
     {:ok, response} = get(["guilds", to_string(guild_id), "members", to_string(user_id)], [])
     {response.status_code, Jason.decode!(response.body)}
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_roles(guild_id) do
     {:ok, response} = get(["guilds", to_string(guild_id), "roles"], [])
     Jason.decode!(response.body)
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_guild(guild_id, with_counts \\ false) do
     # FIXME: First aid
     case get_guild_with_status_code(guild_id, with_counts) do
@@ -59,7 +59,7 @@ defmodule Discord.Api.Raw do
     end
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_guild_with_status_code(guild_id, with_counts \\ false) do
     {:ok, response} =
       get(["guilds", to_string(guild_id)], [{"with_counts", to_string(with_counts)}])
@@ -67,27 +67,27 @@ defmodule Discord.Api.Raw do
     {response.status_code, Jason.decode!(response.body)}
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_user(user_id) do
     {200, body} = get_user_with_status(user_id)
 
     body
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_user_with_status(user_id) do
     {:ok, response} = get(["users", to_string(user_id)], [])
 
     {response.status_code, Jason.decode!(response.body)}
   end
 
-  @impl Behavior
+  @impl Behaviour
   def get_guild_integrations_with_status_code(guild_id) do
     {:ok, response} = get(["guilds", to_string(guild_id), "integrations"], [])
     {response.status_code, Jason.decode!(response.body)}
   end
 
-  @impl Behavior
+  @impl Behaviour
   def patch_webhook_message(application_id, interaction_token, webhook_message_id, body) do
     {:ok, response} =
       patch(
@@ -107,7 +107,7 @@ defmodule Discord.Api.Raw do
     {response.status_code, Jason.decode!(response.body)}
   end
 
-  @impl Behavior
+  @impl Behaviour
   def post_webhook_message(application_id, interaction_token, body) do
     {:ok, response} =
       post(

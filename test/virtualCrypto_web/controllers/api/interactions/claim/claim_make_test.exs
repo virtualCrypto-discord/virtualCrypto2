@@ -59,7 +59,7 @@ defmodule InteractionsControllerTest.Claim.Make do
              currency: %{unit: ^unit},
              claimant: %{discord_id: ^user2},
              payer: %{discord_id: ^user1}
-           } = VirtualCrypto.Money.get_claim_by_id(claim_id)
+           } = VirtualCrypto.Money.Query.Claim.get_claim_by_id(claim_id)
   end
 
   test "invalid amount", %{conn: conn, user1: user1, user2: user2, unit: unit} do

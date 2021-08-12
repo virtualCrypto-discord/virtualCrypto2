@@ -14,6 +14,9 @@ defmodule VirtualCrypto.Auth.Application do
     field :logo_uri, :string
     field :owner_discord_id, :integer
     field :discord_support_server_invite_slug, :string
+    field :webhook_url, :string
+    field :public_key, :binary
+    field :private_key, :binary
 
     timestamps()
   end

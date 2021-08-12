@@ -39,7 +39,7 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
         q =
           unquote(q)
           |> where(
-            [claim, currency, claimant, payer],
+            [claim, currency, claimant, payer, metadata],
             claim.status in ^statuses and unquote(cond_expr)
           )
           |> sr_filter(unquote(sr_filter), operator_id)
@@ -50,7 +50,7 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
             related_user_id -> q |> sr_filter(:all, related_user_id)
           end
 
-        q |> order_by([claim, info, claimant, payer], unquote(order_by))
+        q |> order_by([claim, currency, claimant, payer, metadata], unquote(order_by))
       end
 
     case limit do
@@ -95,7 +95,7 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
             ) do
     quote do
       get_claims_m_q(
-        claims_base_query(),
+        claims_base_query(unquote(operator_id)),
         unquote(operator_id),
         unquote(statuses),
         unquote(sr_filter),

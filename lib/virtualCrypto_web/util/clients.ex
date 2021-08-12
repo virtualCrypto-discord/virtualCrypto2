@@ -23,7 +23,9 @@ defmodule VirtualCryptoWeb.Clients do
       "grant_types" => application.grant_types,
       "logo_uri" => application.logo_uri,
       "owner_discord_id" => to_string(application.owner_discord_id),
-      "response_types" => application.response_types
+      "response_types" => application.response_types,
+      "webhook_url" => application.webhook_url,
+      "public_key" => Base.encode16(application.public_key, case: :lower)
     }
   end
 end

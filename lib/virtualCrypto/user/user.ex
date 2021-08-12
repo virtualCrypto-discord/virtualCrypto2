@@ -2,10 +2,15 @@ defmodule VirtualCrypto.User.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t() :: %VirtualCrypto.User.User{
+          discord_id: binary() | nil,
+          application_id: binary() | nil
+        }
+
   schema "users" do
-    field :discord_id, :integer
-    field :application_id, :integer
-    field :status, :integer
+    field(:discord_id, :integer)
+    field(:application_id, :integer)
+    field(:status, :integer)
 
     timestamps()
   end
