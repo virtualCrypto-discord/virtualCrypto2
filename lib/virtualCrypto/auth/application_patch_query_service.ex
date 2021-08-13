@@ -5,8 +5,8 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
   import Ecto.Query
   import VirtualCrypto.Auth.InternalAction.Util
 
-  defp common2_q(k, q, v, validater) do
-    case validater.(v) do
+  defp common2_q(k, q, v, validator) do
+    case validator.(v) do
       {:ok, v} -> {:ok, update(q, set: [{^k, ^v}])}
       {:error, _} = err -> err
     end
@@ -16,20 +16,20 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
     err
   end
 
-  defp common2(k, {:ok, q}, {:ok, v}, validater) do
-    common2_q(k, q, v, validater)
+  defp common2(k, {:ok, q}, {:ok, v}, validator) do
+    common2_q(k, q, v, validator)
   end
 
-  defp common2(k, {:nop, q}, {:ok, v}, validater) do
-    common2_q(k, q, v, validater)
+  defp common2(k, {:nop, q}, {:ok, v}, validator) do
+    common2_q(k, q, v, validator)
   end
 
-  defp common2(_k, x, :error, _validater) do
+  defp common2(_k, x, :error, _validator) do
     x
   end
 
-  defp common(k, q, map, validater) do
-    common2(k, q, Map.fetch(map, to_string(k)), validater)
+  defp common(k, q, map, validator) do
+    common2(k, q, Map.fetch(map, to_string(k)), validator)
   end
 
   defp logo_uri(q, map) do
@@ -65,6 +65,10 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
     common(:response_types, q, map, &Validator.validate_response_types/1)
   end
 
+  defp webhook_url(q, map) do
+    common(:webhook_url, q, map, &Validator.validate_webhook_url/1)
+  end
+
   defp client_secret_q(x, q, map) do
     case Map.get(map, "client_secret", false) do
       true -> {:ok, q |> update(set: [client_secret: ^make_secure_random_code()])}
@@ -85,9 +89,9 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
     x
   end
 
-  def patch(application_id, params) do
+  def patch(requester, application_id, params) do
     Repo.transaction(fn ->
-      case _patch(application_id, params) do
+      case _patch(requester, application_id, params) do
         {:ok, v} ->
           v
 
@@ -97,7 +101,7 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
     end)
   end
 
-  defp _patch(application_id, params) do
+  defp _patch(requester, application_id, params) do
     q = Auth.Application
     q = where(q, [app], app.id == ^application_id)
 
@@ -109,10 +113,17 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
          |> client_uri(params)
          |> discord_support_server_invite_slug(params)
          |> grant_types(params)
-         |> response_types(params) do
+         |> response_types(params)
+         |> webhook_url(params) do
       {:ok, q} ->
-        {1, _} = Repo.update_all(q, [])
-        patch_redirect_uris(application_id, Map.fetch(params, "redirect_uris"))
+        case Validator.verify_webhook_url(requester, params["webhook_url"], application_id) do
+          :ok ->
+            {1, _} = Repo.update_all(q, [])
+            patch_redirect_uris(application_id, Map.fetch(params, "redirect_uris"))
+
+          x ->
+            x
+        end
 
       {:nop, _q} ->
         patch_redirect_uris(application_id, Map.fetch(params, "redirect_uris"))
@@ -129,8 +140,9 @@ defmodule VirtualCrypto.Auth.Application.PatchQuery do
   defp patch_redirect_uris(application_id, {:ok, redirect_uris}) do
     if redirect_uris |> Enum.all?(&(URI.parse(&1).scheme in ["http", "https"])) do
       q =
-        from redirect_uris in Auth.RedirectUri,
+        from(redirect_uris in Auth.RedirectUri,
           where: redirect_uris.application_id == ^application_id
+        )
 
       Repo.delete_all(q)
 

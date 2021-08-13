@@ -41,7 +41,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
              {{:validate_token, :token_verification_failed}, Guardian.Plug.current_resource(conn)},
            {{:validate_token, :invalid_user}, %User.User{application_id: application_id}} <-
              {{:validate_token, :invalid_user}, User.get_user_by_id(user_id)} do
-        Auth.Application.PatchQuery.patch(application_id, params)
+        Auth.Application.PatchQuery.patch(user_id, application_id, params)
       end
 
     case params do

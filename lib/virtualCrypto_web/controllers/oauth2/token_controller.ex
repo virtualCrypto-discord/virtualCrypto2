@@ -7,7 +7,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
       with {:client_id, %{"client_id" => client_id}} <- {:client_id, params},
            {:redirect_uri, %{"redirect_uri" => redirect_uri}} <- {:redirect_uri, params},
            {:code, %{"code" => code}} <- {:code, params} do
-        Auth.exchange_token_by_authroization_code(%{
+        Auth.exchange_token_by_authorization_code(%{
           client_id: client_id,
           redirect_uri: redirect_uri,
           code: code
