@@ -45,28 +45,28 @@ defmodule InteractionsControllerTest.Claim.List.All do
                  %{
                    "components" => [
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-0",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏪"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-1",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏮️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-2",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏭️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-3",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏩"},
                        "style" => 2,
@@ -75,6 +75,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
                      %{
                        "custom_id" =>
                          CustomId.encode(
+                           4,
                            Button.claim_list(:all) <>
                              ListOptions.encode(%ListOptions{
                                approved: false,
@@ -118,6 +119,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
 
     custom_id_reload =
       CustomId.encode(
+        4,
         Button.claim_list(:all) <>
           ListOptions.encode(%ListOptions{
             approved: false,
@@ -143,6 +145,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
 
     custom_id_select =
       CustomId.encode(
+        5,
         SelectMenu.claim_select() <>
           ListOptions.encode(%ListOptions{
             approved: false,
@@ -164,28 +167,28 @@ defmodule InteractionsControllerTest.Claim.List.All do
                  %{
                    "components" => [
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-0",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏪"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-1",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏮️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-2",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏭️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-3",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏩"},
                        "style" => 2,

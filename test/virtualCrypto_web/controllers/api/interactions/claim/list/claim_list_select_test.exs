@@ -66,6 +66,7 @@ defmodule InteractionsControllerTest.Claim.List.Select do
 
     custom_id_select =
       CustomId.encode(
+        0,
         SelectMenu.claim_select() <>
           ListOptions.encode(options) <> encoded_claims_ids
       )
@@ -127,17 +128,19 @@ defmodule InteractionsControllerTest.Claim.List.Select do
           "disabled" => true
         }
       ]
-      |> Enum.map(
-        &Map.merge(&1, %{
+      |> Enum.with_index()
+      |> Enum.map(fn {v, i} ->
+        Map.merge(v, %{
           "custom_id" =>
             CustomId.encode(
-              Button.claim_action(&1["custom_id"]) <>
+              i + 5,
+              Button.claim_action(v["custom_id"]) <>
                 ListOptions.encode(options) <> encoded_claims_ids
             ),
-          "emoji" => %{"name" => &1["emoji"]},
+          "emoji" => %{"name" => v["emoji"]},
           "type" => 2
         })
-      )
+      end)
 
     assert total_selected_amount == 10_000_099
     res = json_response(conn, 200)
@@ -212,6 +215,7 @@ defmodule InteractionsControllerTest.Claim.List.Select do
 
     custom_id_select =
       CustomId.encode(
+        0,
         SelectMenu.claim_select() <>
           ListOptions.encode(options) <> encoded_claims_ids
       )
@@ -276,17 +280,19 @@ defmodule InteractionsControllerTest.Claim.List.Select do
           "disabled" => false
         }
       ]
-      |> Enum.map(
-        &Map.merge(&1, %{
+      |> Enum.with_index()
+      |> Enum.map(fn {v, i} ->
+        Map.merge(v, %{
           "custom_id" =>
             CustomId.encode(
-              Button.claim_action(&1["custom_id"]) <>
+              i + 5,
+              Button.claim_action(v["custom_id"]) <>
                 ListOptions.encode(options) <> Helper.encode_claim_ids(selected_claims)
             ),
-          "emoji" => %{"name" => &1["emoji"]},
+          "emoji" => %{"name" => v["emoji"]},
           "type" => 2
         })
-      )
+      end)
 
     assert total_selected_amount == 100
     res = json_response(conn, 200)
@@ -364,6 +370,7 @@ defmodule InteractionsControllerTest.Claim.List.Select do
 
     custom_id_select =
       CustomId.encode(
+        0,
         SelectMenu.claim_select() <>
           ListOptions.encode(options) <> encoded_claims_ids
       )

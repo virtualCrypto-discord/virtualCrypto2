@@ -56,16 +56,13 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List.Options do
         x -> x
       end
 
-    random_hash = 1..340_282_366_920_938_463_463_374_607_431_768_211_455 |> Enum.random()
-
     <<encode_bool(pending)::1, encode_bool(approved)::1, encode_bool(denied)::1,
-      encode_bool(canceled)::1, encode_position(position)::2, 0::2, page::32, related_user::64,
-      random_hash::128>>
+      encode_bool(canceled)::1, encode_position(position)::2, 0::2, page::32, related_user::64>>
   end
 
   def parse(
         <<pending::1, approved::1, denied::1, canceled::1, position::2, 0::2, page::32,
-          related_user::64, _random_hash::128, rest::binary>>
+          related_user::64, rest::binary>>
       ) do
     r = %Options{
       pending: parse_status(pending),
