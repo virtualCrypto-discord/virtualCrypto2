@@ -109,7 +109,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   end
 
   defp custom_id(_subcommand, nil, _flags) do
-    "disabled"
+    "disabled-#{UUID.uuid4()}"
   end
 
   defp custom_id(subcommand, :last, query) do
