@@ -81,7 +81,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
         _conn
       )
       when subcommand in [:claimed, :received, :all] do
-    {options, <<>>} = Options.parse(binary)
+    {options, <<_rest::binary>>} = Options.parse(binary)
     user = get_user(payload)
     handle_listing(user, options)
   end
