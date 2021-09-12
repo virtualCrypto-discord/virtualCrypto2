@@ -442,16 +442,14 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
               error_info: :not_enough_amount
             )
 
-            {:error,
-             {:invalid_metadata,
-              errors}} ->
-                conn
-                |> put_status(400)
-                |> render("error.json",
-                  error: :invalid_request,
-                  error_description: "invalid_metadata",
-                  error_description_details: errors
-                )
+          {:error, {:invalid_metadata, errors}} ->
+            conn
+            |> put_status(400)
+            |> render("error.json",
+              error: :invalid_request,
+              error_description: "invalid_metadata",
+              error_description_details: errors
+            )
 
           {:error, :metadata_limit} ->
             conn
