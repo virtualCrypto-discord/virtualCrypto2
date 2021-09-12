@@ -8,7 +8,7 @@ config :virtualCrypto, VirtualCrypto.Repo,
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
   pool: Ecto.Adapters.SQL.Sandbox,
-  log: false
+  pool_size: 40
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

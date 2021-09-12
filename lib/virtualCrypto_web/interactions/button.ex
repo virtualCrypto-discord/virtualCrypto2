@@ -43,7 +43,8 @@ defmodule VirtualCryptoWeb.Interaction.Button do
              %DiscordUser{id: String.to_integer(user["id"])}
            ) do
         {:ok, claims} ->
-          claim_id_str = claims |> Enum.map(& &1.id) |> Enum.map(&"`#{&1}`") |> Enum.join(",")
+          claim_id_str =
+            claims |> Enum.map(& &1.claim.id) |> Enum.map(&"`#{&1}`") |> Enum.join(",")
 
           %{
             content: "id: #{claim_id_str} の請求を" <> action_str(subcommand)
@@ -81,7 +82,7 @@ defmodule VirtualCryptoWeb.Interaction.Button do
         _conn
       )
       when subcommand in [:claimed, :received, :all] do
-    {options, <<>>} = Options.parse(binary)
+    {options, <<_rest::binary>>} = Options.parse(binary)
     user = get_user(payload)
     handle_listing(user, options)
   end

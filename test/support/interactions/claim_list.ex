@@ -55,6 +55,7 @@ defmodule InteractionsControllerTest.Claim.List.Helper do
 
         custom_id =
           CustomId.encode(
+            0,
             Button.claim_action(unquote(action)) <>
               ListOptions.encode(options) <> encoded_claims_ids
           )

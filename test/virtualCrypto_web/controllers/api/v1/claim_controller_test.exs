@@ -5,7 +5,7 @@ defmodule ClaimControllerTest.V1 do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
   defmodule TestDiscordAPi do
-    # @behaviour Discord.Api.Behavior
+    # @behaviour Discord.Api.Behaviour
 
     def get_user(user_id) do
       %{"id" => to_string(user_id)}
@@ -760,7 +760,7 @@ defmodule ClaimControllerTest.V1 do
       status: "pending"
     })
 
-    assert %{} = VirtualCrypto.Money.get_claim_by_id(res["id"])
+    assert %{} = VirtualCrypto.Money.Query.Claim.get_claim_by_id(res["id"])
   end
 
   test "create claim with invalid payer_discord_id type", %{conn: conn, user1: user1, unit: unit} do

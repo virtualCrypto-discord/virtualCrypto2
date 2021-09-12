@@ -1,4 +1,4 @@
-defmodule Discord.Api.Behavior do
+defmodule Discord.Api.Behaviour do
   @type service() :: module()
   @type guild_id :: pos_integer()
   @type user_id :: pos_integer()

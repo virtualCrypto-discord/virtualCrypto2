@@ -49,6 +49,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
 
     custom_id =
       CustomId.encode(
+        0,
         Button.claim_action(:approve) <>
           ListOptions.encode(options) <> encoded_claims_ids
       )
@@ -76,12 +77,14 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
 
     reload_custom_id =
       CustomId.encode(
+        4,
         Button.claim_list(:all) <>
           ListOptions.encode(options)
       )
 
     select_custom_id =
       CustomId.encode(
+        5,
         Button.claim_list(:all) <>
           ListOptions.encode(options) <> (remaining_claims |> Helper.encode_claim_ids())
       )
@@ -92,28 +95,28 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
                  %{
                    "components" => [
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-0",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏪"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-1",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏮️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-2",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏭️"},
                        "style" => 2,
                        "type" => 2
                      },
                      %{
-                       "custom_id" => "disabled",
+                       "custom_id" => "disabled-3",
                        "disabled" => true,
                        "emoji" => %{"name" => "⏩"},
                        "style" => 2,
@@ -167,7 +170,8 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
              "type" => 7
            } == json_response(conn, 200)
 
-    assert VirtualCrypto.Money.get_claim_by_id(claim.claim.id).claim.status == "approved"
+    assert VirtualCrypto.Money.Query.Claim.get_claim_by_id(claim.claim.id).claim.status ==
+             "approved"
 
     after_claimant =
       VirtualCrypto.Money.balance(

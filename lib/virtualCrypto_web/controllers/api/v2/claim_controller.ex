@@ -97,7 +97,13 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   end
 
   defp format_claim(
-         %{claim: claim, currency: currency, claimant: claimant, payer: payer},
+         %{
+           claim: claim,
+           currency: currency,
+           claimant: claimant,
+           payer: payer,
+           metadata: metadata
+         },
          service
        ) do
     %{
@@ -124,7 +130,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       },
       "created_at" => DateTime.from_naive!(claim.inserted_at, "Etc/UTC"),
       "updated_at" => DateTime.from_naive!(claim.updated_at, "Etc/UTC"),
-      "status" => claim.status
+      "status" => claim.status,
+      "metadata" => metadata
     }
   end
 
@@ -274,7 +281,14 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     end
   end
 
-  def post(conn, %{"payer_discord_id" => payer_discord_id, "unit" => unit, "amount" => amount})
+  def post(
+        conn,
+        %{
+          "payer_discord_id" => payer_discord_id,
+          "unit" => unit,
+          "amount" => amount
+        } = d
+      )
       when is_binary(payer_discord_id) and is_binary(amount) do
     case {Guardian.Plug.current_resource(conn), Integer.parse(payer_discord_id),
           Integer.parse(amount)} do
@@ -283,7 +297,8 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
                %VCUser{id: user_id},
                %DiscordUser{id: payer_discord_id},
                unit,
-               amount
+               amount,
+               d["metadata"]
              ) do
           {:ok, claim} ->
             conn
@@ -301,6 +316,15 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
             |> render("error.json",
               error: :invalid_request,
               error_description: :not_found_currency
+            )
+
+          {:error, {:invalid_metadata, x}} ->
+            conn
+            |> put_status(400)
+            |> render("error.json",
+              error: :invalid_request,
+              error_description: "invalid_metadata",
+              error_description_details: x
             )
         end
 
@@ -372,10 +396,10 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     )
   end
 
-  defp patch_(conn, id, f) do
+  defp patch_(conn, id, metadata, f) do
     case {Guardian.Plug.current_resource(conn), Integer.parse(id)} do
       {%{"sub" => user_id, "vc.claim" => true}, {int_id, ""}} ->
-        case f.(int_id, %VCUser{id: user_id}) do
+        case f.(int_id, %VCUser{id: user_id}, metadata) do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
@@ -417,6 +441,26 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
               error: :conflict,
               error_info: :not_enough_amount
             )
+
+            {:error,
+             {:invalid_metadata,
+              errors}} ->
+                conn
+                |> put_status(400)
+                |> render("error.json",
+                  error: :invalid_request,
+                  error_description: "invalid_metadata",
+                  error_description_details: errors
+                )
+
+          {:error, :metadata_limit} ->
+            conn
+            |> put_status(400)
+            |> render("error.json",
+              error: :invalid_request,
+              error_description:
+                "The upper limit of the number of metadata is 50, and it is highly possible that this has been reached. (Maybe for other reasons)"
+            )
         end
 
       {%{"sub" => _, "vc.claim" => false}, _} ->
@@ -434,16 +478,20 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     end
   end
 
-  def patch(conn, %{"id" => id, "status" => "approved"}) do
-    patch_(conn, id, &Money.approve_claim/2)
+  def patch(conn, %{"id" => id, "status" => "approved"} = d) do
+    patch_(conn, id, Map.get(d, "metadata", %{}), &Money.approve_claim/3)
   end
 
-  def patch(conn, %{"id" => id, "status" => "denied"}) do
-    patch_(conn, id, &Money.deny_claim/2)
+  def patch(conn, %{"id" => id, "status" => "denied"} = d) do
+    patch_(conn, id, Map.get(d, "metadata", %{}), &Money.deny_claim/3)
   end
 
-  def patch(conn, %{"id" => id, "status" => "canceled"}) do
-    patch_(conn, id, &Money.cancel_claim/2)
+  def patch(conn, %{"id" => id, "status" => "canceled"} = d) do
+    patch_(conn, id, Map.get(d, "metadata", %{}), &Money.cancel_claim/3)
+  end
+
+  def patch(conn, %{"id" => id, "metadata" => metadata}) do
+    patch_(conn, id, metadata, &Money.update_metadata/3)
   end
 
   def patch(conn, %{"id" => _id}) do
@@ -455,7 +503,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
   def get_by_id(conn, %{"id" => id}) do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        case VirtualCrypto.Money.get_claim_by_id(id) do
+        case VirtualCrypto.Money.get_claim_by_id(%VCUser{id: user_id}, id) do
           %{payer: %VirtualCrypto.User.User{id: ^user_id}} = d ->
             render(conn, "data.json", params: format_claim(d, get_service(conn)))
 

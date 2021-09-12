@@ -64,7 +64,7 @@ defmodule VirtualCrypto.Auth.InternalAction.Application do
          {:verify_webhook_url, :ok} <-
            {:verify_webhook_url,
             if webhook_url do
-              VirtualCrypto.Notification.Webhook.verify(
+              VirtualCrypto.Notification.Webhook.CloudflareWorkers.verify(
                 requester,
                 webhook_url,
                 public_key,

@@ -8,9 +8,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (Error(..))
-import Json.Decode exposing (Decoder)
+import Json.Decode
 import Maybe exposing (withDefault)
-import Types.Applications exposing (ApplicationInfo, Applications, ClientRegistrationPatchErrorResponse, TokenEndpointResponse, clientConfigurationRequestEncoder, clientRegistrationPatchErrorResponseDecoder, tokenEndpointDecoder)
+import Types.Applications exposing (ApplicationInfo, ClientRegistrationPatchErrorResponse, TokenEndpointResponse, clientConfigurationRequestEncoder, clientRegistrationPatchErrorResponseDecoder, tokenEndpointDecoder)
 import Url exposing (Protocol(..))
 import Url.Builder exposing (absolute, string)
 

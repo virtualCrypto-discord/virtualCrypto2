@@ -145,7 +145,7 @@ defmodule VirtualCrypto.Auth.Application.Metadata.Validator do
         {:error, {:invalid_client_metadata, :client_not_found}}
 
       d ->
-        case VirtualCrypto.Notification.Webhook.verify(
+        case VirtualCrypto.Notification.Webhook.CloudflareWorkers.verify(
                requester,
                webhook_url,
                d.public_key,

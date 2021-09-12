@@ -76,7 +76,8 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
                %VCUser{id: user_id},
                %DiscordUser{id: payer_discord_id},
                unit,
-               amount
+               amount,
+               nil
              ) do
           {:ok, claim} ->
             conn
@@ -168,7 +169,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   defp patch_(conn, id, f) do
     case {Guardian.Plug.current_resource(conn), Integer.parse(id)} do
       {%{"sub" => user_id, "vc.claim" => true}, {int_id, ""}} ->
-        case f.(int_id, %VCUser{id: user_id}) do
+        case f.(int_id, %VCUser{id: user_id}, %{}) do
           {:ok, claim} ->
             render(conn, "data.json", params: format_claim(claim, get_service(conn)))
 
@@ -218,15 +219,15 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   end
 
   def patch(conn, %{"id" => id, "status" => "approved"}) do
-    patch_(conn, id, &Money.approve_claim/2)
+    patch_(conn, id, &Money.approve_claim/3)
   end
 
   def patch(conn, %{"id" => id, "status" => "denied"}) do
-    patch_(conn, id, &Money.deny_claim/2)
+    patch_(conn, id, &Money.deny_claim/3)
   end
 
   def patch(conn, %{"id" => id, "status" => "canceled"}) do
-    patch_(conn, id, &Money.cancel_claim/2)
+    patch_(conn, id, &Money.cancel_claim/3)
   end
 
   def patch(conn, %{"id" => _id}) do
@@ -238,7 +239,7 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   def get_by_id(conn, %{"id" => id}) do
     case Guardian.Plug.current_resource(conn) do
       %{"sub" => user_id, "vc.claim" => true} ->
-        case Money.get_claim_by_id(id) do
+        case Money.get_claim_by_id(%VCUser{id: user_id}, id) do
           %{payer: %VirtualCrypto.User.User{id: ^user_id}} = d ->
             render(conn, "data.json", params: format_claim(d, get_service(conn)))
 

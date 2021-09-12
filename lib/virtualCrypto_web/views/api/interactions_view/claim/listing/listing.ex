@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
   alias VirtualCryptoWeb.Interaction.CustomId
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
-
+  @max_column_count 5
   defp render_title(:received) do
     "請求一覧(received)"
   end
@@ -108,18 +108,20 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     end)
   end
 
-  defp custom_id(_subcommand, nil, _flags) do
-    "disabled"
+  defp custom_id(k, _subcommand, nil, _flags) do
+    "disabled-#{k}"
   end
 
-  defp custom_id(subcommand, :last, query) do
+  defp custom_id(k, subcommand, :last, query) do
     CustomId.encode(
+      k,
       CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query | page: :last})
     )
   end
 
-  defp custom_id(subcommand, n, query) do
+  defp custom_id(k, subcommand, n, query) do
     CustomId.encode(
+      k,
       CustomId.UI.Button.claim_list(subcommand) <> Options.encode(%{query | page: n})
     )
   end
@@ -145,7 +147,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     }
   end
 
-  defp pagination_row(subcommand, %{
+  defp pagination_row(k, subcommand, %{
          first: first,
          last: last,
          prev: prev,
@@ -160,45 +162,45 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏪"},
-          custom_id: custom_id(subcommand, first, options),
+          custom_id: custom_id(k, subcommand, first, options),
           disabled: disabled(first)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏮️"},
-          custom_id: custom_id(subcommand, prev, options),
+          custom_id: custom_id(k + 1, subcommand, prev, options),
           disabled: disabled(prev)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏭️"},
-          custom_id: custom_id(subcommand, next, options),
+          custom_id: custom_id(k + 2, subcommand, next, options),
           disabled: disabled(next)
         },
         %{
           type: button(),
           style: button_style_secondary(),
           emoji: %{name: "⏩"},
-          custom_id: custom_id(subcommand, last, options),
+          custom_id: custom_id(k + 3, subcommand, last, options),
           disabled: disabled(last)
         },
         %{
           type: button(),
           style: button_style_secondary(),
-          custom_id: custom_id(subcommand, page, options),
+          custom_id: custom_id(k + 4, subcommand, page, options),
           emoji: %{name: "🔄"}
         }
       ]
     }
   end
 
-  defp selection_select_row(_subcommand, [], _me, _query) do
+  defp selection_select_row(_k, _subcommand, [], _me, _query) do
     []
   end
 
-  defp selection_select_row(subcommand, claims, me, options) do
+  defp selection_select_row(k, subcommand, claims, me, options) do
     [
       %{
         type: action_row(),
@@ -207,6 +209,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
             type: select_menu(),
             custom_id:
               CustomId.encode(
+                k,
                 CustomId.UI.SelectMenu.claim_select() <>
                   Options.encode(options) <>
                   Helper.encode_claim_ids(claims)
@@ -241,19 +244,20 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
     }
   end
 
-  defp action_custom_id(action, claims, options) do
+  defp action_custom_id(k, action, claims, options) do
     CustomId.encode(
+      k,
       CustomId.UI.Button.claim_action(action) <>
         Options.encode(options) <>
         Helper.encode_claim_ids(claims)
     )
   end
 
-  defp selection_execute_row([], _quotations, _me, _query) do
+  defp selection_execute_row(_k, [], _quotations, _me, _query) do
     []
   end
 
-  defp selection_execute_row(selected_claims, quotations, me, query) do
+  defp selection_execute_row(k, selected_claims, quotations, me, query) do
     cancelable =
       selected_claims |> Enum.all?(fn %{claimant: claimant} -> claimant.discord_id == me end)
 
@@ -268,27 +272,27 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
             type: button(),
             style: button_style_secondary(),
             emoji: %{name: "⬅️"},
-            custom_id: action_custom_id(:back, selected_claims, query)
+            custom_id: action_custom_id(k, :back, selected_claims, query)
           },
           %{
             type: button(),
             style: button_style_success(),
             emoji: %{name: "✅"},
-            custom_id: action_custom_id(:approve, selected_claims, query),
+            custom_id: action_custom_id(k + 1, :approve, selected_claims, query),
             disabled: not approvable
           },
           %{
             type: button(),
             style: button_style_danger(),
             emoji: %{name: "❌"},
-            custom_id: action_custom_id(:deny, selected_claims, query),
+            custom_id: action_custom_id(k + 2, :deny, selected_claims, query),
             disabled: not deniable
           },
           %{
             type: button(),
             style: button_style_primary(),
             emoji: %{name: "🗑️"},
-            custom_id: action_custom_id(:cancel, selected_claims, query),
+            custom_id: action_custom_id(k + 3, :cancel, selected_claims, query),
             disabled: not cancelable
           }
         ]
@@ -356,15 +360,17 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
         ],
         components:
           [
-            pagination_row(subcommand, m)
+            pagination_row(0, subcommand, m)
           ] ++
             selection_select_row(
+              @max_column_count,
               subcommand,
               pending_claims,
               me,
               options
             ) ++
             selection_execute_row(
+              @max_column_count * 2,
               selected_claims,
               [],
               me,
@@ -423,12 +429,14 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Listing do
           ] ++ selected_claim_embed(quotations),
         components:
           selection_select_row(
+            0,
             position,
             pending_claims,
             me,
             options
           ) ++
             selection_execute_row(
+              @max_column_count,
               selected_claims,
               quotations,
               me,

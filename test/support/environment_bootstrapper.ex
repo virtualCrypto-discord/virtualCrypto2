@@ -70,7 +70,8 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
       %DiscordUser{id: user_id1},
       %DiscordUser{id: user_id2},
       unit,
-      amount
+      amount,
+      nil
     )
   end
 
@@ -101,7 +102,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         500
       )
 
-    {:ok, c3} = VirtualCrypto.Money.approve_claim(c.id, %DiscordUser{id: d.user2})
+    {:ok, c3} = VirtualCrypto.Money.approve_claim(c.id, %DiscordUser{id: d.user2}, %{})
 
     {:ok, %{claim: c}} =
       create_claim(
@@ -111,7 +112,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         500
       )
 
-    {:ok, c4} = VirtualCrypto.Money.deny_claim(c.id, %DiscordUser{id: d.user2})
+    {:ok, c4} = VirtualCrypto.Money.deny_claim(c.id, %DiscordUser{id: d.user2}, %{})
 
     {:ok, %{claim: c}} =
       create_claim(
@@ -121,7 +122,7 @@ defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
         500
       )
 
-    {:ok, c5} = VirtualCrypto.Money.cancel_claim(c.id, %DiscordUser{id: d.user1})
+    {:ok, c5} = VirtualCrypto.Money.cancel_claim(c.id, %DiscordUser{id: d.user1}, %{})
 
     {:ok, c6} =
       create_claim(
