@@ -28,6 +28,7 @@ defmodule InteractionsControllerTest.Claim.List.Cancel do
 
     custom_id =
       CustomId.encode(
+        0,
         Button.claim_action(:cancel) <>
           ListOptions.encode(options) <> encoded_claims_ids
       )
