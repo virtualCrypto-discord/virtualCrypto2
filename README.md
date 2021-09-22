@@ -16,6 +16,7 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Fill Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) to receive interactions via http.
   - Add your bot to server.
   - Execute `mix register.commands <your guild id>` to register slash commands.
+  - Setup and run https://github.com/virtualCrypto-discord/webhook-emitter-cf-workers.
 ### Example of config/dev.exs
 ```elixir
 use Mix.Config
@@ -85,5 +86,13 @@ config :virtualCrypto, :site_url, "https://localhost:4000"
 config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/callback/discord"
 
 # mix phx.gen.secret 32
-config :virtualCrypto, VirtualCryptoWeb.Endpoint, live_view: [signing_salt: ""]
+config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+  live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
+
+config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
+  children: [VirtualCrypto.Notification.Webhook.CloudflareWorkers]
+
+# https://github.com/virtualCrypto-discord/webhook-emitter-cf-workers
+config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
+  webhook_proxy: "http://127.0.0.1:8787"
 ```
