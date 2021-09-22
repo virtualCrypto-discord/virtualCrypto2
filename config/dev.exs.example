@@ -77,3 +77,6 @@ config :virtualCrypto, :site_url, "https://localhost:4000"
 config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/callback/discord"
 
 config :virtualCrypto, VirtualCryptoWeb.Endpoint, live_view: [signing_salt: ""]
+
+config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
+  webhook_proxy: "http://127.0.0.1:8787"

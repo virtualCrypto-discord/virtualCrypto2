@@ -4,7 +4,7 @@ defmodule InteractionsControllerTest.Info do
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
   defmodule TestDiscordAPI do
-    # @behaviour Discord.Api.Behavior
+    # @behaviour Discord.Api.Behaviour
 
     def get_guild(guild_id) do
       %{"id" => to_string(guild_id), "name" => "TestGuild"}
@@ -258,7 +258,7 @@ defmodule InteractionsControllerTest.Info do
 
   describe "not has icon" do
     defmodule TestDiscordAPINotHasIcon do
-      # @behaviour Discord.Api.Behavior
+      # @behaviour Discord.Api.Behaviour
 
       def get_guild(guild_id) do
         %{"id" => to_string(guild_id), "name" => "TestGuild", "icon" => nil}
@@ -287,7 +287,7 @@ defmodule InteractionsControllerTest.Info do
 
   describe "has icon" do
     defmodule TestDiscordAPIHasIcon do
-      # @behaviour Discord.Api.Behavior
+      # @behaviour Discord.Api.Behaviour
 
       def get_guild(guild_id) do
         %{
@@ -324,7 +324,7 @@ defmodule InteractionsControllerTest.Info do
 
   describe "has animated icon" do
     defmodule TestDiscordAPIHasAnimatedIcon do
-      # @behaviour Discord.Api.Behavior
+      # @behaviour Discord.Api.Behaviour
 
       def get_guild(guild_id) do
         %{

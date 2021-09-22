@@ -84,4 +84,32 @@ defmodule VirtualCrypto.Exterior.User do
       exterior.id == user.id
     end
   end
+
+  defmodule VirtualCryptoInstanceResolver do
+    def resolves(instances) do
+      instances
+    end
+
+    def resolve_ids(instances) do
+      instances |> Enum.map(& &1.id)
+    end
+  end
+
+  defimpl Resolvable, for: U.User do
+    def resolve(user) do
+      user
+    end
+
+    def resolve_id(user) do
+      user.id
+    end
+
+    def resolver(_exterior) do
+      VirtualCryptoInstanceResolver
+    end
+
+    def is?(exterior, user) do
+      exterior.id == user.id
+    end
+  end
 end

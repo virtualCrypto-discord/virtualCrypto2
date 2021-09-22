@@ -13,6 +13,18 @@ defmodule VirtualCryptoWeb.Api.V1V2.ClaimViewCommon do
     }
   end
 
+  def render("error.json", %{
+        error: error,
+        error_description: error_description,
+        error_description_details: details
+      }) do
+    %{
+      error: error,
+      error_description: error_description,
+      error_description_details: details
+    }
+  end
+
   def render("error.json", %{error: error, error_description: error_description}) do
     %{
       error: error,

@@ -43,7 +43,8 @@ defmodule VirtualCryptoWeb.Interaction.Button do
              %DiscordUser{id: String.to_integer(user["id"])}
            ) do
         {:ok, claims} ->
-          claim_id_str = claims |> Enum.map(& &1.id) |> Enum.map(&"`#{&1}`") |> Enum.join(",")
+          claim_id_str =
+            claims |> Enum.map(& &1.claim.id) |> Enum.map(&"`#{&1}`") |> Enum.join(",")
 
           %{
             content: "id: #{claim_id_str} の請求を" <> action_str(subcommand)

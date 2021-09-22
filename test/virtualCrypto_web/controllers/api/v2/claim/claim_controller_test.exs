@@ -3,67 +3,19 @@ defmodule ClaimControllerTest.V2 do
   import Enum, only: [at: 2]
   import String, only: [to_integer: 1]
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
-
-  defmodule TestDiscordAPI do
-    # @behaviour Discord.Api.Behavior
-
-    def get_user(user_id) do
-      %{"id" => to_string(user_id)}
-    end
-  end
+  use VirtualCryptoWeb.TestDataVerifier
 
   setup :setup_claim
 
   setup %{conn: conn} = d do
-    Map.put(d, :conn, VirtualCryptoWeb.Plug.DiscordApiService.set_service(conn, TestDiscordAPI))
-  end
-
-  defp verify_claim(claim, %{
-         amount: amount,
-         claimant: claimant,
-         payer: payer,
-         currency: currency,
-         status: status
-       }) do
-    assert to_integer(claim["amount"]) == amount
-    assert claim["status"] == status
-    verify_user(claim["claimant"], claimant)
-    verify_user(claim["payer"], payer)
-    verify_currency(claim["currency"], currency)
-  end
-
-  defp verify_user(user, user_) do
-    if Map.get(user_, :id) != nil do
-      assert user["id"] == user_.id
-    else
-      assert(is_binary(user["id"]))
-    end
-
-    if Map.get(user_, :discord) != nil do
-      assert to_integer(user["discord"]["id"]) == user_.discord.id
-    end
-  end
-
-  defp verify_currency(currency, currency_) do
-    assert currency["unit"] == currency_.unit
-    assert to_integer(currency["guild"]) == currency_.guild
-    assert currency["name"] == currency_.name
-
-    case Map.get(currency_, :pool_amount) do
-      nil ->
-        nil
-
-      pool_amount ->
-        assert to_integer(currency["pool_amount"]) == pool_amount
-    end
-
-    case Map.fetch(currency_, :total_amount) do
-      {:ok, total_amount} ->
-        assert currency["total_amount"] == total_amount
-
-      :error ->
-        nil
-    end
+    Map.put(
+      d,
+      :conn,
+      VirtualCryptoWeb.Plug.DiscordApiService.set_service(
+        conn,
+        VirtualCryptoWeb.ClaimTest.TestDiscordAPI
+      )
+    )
   end
 
   test "get user1 claims with invalid token by user1", %{conn: conn} = ctx do
@@ -802,7 +754,7 @@ defmodule ClaimControllerTest.V2 do
       status: "pending"
     })
 
-    assert %{} = VirtualCrypto.Money.get_claim_by_id(res["id"])
+    assert %{} = VirtualCrypto.Money.Query.Claim.get_claim_by_id(res["id"])
   end
 
   test "create claim with invalid payer_discord_id type", %{conn: conn, user1: user1, unit: unit} do

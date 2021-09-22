@@ -40,7 +40,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
 
     regex = ~r/id: (\d+)の請求を承諾し、支払いました。/
     assert [_, ^claim_id_str] = Regex.run(regex, content)
-    assert VirtualCrypto.Money.get_claim_by_id(claim_id).claim.status == "approved"
+    assert VirtualCrypto.Money.Query.Claim.get_claim_by_id(claim_id).claim.status == "approved"
 
     after_claimant =
       VirtualCrypto.Money.balance(

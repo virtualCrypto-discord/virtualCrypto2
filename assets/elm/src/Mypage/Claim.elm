@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Mypage.Dashboard exposing (DynamicData(..))
-import Types.User exposing (User, avatarURL)
+import Types.User exposing (User)
 import Types.Claim exposing (Claims,claimsDecoder,Claim)
 import Platform exposing (Task)
 import Task exposing (Task)
