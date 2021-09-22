@@ -28,10 +28,16 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
     Repo.one(q)
   end
 
-  defp execute_raw(forward, body, timestamp, public_key, private_key) do
-    webhook_proxy =
-      Keyword.fetch!(Application.get_env(:virtualCrypto, __MODULE__), :webhook_proxy)
+  def credentials(config) do
+    case Keyword.fetch(config, :ssl) do
+      :error -> []
+      {:ok, x} -> [ssl: x]
+    end
+  end
 
+  defp execute_raw(forward, body, timestamp, public_key, private_key) do
+    config = Application.get_env(:virtualCrypto, __MODULE__)
+    webhook_proxy = Keyword.fetch!(config, :webhook_proxy)
     timestamp = to_string(timestamp)
     message = timestamp <> body
 
@@ -42,11 +48,16 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
         {:ed_pri, :ed25519, public_key, private_key}
       )
 
-    HTTPoison.post(webhook_proxy, body, %{
-      "X-Signature-Ed25519" => Base.encode16(signature, case: :lower),
-      "X-Signature-Timestamp" => timestamp,
-      "X-Forward" => forward
-    })
+    HTTPoison.post(
+      webhook_proxy,
+      body,
+      %{
+        "X-Signature-Ed25519" => Base.encode16(signature, case: :lower),
+        "X-Signature-Timestamp" => timestamp,
+        "X-Forward" => forward
+      },
+      credentials(config)
+    )
   end
 
   defp execute_json(user, event) do
@@ -77,10 +88,9 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
         if res.status_code != 200 do
           Logger.warn("proxy respond with #{res.status_code}")
         end
-
-        case res.headers |> List.keyfind("x-status", 0) do
+        case res.headers |> List.keyfind("X-Status", 0) do
           nil ->
-            Logger.warn("missing x-status header: #{res.body}")
+            Logger.warn("missing X-Status header: #{res.body}")
 
             :error
 
@@ -90,7 +100,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
                 {:ok, v, Jason.decode(res.body)}
 
               _ ->
-                Logger.warn("invalid x-status header value")
+                Logger.warn("invalid X-Status header value")
 
                 :error
             end
@@ -172,7 +182,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
     case execute_json(user, %{type: @event_type_claim_status_update, data: events}) do
       {:ok, %{status_code: 200, headers: headers}} ->
         Logger.info(
-          "dispatched claim_update: user=#{user.application_id} x-status=#{headers |> List.keyfind("x-status", 0) |> elem(1)}"
+          "dispatched claim_update: user=#{user.application_id} X-Status=#{headers |> List.keyfind("X-Status", 0) |> elem(1)}"
         )
 
       {:ok, %{status_code: status_code}} ->
