@@ -31,7 +31,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
   def credentials(config) do
     case Keyword.fetch(config, :ssl) do
       :error -> []
-      {:ok, x} -> [ssl: x]
+      {:ok, x} -> [ssl: [cacertfile: CAStore.file_path() | x]]
     end
   end
 
@@ -108,7 +108,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
         end
 
       {:error, err} ->
-        Logger.warn("an error occurred while processing verification",err)
+        Logger.warn("an error occurred while processing verification", err)
         :error
     end
   end

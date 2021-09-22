@@ -59,7 +59,8 @@ defmodule VirtualCrypto.MixProject do
       {:tzdata, "~> 1.1"},
       {:excoveralls, "~> 0.3", only: :test},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:hammer, "~> 6.0"}
+      {:hammer, "~> 6.0"},
+      {:castore, "~> 0.1.11"}
     ]
   end
 
