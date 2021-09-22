@@ -52,4 +52,8 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs.example which loads secrets
 # and configuration from environment variables.
+
+config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
+  children: [VirtualCrypto.Notification.Webhook.CloudflareWorkers]
+
 import_config "prod.secret.exs"

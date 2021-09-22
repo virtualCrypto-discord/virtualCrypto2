@@ -29,7 +29,9 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
   end
 
   defp execute_raw(forward, body, timestamp, public_key, private_key) do
-    webhook_proxy = Application.get_env(:virtualCrypto, :webhook_proxy)
+    webhook_proxy =
+      Keyword.fetch!(Application.get_env(:virtualCrypto, __MODULE__), :webhook_proxy)
+
     timestamp = to_string(timestamp)
     message = timestamp <> body
 
@@ -159,6 +161,12 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
 
   @impl VirtualCrypto.Notification.Behaviour
   def notify_claim_update(exterior, events) when is_list(events) do
+    Task.start(fn ->
+      notify_claim_update_sync(exterior, events)
+    end)
+  end
+
+  def notify_claim_update_sync(exterior, events) when is_list(events) do
     user = VirtualCrypto.Exterior.User.Resolvable.resolve(exterior)
 
     case execute_json(user, %{type: @event_type_claim_status_update, data: events}) do

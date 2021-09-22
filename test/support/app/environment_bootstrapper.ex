@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.EnvironmentBootstrapper do
+defmodule VirtualCrypto.EnvironmentBootstrapper do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
