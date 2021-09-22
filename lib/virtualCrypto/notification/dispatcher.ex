@@ -7,7 +7,7 @@ defmodule VirtualCrypto.Notification.Dispatcher do
 
     modules
     |> Enum.each(fn module ->
-        module.notify_claim_update(exterior, events)
+      module.notify_claim_update(exterior, events)
     end)
   end
 end
