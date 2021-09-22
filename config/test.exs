@@ -83,3 +83,6 @@ config :virtualCrypto,
 config :virtualCrypto,
        :private_key,
        privkey
+
+config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
+  children: [VirtualCryptoTest.Notification.Sink]

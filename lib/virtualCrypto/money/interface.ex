@@ -372,10 +372,10 @@ defmodule VirtualCrypto.Money do
           "denied" -> :denied
         end,
       amount: to_string(claim.amount),
-      updated_at: claim.updated_at,
+      updated_at: claim.updated_at |> DateTime.from_naive!("Etc/UTC"),
       metadata: metadata,
       payer: %{
-        id: to_string(payer.id),
+        id: payer.id,
         discord: %{
           id:
             if payer.discord_id do
