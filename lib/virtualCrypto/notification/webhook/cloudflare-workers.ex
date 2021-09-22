@@ -107,7 +107,8 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
             end
         end
 
-      {:error, _} ->
+      {:error, err} ->
+        Logger.warn("an error occurred while processing verification",err)
         :error
     end
   end
