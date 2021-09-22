@@ -88,6 +88,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
         if res.status_code != 200 do
           Logger.warn("proxy respond with #{res.status_code}")
         end
+
         case res.headers |> List.keyfind("X-Status", 0) do
           nil ->
             Logger.warn("missing X-Status header: #{res.body}")
