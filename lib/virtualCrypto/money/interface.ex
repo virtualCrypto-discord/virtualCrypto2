@@ -364,6 +364,16 @@ defmodule VirtualCrypto.Money do
          payer: payer,
          metadata: metadata
        }) do
+    payer =
+      case payer do
+        %{discord_id: nil} ->
+          %{}
+
+        %{discord_id: x} ->
+          %{discord: %{id: to_string(x)}}
+      end
+      |> Map.put(:id, payer.id)
+
     %{
       id: claim.id,
       status:
@@ -374,17 +384,7 @@ defmodule VirtualCrypto.Money do
       amount: to_string(claim.amount),
       updated_at: claim.updated_at |> DateTime.from_naive!("Etc/UTC"),
       metadata: metadata,
-      payer: %{
-        id: payer.id,
-        discord: %{
-          id:
-            if payer.discord_id do
-              to_string(payer.discord_id)
-            else
-              nil
-            end
-        }
-      },
+      payer: payer,
       currency: %{
         id: currency.id,
         unit: currency.unit,
