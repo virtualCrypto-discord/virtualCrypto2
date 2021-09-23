@@ -31,7 +31,7 @@ defmodule VirtualCrypto.Notification.Webhook.CloudflareWorkers do
   def credentials(config) do
     case Keyword.fetch(config, :ssl) do
       :error -> []
-      {:ok, x} -> [ssl: [cacertfile: CAStore.file_path() | x]]
+      {:ok, x} -> [ssl: [{:cacertfile ,CAStore.file_path()} | x]]
     end
   end
 
