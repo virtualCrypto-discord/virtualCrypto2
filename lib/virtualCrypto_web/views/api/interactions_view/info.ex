@@ -50,7 +50,26 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     ~s/`#{user_amount}#{data.unit}`/
   end
 
-  def render(:error, _, _, _) do
+  def render(:error, :must_supply_argument_when_run_in_dm) do
+    %{
+      type: channel_message_with_source(),
+      data: %{
+        flags: 64,
+        embeds: [
+          %{
+            title: "エラー",
+            color: color_error(),
+            description: "DMで実行する場合はオプションを指定する必要があります。"
+          }
+        ],
+        allowed_mentions: %{
+          parse: []
+        }
+      }
+    }
+  end
+
+  def render(:error, :not_found) do
     %{
       type: channel_message_with_source(),
       data: %{
@@ -69,7 +88,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     }
   end
 
-  def render(:ok, data, user_amount, guild) do
+  def render(:ok, %{info: data, amount: user_amount, guild: guild}) do
     %{
       type: channel_message_with_source(),
       data: %{

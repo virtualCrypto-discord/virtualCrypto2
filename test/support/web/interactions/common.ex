@@ -74,4 +74,17 @@ defmodule InteractionsControllerTest.Helper.Common do
       guild_id: to_string(guild_id)
     }
   end
+
+  def execute_from_dm(
+        data,
+        user
+      ) do
+    %{
+      type: 2,
+      data: data |> Map.put(:component_type, 2),
+      user: %{
+        id: to_string(user)
+      }
+    }
+  end
 end

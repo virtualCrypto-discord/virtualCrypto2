@@ -12,6 +12,10 @@ defmodule InteractionsControllerTest.Info.Helper do
     execute_from_guild(data(), sender, guild_id)
   end
 
+  def from_dm(sender) do
+    execute_from_dm(data(), sender)
+  end
+
   def from_guild_name(name, sender, guild_id) do
     execute_from_guild(
       data([
