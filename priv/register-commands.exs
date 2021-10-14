@@ -74,7 +74,8 @@ defmodule Command do
           "name" => "name",
           "description" => "検索したい通貨の通貨名です。",
           "type" => 3,
-          "required" => false
+          "required" => false,
+          "autocomplete"=> true
         },
         %{
           "name" => "unit",

@@ -989,7 +989,11 @@ defmodule VirtualCrypto.Money do
   end
 
   def search_currencies_with_asset_by_unit(unit, guild_id, user) do
-    Query.Currency.search_currencies_with_asset_by_unit(unit,guild_id, user, 25)
+    Query.Currency.search_currencies_with_asset_by_unit(unit, guild_id, user, 25)
+  end
+
+  def search_currencies_with_asset_by_name(name, guild_id, user) do
+    Query.Currency.search_currencies_with_asset_by_name(name, guild_id, user, 25)
   end
 
   def search_currencies_with_asset_by_guild_and_user(guild_id, user) do
