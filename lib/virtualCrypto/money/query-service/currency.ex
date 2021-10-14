@@ -116,10 +116,29 @@ defmodule VirtualCrypto.Money.Query.Currency do
     |> Repo.one()
   end
 
+  def get_currency_by_guild_id_with_lock(guild_id) do
+    Money.Currency
+    |> where([m], m.guild_id == ^guild_id)
+    |> lock("FOR UPDATE")
+    |> Repo.one()
+  end
+
   def get_currency_by_id(id) do
     Money.Currency
     |> where([m], m.id == ^id)
     |> Repo.one()
+  end
+
+  defp escape_like_query(q) do
+    String.replace(q, ["%", "_", "\\"], fn <<char>> -> <<"\\", char>> end)
+  end
+
+  def search_currencies_by_unit(unit, limit \\ 10) do
+    Money.Currency
+    |> where([m], ilike(m.unit, ^"#{escape_like_query(unit)}%"))
+    |> order_by([m], asc: [fragment("char_length(?)", m.unit), m.id])
+    |> limit(^limit)
+    |> Repo.all()
   end
 
   def info(:guild, guild_id) do

@@ -130,6 +130,48 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
 
   def verified(
         conn,
+        %{
+          "type" => 4,
+          "data" => %{
+            "name" => name,
+            "options" => [
+              %{
+                "name" => subcommand_name,
+                "type" => 1,
+                "options" => options
+              }
+            ]
+          }
+        } = params
+      ) do
+    focused = options |> Enum.find(&Map.get(&1, "focused", false))
+
+    render(conn, "autocomplete.json",
+      params:
+        VirtualCryptoWeb.Interaction.AutoComplete.handle(
+          [name, subcommand_name],
+          focused,
+          options,
+          params,
+          conn
+        )
+    )
+  end
+
+  def verified(
+        conn,
+        %{"type" => 4, "data" => %{"name" => name, "options" => options}} = params
+      ) do
+    focused = options |> Enum.find(&Map.get(&1, "focused", false))
+
+    render(conn, "autocomplete.json",
+      params:
+        VirtualCryptoWeb.Interaction.AutoComplete.handle([name], focused, options, params, conn)
+    )
+  end
+
+  def verified(
+        conn,
         %{"type" => 3, "data" => %{"custom_id" => custom_id, "component_type" => 2}} = params
       ) do
     {path, data} = custom_id |> CustomId.parse() |> CustomId.UI.Button.parse()

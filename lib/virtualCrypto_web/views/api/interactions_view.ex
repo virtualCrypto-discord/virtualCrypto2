@@ -76,4 +76,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
   def render("claim.json", %{params: params}) do
     InteractionsView.Claim.render(params)
   end
+
+  def render("autocomplete.json", %{params: params}) do
+    %{
+      type: 8,
+      data: %{
+        choices: params
+      }
+    }
+  end
 end
