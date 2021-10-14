@@ -429,8 +429,7 @@ defmodule VirtualCrypto.Money do
                claimant: claimant,
                payer: payer,
                metadata: metadata,
-               claimant_metadata:
-                 Query.Claim.get_claim_metadata(claim.id, claimant.id)
+               claimant_metadata: Query.Claim.get_claim_metadata(claim.id, claimant.id)
              }
            else
              {:get_claim, _} ->
@@ -524,8 +523,7 @@ defmodule VirtualCrypto.Money do
                claimant: claimant,
                payer: payer,
                metadata: metadata,
-               claimant_metadata:
-                 Query.Claim.get_claim_metadata(claim.id, claimant.id)
+               claimant_metadata: Query.Claim.get_claim_metadata(claim.id, claimant.id)
              }
            else
              {:get_claim, _} ->
@@ -990,11 +988,11 @@ defmodule VirtualCrypto.Money do
     x
   end
 
-  def search_currencies_by_unit(unit) do
-    Query.Currency.search_currencies_by_unit(unit, 25)
+  def search_currencies_with_asset_by_unit(unit, guild_id, user) do
+    Query.Currency.search_currencies_with_asset_by_unit(unit,guild_id, user, 25)
   end
 
-  def search_currencies_by_guild(guild_id) do
-    [Query.Currency.get_currency_by_guild_id(guild_id)]
+  def search_currencies_with_asset_by_guild_and_user(guild_id, user) do
+    Query.Currency.search_currencies_with_asset_by_guild_and_user(guild_id, user, 25)
   end
 end
