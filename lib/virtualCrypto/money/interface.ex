@@ -6,7 +6,7 @@ defmodule VirtualCrypto.Money do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
-
+  @type sr_filter_t :: :all | :received | :claimed
   @type claim_t :: %{
           claim: %VirtualCrypto.Money.Claim{},
           currency: %VirtualCrypto.Money.Currency{},
@@ -16,6 +16,10 @@ defmodule VirtualCrypto.Money do
   @type partial_claim_t :: %{
           id: non_neg_integer(),
           status: VirtualCrypto.Money.Claim.status_t()
+        }
+  @type search_result_t :: %{
+          amount: non_neg_integer(),
+          currency: %VirtualCrypto.Money.Currency{}
         }
   @type page :: pos_integer() | :last
   # FIXME: rename to create_payment and take map
@@ -289,8 +293,8 @@ defmodule VirtualCrypto.Money do
   @spec get_claims(
           UserResolvable.t(),
           [String.t()],
-          :all | :received | :claimed,
-          UserResolvable.t(),
+          sr_filter_t(),
+          UserResolvable.t() | nil,
           :desc_claim_id | :asc_claim_id,
           %{page: page()} | %{cursor: {:next, any()} | {:on_next, any()} | :first},
           pos_integer() | {pos_integer(), pos_integer()} | nil
@@ -306,7 +310,6 @@ defmodule VirtualCrypto.Money do
             page: pos_integer()
           }
           | [claim_t()]
-
   def get_claims(
         user_id,
         statuses,
@@ -988,15 +991,61 @@ defmodule VirtualCrypto.Money do
     x
   end
 
+  @spec search_currencies_with_asset_by_unit(
+          String.t(),
+          non_neg_integer() | nil,
+          UserResolvable.t()
+        ) :: [
+          search_result_t()
+        ]
   def search_currencies_with_asset_by_unit(unit, guild_id, user) do
-    Query.Currency.search_currencies_with_asset_by_unit(unit, guild_id, user, 25)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Currency.search_currencies_with_asset_by_unit(unit, guild_id, user, 25)
+      end)
+
+    x
   end
 
+  @spec search_currencies_with_asset_by_name(
+          String.t(),
+          non_neg_integer() | nil,
+          UserResolvable.t()
+        ) :: [search_result_t()]
   def search_currencies_with_asset_by_name(name, guild_id, user) do
-    Query.Currency.search_currencies_with_asset_by_name(name, guild_id, user, 25)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Currency.search_currencies_with_asset_by_name(name, guild_id, user, 25)
+      end)
+
+    x
   end
 
+  @spec search_currencies_with_asset_by_guild_and_user(
+          non_neg_integer() | nil,
+          UserResolvable.t()
+        ) :: [search_result_t()]
   def search_currencies_with_asset_by_guild_and_user(guild_id, user) do
-    Query.Currency.search_currencies_with_asset_by_guild_and_user(guild_id, user, 25)
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Currency.search_currencies_with_asset_by_guild_and_user(guild_id, user, 25)
+      end)
+
+    x
+  end
+
+  @spec search_claims(
+          UserResolvable.t(),
+          String.t(),
+          sr_filter_t(),
+          non_neg_integer() | nil
+        ) :: [claim_t()]
+  def search_claims(user, query, sr_filter, guild_id, limit \\ 25) do
+    {:ok, x} =
+      Repo.transaction(fn ->
+        Query.Claim.list_candidates(user, query, sr_filter, guild_id, limit)
+      end)
+
+    x
   end
 end

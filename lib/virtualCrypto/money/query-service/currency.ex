@@ -130,10 +130,6 @@ defmodule VirtualCrypto.Money.Query.Currency do
     |> Repo.one()
   end
 
-  defp escape_like_query(q) do
-    String.replace(q, ["%", "_", "\\"], fn <<char>> -> <<"\\", char>> end)
-  end
-
   def search_currencies_with_asset_by_unit(
         unit,
         guild_id,
@@ -158,16 +154,24 @@ defmodule VirtualCrypto.Money.Query.Currency do
           currency: currencies
         },
         order_by: [
-          desc: currencies.guild_id == ^guild_id,
-          desc:
+          {:desc, currencies.guild_id == ^guild_id},
+          {:desc,
+           fragment(
+             "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
+             users.discord_id,
+             ^discord_user_id,
+             assets.amount
+           )},
+          {:asc, fragment("char_length(?)", currencies.unit)},
+          fragment(
+            "? DESC NULLS LAST",
             fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
+              "CASE ? WHEN ? THEN ? ELSE NULL END",
               users.discord_id,
               ^discord_user_id,
-              assets.amount
-            ),
-          asc: fragment("char_length(?)", currencies.unit),
-          asc: currencies.id
+              assets.updated_at
+            )
+          )
         ],
         limit: ^limit
       )
@@ -184,16 +188,24 @@ defmodule VirtualCrypto.Money.Query.Currency do
         on: assets.currency_id == currencies.id and assets.user_id == ^user_id,
         where: ilike(currencies.unit, ^"#{escape_like_query(unit)}%"),
         order_by: [
-          desc: currencies.guild_id == ^guild_id,
-          desc:
+          {:desc, currencies.guild_id == ^guild_id},
+          {:desc,
+           fragment(
+             "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
+             assets.id,
+             ^user_id,
+             assets.amount
+           )},
+          {:asc, fragment("char_length(?)", currencies.unit)},
+          fragment(
+            "? DESC NULLS LAST",
             fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
+              "CASE ? WHEN ? THEN ? ELSE NULL END",
               assets.id,
               ^user_id,
-              assets.amount
-            ),
-          asc: fragment("char_length(?)", currencies.unit),
-          asc: currencies.id
+              assets.updated_at
+            )
+          )
         ],
         select: %{
           amount:
@@ -352,7 +364,7 @@ defmodule VirtualCrypto.Money.Query.Currency do
           desc: currencies.guild_id == ^guild_id,
           desc:
             fragment(
-              "(CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
+              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
               assets.id,
               ^user_id,
               assets.amount

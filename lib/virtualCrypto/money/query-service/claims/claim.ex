@@ -1,6 +1,8 @@
 defmodule VirtualCrypto.Money.Query.Claim do
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
   alias VirtualCrypto.Exterior.User.Resolver, as: UserResolver
+  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
+  alias VirtualCrypto.User
   alias VirtualCrypto.Money.Query.Claim.Raw.Get, as: RawGet
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Money
@@ -20,6 +22,7 @@ defmodule VirtualCrypto.Money.Query.Claim do
                                  ]
                                )
 
+  @signed_long_max_value 9_223_372_036_854_775_807
   def get_claim_by_id(id) do
     query =
       from(claim in Money.Claim,
@@ -457,7 +460,7 @@ defmodule VirtualCrypto.Money.Query.Claim do
   end
 
   def create_claim(claimant, payer, unit, amount, metadata)
-      when is_positive_integer(amount) and amount <= 9_223_372_036_854_775_807 do
+      when is_positive_integer(amount) and amount <= @signed_long_max_value do
     case Money.Currency |> where([i], i.unit == ^unit) |> Repo.one() do
       nil ->
         {:error, :not_found_currency}
@@ -492,5 +495,123 @@ defmodule VirtualCrypto.Money.Query.Claim do
 
   def create_claim(_claimant_user_id, _payer_user_id, _unit, _amount, _metadata) do
     {:error, :invalid_amount}
+  end
+
+  def list_candidates(%DiscordUser{id: discord_id}, query, :received, guild_id, limit) do
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: payers.discord_id == ^discord_id and claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where: like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%"),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
+  end
+
+  def list_candidates(%DiscordUser{id: discord_id}, query, :claimed, guild_id, limit) do
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claimants.discord_id == ^discord_id and claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where: like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%"),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
+  end
+
+  def list_candidates(%DiscordUser{id: discord_id}, query, :all, guild_id, limit) do
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where:
+          like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%") and
+            (claimants.discord_id == ^discord_id or payers.discord_id == ^discord_id),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
+  end
+
+  def list_candidates(user, query, :received, guild_id, limit) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: payers.id == ^user_id and claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where: like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%"),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
+  end
+
+  def list_candidates(user, query, :claimed, guild_id, limit) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claimants.id == ^user_id and claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where: like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%"),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
+  end
+
+  def list_candidates(user, query, :all, guild_id, limit) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(claims in Money.Claim,
+        join: payers in User.User,
+        on: claims.payer_user_id == payers.id,
+        join: claimants in User.User,
+        on: claims.claimant_user_id == claimants.id,
+        join: currencies in Money.Currency,
+        on: claims.currency_id == currencies.id,
+        where:
+          like(fragment("?::text", claims.id), ^"#{escape_like_query(query)}%") and
+            (claimants.id == ^user_id or payers.id == ^user_id),
+        order_by: [desc: currencies.guild_id == ^guild_id, desc: claims.id],
+        limit: ^limit,
+        select: %{claim: claims, payer: payers, claimant: claimants, currency: currencies}
+      )
+
+    Repo.all(q)
   end
 end

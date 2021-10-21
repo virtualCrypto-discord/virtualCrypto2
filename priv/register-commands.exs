@@ -211,7 +211,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         },
@@ -224,7 +225,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         },
@@ -237,7 +239,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         }
