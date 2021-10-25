@@ -254,6 +254,29 @@ defmodule InteractionsControllerTest.Info do
                "type" => 4
              }
     end
+
+    test "run in dm", %{conn: conn} = ctx do
+      conn =
+        execute_interaction(
+          conn,
+          from_dm(ctx.user1)
+        )
+
+      assert json_response(conn, 200) == %{
+               "data" => %{
+                 "embeds" => [
+                   %{
+                     "color" => color_error(),
+                     "title" => "エラー",
+                     "description" => "DMで実行する場合はオプションを指定する必要があります。"
+                   }
+                 ],
+                 "flags" => 64,
+                 "allowed_mentions" => %{"parse" => []}
+               },
+               "type" => 4
+             }
+    end
   end
 
   describe "not has icon" do

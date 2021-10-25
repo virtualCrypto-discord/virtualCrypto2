@@ -181,17 +181,30 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         _ -> []
       end
 
-    case VirtualCrypto.Money.info([name: options["name"], unit: options["unit"]] ++ guild_query) do
-      nil ->
-        {:error, nil, nil, nil}
+    name = options["name"]
+    unit = options["unit"]
 
-      info ->
-        guild = VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
+    case {name, unit, guild_query} do
+      {nil, nil, []} ->
+        {:error, :must_supply_argument_when_run_in_dm}
 
-        case Money.balance(user: %DiscordUser{id: int_user_id})
-             |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-          [balance] -> {:ok, info, balance.asset.amount, guild}
-          [] -> {:ok, info, 0, guild}
+      _ ->
+        query = [name: name, unit: unit] ++ guild_query
+
+        case VirtualCrypto.Money.info(query) do
+          nil ->
+            {:error, :not_found}
+
+          info ->
+            guild =
+              VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
+
+            case Money.balance(user: %DiscordUser{id: int_user_id})
+                 # FIXME: do not client side filtering
+                 |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
+              [balance] -> {:ok, %{info: info, amount: balance.asset.amount, guild: guild}}
+              [] -> {:ok, %{info: info, amount: 0, guild: guild}}
+            end
         end
     end
   end
