@@ -1,20 +1,12 @@
 defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
-  defp arrow(exec, payer, claimant) when exec == payer and exec == claimant do
-    "↔"
+  defp user_tag(%{"username" => name, "discriminator" => discriminator}) do
+    "#{name}##{discriminator}"
   end
 
-  defp arrow(exec, payer, _claimant) when exec == payer do
-    "➡️"
-  end
-
-  defp arrow(exec, _payer, claimant) when exec == claimant do
-    "⬅"
-  end
-
-  defp format(currencies, executor_discord_id) do
-    currencies
+  defp format(claims, executor_discord_id) do
+    claims
     |> Enum.map(fn
       %{
         currency: %{unit: unit},
@@ -22,10 +14,15 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
         payer: %{discord_id: payer_discord_id},
         claimant: %{discord_id: claimant_discord_id}
       } ->
-        arrow = arrow(executor_discord_id, payer_discord_id, claimant_discord_id)
+        [payer, claimant] =
+          Task.await_many([
+            Task.async(fn -> Discord.Api.Cached.get_user(payer_discord_id) end),
+            Task.async(fn -> Discord.Api.Cached.get_user(claimant_discord_id) end)
+          ])
 
         %{
-          name: "#{id}(#{amount}#{unit}#{arrow})",
+          name:
+            "請求id: #{id}  金額: #{amount}#{unit}  請求元: #{user_tag(claimant)}  請求先: #{user_tag(payer)}",
           value: id
         }
     end)
