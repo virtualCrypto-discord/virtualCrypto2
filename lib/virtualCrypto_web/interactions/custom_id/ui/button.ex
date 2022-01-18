@@ -9,9 +9,6 @@ defmodule VirtualCryptoWeb.Interaction.CustomId.UI.Button do
   def claim_action(:deny), do: <<0xF0, 5>>
   def claim_action(:cancel), do: <<0xF0, 6>>
   def claim_action(:back), do: <<0xF0, 7>>
-  def claim_action_single(:approve), do: <<0xF0, 8>>
-  def claim_action_single(:deny), do: <<0xF0, 9>>
-  def claim_action_single(:cancel), do: <<0xF0, 10>>
 
   defp parse_long(<<h1, h2, data::binary>>) do
     case (h1 &&& 0x0F) <<< 8 ||| h2 do
@@ -22,9 +19,6 @@ defmodule VirtualCryptoWeb.Interaction.CustomId.UI.Button do
       5 -> {[:claim, :action, :deny], data}
       6 -> {[:claim, :action, :cancel], data}
       7 -> {[:claim, :action, :back], data}
-      8 -> {[:claim, :action_single, :approve], data}
-      9 -> {[:claim, :action_single, :deny], data}
-      10 -> {[:claim, :action_single, :cancel], data}
     end
   end
 

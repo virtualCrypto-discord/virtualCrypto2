@@ -13,38 +13,6 @@ defmodule VirtualCryptoWeb.Interaction.Button do
   defp action_str(:deny), do: "拒否しました。"
   defp action_str(:cancel), do: "キャンセルしました。"
 
-  defp handle_single_patch(subcommand, binary, user) do
-    <<claim_id::64, _rest::binary>> = binary
-    user_id = String.to_integer(user["id"])
-    user = %DiscordUser{id: user_id}
-
-    result =
-      case subcommand do
-        :approve ->
-          VirtualCrypto.Money.approve_claim(claim_id, user, nil)
-
-        :deny ->
-          VirtualCrypto.Money.deny_claim(claim_id, user, nil)
-
-        :cancel ->
-          VirtualCrypto.Money.cancel_claim(claim_id, user, nil)
-      end
-
-    case result do
-      {:ok, claim} ->
-        {"claim",
-         {:ok, "show",
-          claim
-          |> Map.merge(%{
-            action: subcommand,
-            me: user_id
-          })}}
-
-      {:error, err} ->
-        {"claim", {:error, "show", err}}
-    end
-  end
-
   defp handle_patch(
          subcommand,
          binary,
@@ -145,17 +113,5 @@ defmodule VirtualCryptoWeb.Interaction.Button do
     user = get_user(payload)
 
     handle_patch(subcommand, data, user)
-  end
-
-  def handle(
-        [:claim, :action_single, subcommand],
-        data,
-        payload,
-        _conn
-      )
-      when subcommand in [:approve, :deny, :cancel] do
-    user = get_user(payload)
-
-    handle_single_patch(subcommand, data, user)
   end
 end

@@ -6,11 +6,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
   end
 
   defp render_error(:name, options) do
-    "`#{options["name"]}`という名前の通貨は存在しています。別の名前を使用してください。"
+    ~s/`#{options["name"]}`という名前の通貨は存在しています。別の名前を使用してください。/
   end
 
   defp render_error(:unit, options) do
-    "`#{options["unit"]}`という単位の通貨は存在しています。別の単位を使用してください。"
+    ~s/`#{options["unit"]}`という単位の通貨は存在しています。別の単位を使用してください。/
   end
 
   defp render_error(:invalid, _) do
