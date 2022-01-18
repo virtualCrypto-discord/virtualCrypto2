@@ -150,7 +150,6 @@ defmodule Command do
   end
 
   def claim do
-
     %{
       "name" => "claim",
       "description" => "請求に関するコマンドです。",
@@ -205,7 +204,7 @@ defmodule Command do
           "options" => [
             %{
               "name" => "id",
-              "description" => "請求の番号です。/claim listで確認できます。",
+              "description" => "請求の番号です。",
               "type" => 4,
               "required" => true
             }
@@ -218,7 +217,7 @@ defmodule Command do
           "options" => [
             %{
               "name" => "id",
-              "description" => "請求の番号です。/claim listで確認できます。",
+              "description" => "請求の番号です。",
               "type" => 4,
               "required" => true
             }
@@ -231,7 +230,20 @@ defmodule Command do
           "options" => [
             %{
               "name" => "id",
-              "description" => "請求の番号です。/claim listで確認できます。",
+              "description" => "請求の番号です。",
+              "type" => 4,
+              "required" => true
+            }
+          ]
+        },
+        %{
+          "name" => "show",
+          "description" => "請求を表示します。",
+          "type" => 1,
+          "options" => [
+            %{
+              "name" => "id",
+              "description" => "請求の番号です。",
               "type" => 4,
               "required" => true
             }
