@@ -2,7 +2,6 @@ defmodule VirtualCrypto.Money.Query.Currency do
   alias VirtualCrypto.Repo
   alias VirtualCrypto.Money
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
-  alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import VirtualCrypto.Money.Query.Util
   import Ecto.Query
 
@@ -130,55 +129,6 @@ defmodule VirtualCrypto.Money.Query.Currency do
     |> Repo.one()
   end
 
-  def search_currencies_with_asset_by_unit(
-        unit,
-        guild_id,
-        %DiscordUser{id: discord_user_id},
-        limit
-      ) do
-    q =
-      from(currencies in Money.Currency,
-        left_join: assets in Money.Asset,
-        on: assets.currency_id == currencies.id,
-        left_join: users in VirtualCrypto.User.User,
-        on: users.discord_id == ^discord_user_id and assets.user_id == users.id,
-        where: ilike(currencies.unit, ^"#{escape_like_query(unit)}%"),
-        select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.amount
-            ),
-          currency: currencies
-        },
-        order_by: [
-          {:desc, currencies.guild_id == ^guild_id},
-          {:desc,
-           fragment(
-             "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-             users.discord_id,
-             ^discord_user_id,
-             assets.amount
-           )},
-          {:asc, fragment("char_length(?)", currencies.unit)},
-          fragment(
-            "? DESC NULLS LAST",
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE NULL END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.updated_at
-            )
-          )
-        ],
-        limit: ^limit
-      )
-
-    Repo.all(q)
-  end
-
   def search_currencies_with_asset_by_unit(unit, guild_id, user, limit) do
     user_id = UserResolvable.resolve_id(user)
 
@@ -191,73 +141,19 @@ defmodule VirtualCrypto.Money.Query.Currency do
           {:desc, currencies.guild_id == ^guild_id},
           {:desc,
            fragment(
-             "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-             assets.id,
-             ^user_id,
+             "? != 0",
              assets.amount
            )},
           {:asc, fragment("char_length(?)", currencies.unit)},
           fragment(
             "? DESC NULLS LAST",
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE NULL END",
-              assets.id,
-              ^user_id,
-              assets.updated_at
-            )
+            assets.updated_at
           )
         ],
         select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              assets.id,
-              ^user_id,
-              assets.amount
-            ),
+          amount: assets.amount |> coalesce(0),
           currency: currencies
         },
-        limit: ^limit
-      )
-
-    Repo.all(q)
-  end
-
-  def search_currencies_with_asset_by_name(
-        name,
-        guild_id,
-        %DiscordUser{id: discord_user_id},
-        limit
-      ) do
-    q =
-      from(currencies in Money.Currency,
-        left_join: assets in Money.Asset,
-        on: assets.currency_id == currencies.id,
-        left_join: users in VirtualCrypto.User.User,
-        on: users.discord_id == ^discord_user_id and assets.user_id == users.id,
-        where: ilike(currencies.name, ^"#{escape_like_query(name)}%"),
-        select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.amount
-            ),
-          currency: currencies
-        },
-        order_by: [
-          desc: currencies.guild_id == ^guild_id,
-          desc:
-            fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.amount
-            ),
-          asc: fragment("char_length(?)", currencies.name),
-          asc: currencies.id
-        ],
         limit: ^limit
       )
 
@@ -276,62 +172,16 @@ defmodule VirtualCrypto.Money.Query.Currency do
           desc: currencies.guild_id == ^guild_id,
           desc:
             fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-              assets.id,
-              ^user_id,
+              "? != 0",
               assets.amount
             ),
           asc: fragment("char_length(?)", currencies.name),
           asc: currencies.id
         ],
         select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              assets.id,
-              ^user_id,
-              assets.amount
-            ),
+          amount: assets.amount |> coalesce(0),
           currency: currencies
         },
-        limit: ^limit
-      )
-
-    Repo.all(q)
-  end
-
-  def search_currencies_with_asset_by_guild_and_user(
-        guild_id,
-        %DiscordUser{id: discord_user_id},
-        limit
-      ) do
-    q =
-      from(currencies in Money.Currency,
-        left_join: assets in Money.Asset,
-        on: assets.currency_id == currencies.id,
-        left_join: users in VirtualCrypto.User.User,
-        on: users.discord_id == ^discord_user_id and assets.user_id == users.id,
-        select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.amount
-            ),
-          currency: currencies
-        },
-        order_by: [
-          desc: currencies.guild_id == ^guild_id,
-          desc:
-            fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-              users.discord_id,
-              ^discord_user_id,
-              assets.amount
-            ),
-          asc: currencies.id
-        ],
         limit: ^limit
       )
 
@@ -348,25 +198,17 @@ defmodule VirtualCrypto.Money.Query.Currency do
     q =
       from(currencies in Money.Currency,
         left_join: assets in Money.Asset,
-        on: assets.currency_id == currencies.id,
+        on: assets.currency_id == currencies.id and assets.user_id == ^user_id,
         where: assets.user_id == ^user_id or currencies.guild_id == ^guild_id,
         select: %{
-          amount:
-            fragment(
-              "CASE ? WHEN ? THEN ? ELSE 0 END",
-              assets.id,
-              ^user_id,
-              assets.amount
-            ),
+          amount: assets.amount |> coalesce(0),
           currency: currencies
         },
         order_by: [
           desc: currencies.guild_id == ^guild_id,
           desc:
             fragment(
-              "CASE ? WHEN ? THEN ? != 0 ELSE FALSE END",
-              assets.id,
-              ^user_id,
+              "? != 0",
               assets.amount
             ),
           asc: currencies.id

@@ -4,7 +4,7 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.CurrencyUnit do
     |> Enum.map(fn
       %{currency: %{name: name, unit: unit}, amount: amount} ->
         %{
-          name: "#{name}(#{amount}#{unit})",
+          name: "通貨名: #{name} 所持量: #{amount}#{unit}",
           value: unit
         }
     end)
