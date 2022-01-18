@@ -1,5 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.InteractionsView.Claim.Common
+  alias VirtualCryptoWeb.Api.InteractionsView.Claim.Show
 
   defp render_error(:not_found) do
     "そのidの請求は見つかりませんでした。"
@@ -39,7 +41,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: ~s/請求id: #{claim.id} で請求を受け付けました。`\/claim list`でご確認ください。/
+        embeds: [
+          %{
+            description: "請求id: #{claim.id} で請求を受け付けました。`\/claim show id:#{claim.id}`でご確認ください。",
+            color: color_ok()
+          }
+        ]
       }
     }
   end
@@ -49,7 +56,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: ~s/id: #{claim.id}の請求を承諾し、支払いました。/
+        embeds: [
+          %{
+            description: render_action_result(:approve, claim),
+            color: color_ok()
+          }
+        ]
       }
     }
   end
@@ -59,7 +71,12 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: ~s/id: #{claim.id}の請求を拒否しました。/
+        embeds: [
+          %{
+            description: render_action_result(:deny, claim),
+            color: color_ok()
+          }
+        ]
       }
     }
   end
@@ -69,9 +86,18 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: ~s/id: #{claim.id}の請求をキャンセルしました。/
+        embeds: [
+          %{
+            description: render_action_result(:cancel, claim),
+            color: color_ok()
+          }
+        ]
       }
     }
+  end
+
+  def render({:ok, "show", data}) do
+    Show.render(data)
   end
 
   def render({:error, _, error}) do
@@ -79,7 +105,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
       type: channel_message_with_source(),
       data: %{
         flags: 64,
-        content: ~s/エラー: #{render_error(error)}/
+        embeds: [
+          %{
+            title: "エラー",
+            description: "#{render_error(error)}",
+            color: color_error()
+          }
+        ]
       }
     }
   end
