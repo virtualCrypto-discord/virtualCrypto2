@@ -158,7 +158,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Show do
   end
 
   def depends_assets(%{
-        currency: currency,
         claim: %{status: "pending"} = claim,
         claimant: claimant,
         payer: payer,
@@ -193,7 +192,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim.Show do
 
   def render(
         %{
-          claim: %{status: status} = claim,
+          claim: claim,
           claimant: claimant,
           payer: payer,
           currency: currency,

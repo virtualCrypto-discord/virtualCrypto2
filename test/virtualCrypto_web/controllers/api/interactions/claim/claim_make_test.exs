@@ -48,10 +48,19 @@ defmodule InteractionsControllerTest.Claim.Make do
         make_from_guild(%{claimant: user2, payer: user1, unit: unit, amount: amount})
       )
 
-    assert %{"data" => %{"content" => content, "flags" => 64}, "type" => 4} =
-             json_response(conn, 200)
+    assert %{
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "description" => content
+                 }
+               ],
+               "flags" => 64
+             },
+             "type" => 4
+           } = json_response(conn, 200)
 
-    regex = ~r/請求id: (\d+) で請求を受け付けました。`\/claim list`でご確認ください。/
+    regex = ~r/請求id: (\d+) で請求を受け付けました。`\/claim show id:\d+`でご確認ください。/
     assert [_, claim_id] = Regex.run(regex, content)
 
     assert %{
@@ -71,10 +80,19 @@ defmodule InteractionsControllerTest.Claim.Make do
         make_from_guild(%{claimant: user2, payer: user1, unit: unit, amount: amount})
       )
 
-    assert %{"data" => %{"content" => content, "flags" => 64}, "type" => 4} =
-             json_response(conn, 200)
+    assert %{
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "description" => content
+                 }
+               ],
+               "flags" => 64
+             },
+             "type" => 4
+           } = json_response(conn, 200)
 
-    assert content == "エラー: 不正な金額です。1以上9223372036854775807以下である必要があります。"
+    assert content == "不正な金額です。1以上9223372036854775807以下である必要があります。"
   end
 
   test "invalid unit", %{conn: conn, user1: user1, user2: user2} do
@@ -86,9 +104,18 @@ defmodule InteractionsControllerTest.Claim.Make do
         make_from_guild(%{claimant: user2, payer: user1, unit: "void", amount: amount})
       )
 
-    assert %{"data" => %{"content" => content, "flags" => 64}, "type" => 4} =
-             json_response(conn, 200)
+    assert %{
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "description" => content
+                 }
+               ],
+               "flags" => 64
+             },
+             "type" => 4
+           } = json_response(conn, 200)
 
-    assert content == "エラー: 指定された通貨は存在しません。"
+    assert content == "指定された通貨は存在しません。"
   end
 end

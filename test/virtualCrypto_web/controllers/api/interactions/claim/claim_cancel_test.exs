@@ -15,7 +15,14 @@ defmodule InteractionsControllerTest.Claim.Cancel do
       )
 
     assert %{
-             "data" => %{"content" => content, "flags" => 64},
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "description" => content
+                 }
+               ],
+               "flags" => 64
+             },
              "type" => 4
            } = json_response(conn, 200)
 
@@ -84,6 +91,6 @@ defmodule InteractionsControllerTest.Claim.Cancel do
         patch_from_guild("cancel", -1, user1)
       )
 
-    assert_discord_message(conn, "エラー: そのidの請求は見つかりませんでした。")
+    assert_discord_message(conn, "そのidの請求は見つかりませんでした。")
   end
 end
