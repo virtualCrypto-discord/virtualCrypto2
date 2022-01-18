@@ -57,7 +57,7 @@ config :virtualCrypto, :client_secret, "73yK3Fio6SL4vABMcP6E7xufQApJMpeZ"
 
 config :virtualCrypto,
        :invite_url,
-       "https://discord.com/api/oauth2/authorize?client_id=791984306632654869&permissions=379968&scope=applications.commands%20bot"
+       "https://discord.com/api/oauth2/authorize?client_id=791984306632654869&permissions=0&scope=applications.commands%20bot"
 
 config :virtualCrypto, :support_guild_invite_url, "https://discord.com/invite/Hgp5DpG"
 
