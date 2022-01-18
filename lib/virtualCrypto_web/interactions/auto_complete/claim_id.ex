@@ -5,7 +5,7 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
     "#{name}##{discriminator}"
   end
 
-  defp format(claims, executor_discord_id) do
+  defp format(claims) do
     claims
     |> Enum.map(fn
       %{
@@ -36,6 +36,6 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
     user = %DiscordUser{id: user_discord_id}
 
     list_candidates(claim_id, guild_id, user, sr_filter)
-    |> format(user_discord_id)
+    |> format()
   end
 end
