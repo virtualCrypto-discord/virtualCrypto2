@@ -5,12 +5,28 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
     "#{name}##{discriminator}"
   end
 
+  defp claim_status_emoji("approved") do
+    "✅"
+  end
+
+  defp claim_status_emoji("denied") do
+    "❌"
+  end
+
+  defp claim_status_emoji("canceled") do
+    "🗑️"
+  end
+
+  defp claim_status_emoji("pending") do
+    "⌛"
+  end
+
   defp format(claims) do
     claims
     |> Enum.map(fn
       %{
         currency: %{unit: unit},
-        claim: %{amount: amount, id: id},
+        claim: %{amount: amount, id: id, status: status},
         payer: %{discord_id: payer_discord_id},
         claimant: %{discord_id: claimant_discord_id}
       } ->
@@ -22,7 +38,7 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
 
         %{
           name:
-            "請求id: #{id}  金額: #{amount}#{unit}  請求元: #{user_tag(claimant)}  請求先: #{user_tag(payer)}",
+            "#{claim_status_emoji(status)}  請求id: #{id}  金額: #{amount}#{unit}  請求元: #{user_tag(claimant)}  請求先: #{user_tag(payer)}",
           value: id
         }
     end)
