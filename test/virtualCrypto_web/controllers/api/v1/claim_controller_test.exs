@@ -10,6 +10,10 @@ defmodule ClaimControllerTest.V1 do
     def get_user(user_id) do
       %{"id" => to_string(user_id)}
     end
+
+    def get_user_with_status(user_id) do
+      {200, get_user(user_id)}
+    end
   end
 
   setup :setup_claim
