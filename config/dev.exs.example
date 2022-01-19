@@ -66,7 +66,7 @@ config :virtualCrypto, :client_id, "discord dev portal"
 
 config :virtualCrypto, :client_secret, "discord dev portal"
 
-config :virtualCrypto, :invite_url, "https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=379968&scope=applications.commands%20bot"
+config :virtualCrypto, :invite_url, "https://discord.com/api/oauth2/authorize?client_id={client_id}&permissions=0&scope=applications.commands%20bot"
 
 config :virtualCrypto, :support_guild_invite_url, "https://discord.com/invite/Hgp5DpG"
 
