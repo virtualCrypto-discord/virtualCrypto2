@@ -20,7 +20,7 @@ defmodule VirtualCrypto.Application do
       # {VirtualCrypto.Worker, arg}
 
       VirtualCrypto.Scheduler,
-      {Cachex, name: :discord_users, expiration: expiration(default: 15 * 60 * 1000), stats: true}
+      {Discord.Api.UserCache, expiration: expiration(default: 15 * 60 * 1000), stats: true}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

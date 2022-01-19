@@ -97,6 +97,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
         failed(socket, ~s/Integrationの取得が#{code}で失敗しました。/, edit: true)
 
       {:find_target_integration, _} ->
+        # must get flesh data
         case Discord.Api.Raw.get_user_with_status(assigns.bot_id) do
           {200, %{"username" => username, "discriminator" => discriminator, "bot" => true}} ->
             case Discord.Api.Raw.get_guild_with_status_code(assigns.guild_id) do

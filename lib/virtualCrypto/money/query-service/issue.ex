@@ -1,18 +1,11 @@
 defmodule VirtualCrypto.Money.Query.Issue do
   alias VirtualCrypto.Exterior.User.Resolvable, as: UserResolvable
   alias VirtualCrypto.Repo
-  alias VirtualCrypto.Money
   import VirtualCrypto.Money.Query.Util
-  import Ecto.Query
   import VirtualCrypto.Money.Query.Asset, only: [upsert_asset_amount: 3]
-  import VirtualCrypto.Money.Query.Currency, only: [update_pool_amount: 2]
 
-  defp get_currency_by_guild_id_with_lock(guild_id) do
-    Money.Currency
-    |> where([m], m.guild_id == ^guild_id)
-    |> lock("FOR UPDATE")
-    |> Repo.one()
-  end
+  import VirtualCrypto.Money.Query.Currency,
+    only: [update_pool_amount: 2, get_currency_by_guild_id_with_lock: 1]
 
   def issue(receiver, :all, guild_id) do
     # Get currency info by guild.

@@ -116,10 +116,107 @@ defmodule VirtualCrypto.Money.Query.Currency do
     |> Repo.one()
   end
 
+  def get_currency_by_guild_id_with_lock(guild_id) do
+    Money.Currency
+    |> where([m], m.guild_id == ^guild_id)
+    |> lock("FOR UPDATE")
+    |> Repo.one()
+  end
+
   def get_currency_by_id(id) do
     Money.Currency
     |> where([m], m.id == ^id)
     |> Repo.one()
+  end
+
+  def search_currencies_with_asset_by_unit(unit, guild_id, user, limit) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(currencies in Money.Currency,
+        left_join: assets in Money.Asset,
+        on: assets.currency_id == currencies.id and assets.user_id == ^user_id,
+        where: ilike(currencies.unit, ^"#{escape_like_query(unit)}%"),
+        order_by: [
+          {:desc, currencies.guild_id == ^guild_id},
+          {:desc,
+           fragment(
+             "? != 0",
+             assets.amount
+           )},
+          {:asc, fragment("char_length(?)", currencies.unit)},
+          fragment(
+            "? DESC NULLS LAST",
+            assets.updated_at
+          )
+        ],
+        select: %{
+          amount: assets.amount |> coalesce(0),
+          currency: currencies
+        },
+        limit: ^limit
+      )
+
+    Repo.all(q)
+  end
+
+  def search_currencies_with_asset_by_name(name, guild_id, user, limit) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(currencies in Money.Currency,
+        left_join: assets in Money.Asset,
+        on: assets.currency_id == currencies.id and assets.user_id == ^user_id,
+        where: ilike(currencies.name, ^"#{escape_like_query(name)}%"),
+        order_by: [
+          desc: currencies.guild_id == ^guild_id,
+          desc:
+            fragment(
+              "? != 0",
+              assets.amount
+            ),
+          asc: fragment("char_length(?)", currencies.name),
+          asc: currencies.id
+        ],
+        select: %{
+          amount: assets.amount |> coalesce(0),
+          currency: currencies
+        },
+        limit: ^limit
+      )
+
+    Repo.all(q)
+  end
+
+  def search_currencies_with_asset_by_guild_and_user(
+        guild_id,
+        user,
+        limit
+      ) do
+    user_id = UserResolvable.resolve_id(user)
+
+    q =
+      from(currencies in Money.Currency,
+        left_join: assets in Money.Asset,
+        on: assets.currency_id == currencies.id and assets.user_id == ^user_id,
+        where: assets.user_id == ^user_id or currencies.guild_id == ^guild_id,
+        select: %{
+          amount: assets.amount |> coalesce(0),
+          currency: currencies
+        },
+        order_by: [
+          desc: currencies.guild_id == ^guild_id,
+          desc:
+            fragment(
+              "? != 0",
+              assets.amount
+            ),
+          asc: currencies.id
+        ],
+        limit: ^limit
+      )
+
+    Repo.all(q)
   end
 
   def info(:guild, guild_id) do

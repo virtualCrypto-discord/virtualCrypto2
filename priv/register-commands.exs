@@ -46,7 +46,8 @@ defmodule Command do
           "name" => "unit",
           "description" => "送信したい通貨の単位です。",
           "type" => 3,
-          "required" => true
+          "required" => true,
+          "autocomplete"=> true
         },
         %{
           "name" => "user",
@@ -73,13 +74,15 @@ defmodule Command do
           "name" => "name",
           "description" => "検索したい通貨の通貨名です。",
           "type" => 3,
-          "required" => false
+          "required" => false,
+          "autocomplete"=> true
         },
         %{
           "name" => "unit",
           "description" => "検索したい通貨の単位です。",
           "type" => 3,
-          "required" => false
+          "required" => false,
+          "autocomplete"=> true
         }
       ]
     }
@@ -188,7 +191,8 @@ defmodule Command do
               "name" => "unit",
               "description" => "請求する通貨の単位です。",
               "type" => 3,
-              "required" => true
+              "required" => true,
+              "autocomplete"=> true
             },
             %{
               "name" => "amount",
@@ -207,7 +211,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         },
@@ -220,7 +225,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         },
@@ -233,7 +239,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。/claim listで確認できます。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         }
