@@ -34,7 +34,14 @@ defmodule InteractionsControllerTest.Claim.Approve do
       )
 
     assert %{
-             "data" => %{"content" => content, "flags" => 64},
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "description" => content
+                 }
+               ],
+               "flags" => 64
+             },
              "type" => 4
            } = json_response(conn, 200)
 
@@ -76,7 +83,7 @@ defmodule InteractionsControllerTest.Claim.Approve do
         patch_from_guild("approve", (claims |> at(1) |> Map.fetch!(:claim)).id, user1)
       )
 
-    assert_discord_message(conn, "エラー: お金が足りません。")
+    assert_discord_message(conn, "お金が足りません。")
   end
 
   test "approve pending claim by claimant not_enough_amount", %{
@@ -157,6 +164,6 @@ defmodule InteractionsControllerTest.Claim.Approve do
         patch_from_guild("approve", -1, user1)
       )
 
-    assert_discord_message(conn, "エラー: そのidの請求は見つかりませんでした。")
+    assert_discord_message(conn, "そのidの請求は見つかりませんでした。")
   end
 end

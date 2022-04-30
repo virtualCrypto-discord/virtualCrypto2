@@ -6,9 +6,17 @@ defmodule InteractionsControllerTest.Claim.Helper do
       import InteractionsControllerTest.Claim.Helper
 
       def assert_discord_message(conn, message) do
+        color_error = VirtualCryptoWeb.Api.InteractionsView.Util.color_error()
+
         assert %{
                  "data" => %{
-                   "content" => ^message,
+                   "embeds" => [
+                     %{
+                       "title" => "エラー",
+                       "color" => ^color_error,
+                       "description" => ^message
+                     }
+                   ],
                    "flags" => 64
                  },
                  "type" => 4
@@ -22,7 +30,7 @@ defmodule InteractionsControllerTest.Claim.Helper do
             InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )
 
-        assert_discord_message(conn, "エラー: この請求に対してこの操作を行う権限がありません。")
+        assert_discord_message(conn, "この請求に対してこの操作を行う権限がありません。")
       end
 
       def test_invalid_status(conn, action, claim, user) do
@@ -32,7 +40,7 @@ defmodule InteractionsControllerTest.Claim.Helper do
             InteractionsControllerTest.Claim.Helper.patch_from_guild(action, claim.id, user)
           )
 
-        assert_discord_message(conn, "エラー: この請求に対してこの操作を行うことは出来ません。")
+        assert_discord_message(conn, "この請求に対してこの操作を行うことは出来ません。")
       end
     end
   end

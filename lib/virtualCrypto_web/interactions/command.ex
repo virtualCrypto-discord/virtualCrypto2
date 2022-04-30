@@ -328,4 +328,41 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       {:error, err} -> {:error, "cancel", err}
     end
   end
+
+  def handle(
+        "claim",
+        %{"subcommand" => "show"} = options,
+        payload,
+        _conn
+      ) do
+    id = options["sub_options"]["id"]
+    user = get_user(payload)
+    int_user_id = user["id"] |> String.to_integer()
+    user = %DiscordUser{id: int_user_id}
+
+    case Money.get_claim_by_id(user, id) do
+      {:error, err} ->
+        {:error, "show", err}
+
+      claim ->
+        data =
+          claim
+          |> Map.merge(%{
+            me: int_user_id,
+            action: :command
+          })
+
+        data =
+          case data do
+            %{claim: %{status: "pending"}, payer: %{discord_id: ^int_user_id}} ->
+              assets = VirtualCrypto.Money.balance(user: user)
+              data |> Map.put(:assets, assets)
+
+            _ ->
+              data
+          end
+
+        {:ok, "show", data}
+    end
+  end
 end
