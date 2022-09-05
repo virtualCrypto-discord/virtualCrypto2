@@ -18,14 +18,15 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete do
   end
 
   def handle(["claim", subcommand], %{"name" => "id", "value" => value}, _, payload, _)
-      when subcommand in ["approve", "deny", "cancel"] do
+      when subcommand in ["approve", "deny", "cancel", "show"] do
     user = get_user(payload)
     int_user_id = String.to_integer(user["id"])
 
     sr_filter_subcommand_map = %{
       "approve" => :received,
       "deny" => :received,
-      "cancel" => :claimed
+      "cancel" => :claimed,
+      "show" => :all
     }
 
     AutoComplete.ClaimId.handle(
