@@ -55,7 +55,7 @@ defmodule VirtualCrypto.Money.Query.Issue do
              time: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
              receiver_id: receiver_id
            }) do
-      {:ok, %{amount: amount, currency: currency}}
+      {:ok, %{amount: amount, currency: %{currency | pool_amount: currency.pool_amount - amount}}}
     else
       {:currency, false} -> {:error, :not_found_currency}
       {:pool_amount, false} -> {:error, :not_enough_amount}
