@@ -238,7 +238,8 @@ defmodule Command do
               "name" => "id",
               "description" => "請求の番号です。",
               "type" => 4,
-              "required" => true
+              "required" => true,
+              "autocomplete" => true
             }
           ]
         },
