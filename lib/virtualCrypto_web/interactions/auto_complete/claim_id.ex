@@ -44,14 +44,14 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
     end)
   end
 
-  defp list_candidates(claim_id, guild_id, user, sr_filter) do
-    VirtualCrypto.Money.search_claims(user, to_string(claim_id), sr_filter, guild_id, 25)
+  defp list_candidates(claim_id, guild_id, user, sr_filter, status) do
+    VirtualCrypto.Money.search_claims(user, to_string(claim_id), sr_filter, status, guild_id, 25)
   end
 
-  def handle(claim_id, guild_id, user_discord_id, sr_filter) do
+  def handle(claim_id, guild_id, user_discord_id, sr_filter, status) do
     user = %DiscordUser{id: user_discord_id}
 
-    list_candidates(claim_id, guild_id, user, sr_filter)
+    list_candidates(claim_id, guild_id, user, sr_filter, status)
     |> format()
   end
 end

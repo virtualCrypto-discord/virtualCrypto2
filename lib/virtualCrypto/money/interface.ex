@@ -22,6 +22,10 @@ defmodule VirtualCrypto.Money do
           currency: %VirtualCrypto.Money.Currency{}
         }
   @type page :: pos_integer() | :last
+  @typedoc """
+  "pending" | "approved" | "denied" | "canceled"
+  """
+  @type status_t :: String.t()
   # FIXME: rename to create_payment and take map
   @moduledoc """
   receiver must be discord user
@@ -1038,12 +1042,13 @@ defmodule VirtualCrypto.Money do
           UserResolvable.t(),
           String.t(),
           sr_filter_t(),
+          [status_t()],
           non_neg_integer() | nil
         ) :: [claim_t()]
-  def search_claims(user, query, sr_filter, guild_id, limit \\ 25) do
+  def search_claims(user, query, sr_filter, status, guild_id, limit \\ 25) do
     {:ok, x} =
       Repo.transaction(fn ->
-        Query.Claim.list_candidates(user, query, sr_filter, guild_id, limit)
+        Query.Claim.list_candidates(user, query, sr_filter, status, guild_id, limit)
       end)
 
     x
