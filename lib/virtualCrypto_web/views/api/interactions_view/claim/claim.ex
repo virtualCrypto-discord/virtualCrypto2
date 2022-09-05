@@ -6,7 +6,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Claim do
   defp render_error(:not_found) do
     "そのidの請求は見つかりませんでした。"
   end
-
+  
   defp render_error(:not_enough_amount) do
     "お金が足りません。"
   end
