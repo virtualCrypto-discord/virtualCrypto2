@@ -364,6 +364,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
           end
 
         {:ok, "show", data}
+
       %{} ->
         {:error, "show", :not_found}
     end
