@@ -25,15 +25,6 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   defp logo_url,
     do: @site_url <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
 
-  def name_unit_check(name, unit) do
-    with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
-         true <- Regex.match?(~r/[a-z]{1,10}/, unit) do
-      true
-    else
-      _ -> false
-    end
-  end
-
   defp resolve_status_filter(sub_options) do
     sub_options = Map.take(sub_options, ["approved", "canceled", "denied", "pending"])
 
@@ -91,11 +82,16 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       int_guild = String.to_integer(guild)
       int_amount = cast_int(amount)
 
-      case VirtualCrypto.Money.give(receiver: int_receiver, amount: int_amount, guild: int_guild) do
+      case VirtualCryptoLegacyIssuer.issue(%{
+             receiver: int_receiver,
+             amount: int_amount,
+             guild: int_guild
+           }) do
         {:ok,
          %{
-           currency: %VirtualCrypto.Money.Currency{unit: unit, pool_amount: pool_amount},
-           amount: int_amount
+           currency: %VirtualCrypto.Money.Currency{unit: unit},
+           amount: int_amount,
+           issuer: %{pool_amount: pool_amount}
          }} ->
           {:ok, {receiver, int_amount, unit, pool_amount}}
 
@@ -139,23 +135,20 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     options = %{options | "amount" => cast_int(options["amount"])}
 
     if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
-      if name_unit_check(options["name"], options["unit"]) do
-        case VirtualCrypto.Money.create(
-               guild: int_guild_id,
-               name: options["name"],
-               unit: options["unit"],
-               creator: %DiscordUser{id: int_user_id},
-               creator_amount: options["amount"]
-             ) do
-          {:ok} -> {:ok, :ok, options}
-          {:error, :guild} -> {:error, :guild, options}
-          {:error, :unit} -> {:error, :unit, options}
-          {:error, :name} -> {:error, :name, options}
-          {:error, :invalid_amount} -> {:error, :invalid_amount, options}
-          _ -> {:error, :none, options}
-        end
-      else
-        {:error, :invalid, options}
+      case VirtualCryptoLegacyIssuer.enact_monetary_system(%{
+             guild: int_guild_id,
+             name: options["name"],
+             unit: options["unit"],
+             creator: %DiscordUser{id: int_user_id},
+             creator_amount: options["amount"]
+           }) do
+        {:ok, nil} -> {:ok, :ok, options}
+        {:error, :invalid_parameter} -> {:error, :invalid_parameter, options}
+        {:error, :duplicate_guild} -> {:error, :duplicate_guild, options}
+        {:error, :unit} -> {:error, :unit, options}
+        {:error, :name} -> {:error, :name, options}
+        {:error, :invalid_amount} -> {:error, :invalid_amount, options}
+        _ -> {:error, :none, options}
       end
     else
       {:error, :permission, options}
@@ -171,39 +164,29 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     {:error, :run_in_dm, %{}}
   end
 
-  def handle("info", options, payload, conn) do
+  def handle("info", options, payload, _conn) do
     user = get_user(payload)
     int_user_id = String.to_integer(user["id"])
-
-    guild_query =
-      case payload do
-        %{"guild_id" => guild_id} -> [guild: guild_id]
-        _ -> []
-      end
-
     name = options["name"]
     unit = options["unit"]
 
-    case {name, unit, guild_query} do
-      {nil, nil, []} ->
-        {:error, :must_supply_argument_when_run_in_dm}
+    case {name, unit} do
+      {nil, nil} ->
+        {:error, :must_supply_argument}
 
       _ ->
-        query = [name: name, unit: unit] ++ guild_query
+        query = [name: name, unit: unit]
 
         case VirtualCrypto.Money.info(query) do
           nil ->
             {:error, :not_found}
 
           info ->
-            guild =
-              VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
-
             case Money.balance(user: %DiscordUser{id: int_user_id})
                  # FIXME: do not client side filtering
                  |> Enum.filter(fn x -> x.currency.unit == info.unit end) do
-              [balance] -> {:ok, %{info: info, amount: balance.asset.amount, guild: guild}}
-              [] -> {:ok, %{info: info, amount: 0, guild: guild}}
+              [balance] -> {:ok, %{info: info, amount: balance.asset.amount}}
+              [] -> {:ok, %{info: info, amount: 0}}
             end
         end
     end

@@ -17,23 +17,23 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     name = "nyan#{guild}"
     name2 = "wan#{guild}"
 
-    {:ok} =
-      VirtualCrypto.Money.create(
+    {:ok,_} =
+      VirtualCryptoLegacyIssuer.enact_monetary_system(%{
         guild: guild,
         name: name,
         unit: unit,
         creator: %DiscordUser{id: user1},
         creator_amount: 1000 * 200
-      )
+      })
 
-    {:ok} =
-      VirtualCrypto.Money.create(
+    {:ok,_} =
+      VirtualCryptoLegacyIssuer.enact_monetary_system(%{
         guild: guild2,
         name: name2,
         unit: unit2,
         creator: %DiscordUser{id: user2},
         creator_amount: 1000 * 200
-      )
+      })
 
     currency = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit)
     currency2 = Repo.get_by(VirtualCrypto.Money.Currency, unit: unit2)
@@ -47,7 +47,7 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
       )
 
     {:ok, _} =
-      VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
+      VirtualCryptoLegacyIssuer.issue(%{receiver: %DiscordUser{id: user2}, amount: 500, guild: guild})
 
     Map.merge(ctx, %{
       user1: user1,

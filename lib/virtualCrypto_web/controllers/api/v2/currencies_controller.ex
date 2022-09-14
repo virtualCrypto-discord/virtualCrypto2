@@ -12,13 +12,6 @@ defmodule VirtualCryptoWeb.Api.V2.CurrenciesController do
     end
   end
 
-  defp get(%{"guild" => guild_id}) do
-    case Integer.parse(guild_id) do
-      {int_guild_id, ""} when int_guild_id >= 1 -> {:ok, {:guild, int_guild_id}}
-      _ -> {:error, {:invalid_request, :guild_id_must_be_positive_integer}}
-    end
-  end
-
   defp get(%{"name" => name}) do
     {:ok, {:name, name}}
   end
@@ -36,7 +29,7 @@ defmodule VirtualCryptoWeb.Api.V2.CurrenciesController do
   end
 
   def index(conn, params) do
-    m = Map.take(params, ["id", "guild", "name", "unit"])
+    m = Map.take(params, ["id", "name", "unit"])
 
     params =
       case map_size(m) do
@@ -53,7 +46,7 @@ defmodule VirtualCryptoWeb.Api.V2.CurrenciesController do
           end
 
         _ ->
-          {:error, {:invalid_request, :need_one_parameter_from_id_guild_name_or_unit}}
+          {:error, {:invalid_request, :need_one_parameter_from_id_name_or_unit}}
       end
 
     case params do

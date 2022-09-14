@@ -106,106 +106,77 @@ defmodule VirtualCrypto.Money do
     end)
   end
 
-  @doc """
-  receiver must be discord user!
-  """
-  @spec give(
-          receiver: UserResolvable.t(),
-          amount: non_neg_integer(),
-          guild: non_neg_integer()
-        ) ::
-          {:ok, Ecto.Schema.t()}
-          | {:error, :not_found_currency}
-          | {:error, :not_found_sender_asset}
-          | {:error, :not_enough_amount}
-  def give(kw) do
-    guild = Keyword.fetch!(kw, :guild)
+  def issue(m) do
+    Repo.transaction(fn ->
+      issue_embedded_issuer_bypass(m)
+    end)
+  end
 
-    case Multi.new()
-         |> Multi.run(:give, fn _, _ ->
-           Query.Issue.issue(
-             Keyword.fetch!(kw, :receiver),
-             Keyword.fetch!(kw, :amount),
-             guild
-           )
-         end)
-         |> Repo.transaction() do
-      {:ok, %{give: m}} -> {:ok, m}
-      {:error, :give, :not_found_currency, _} -> {:error, :not_found_currency}
-      {:error, :give, :not_found_sender_asset, _} -> {:error, :not_found_sender_asset}
-      {:error, :give, :not_enough_amount, _} -> {:error, :not_enough_amount}
-      {:error, :give, :invalid_amount, _} -> {:error, :invalid_amount}
+  def issue_embedded_issuer_bypass(%{currency_id: currency_id, receiver: receiver, amount: amount}) do
+    Query.Issue.issue(receiver, amount, currency_id)
+  end
+
+  def name_unit_check(name, unit) do
+    with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
+         true <- Regex.match?(~r/[a-z]{1,10}/, unit) do
+      true
+    else
+      _ -> false
     end
   end
 
-  defp _create(guild, name, unit, creator, creator_amount, pool_amount, retry)
+  defp _enact(%{name: name, unit: unit} = m, retry)
        when retry > 0 do
-    case Multi.new()
-         |> Multi.run(:create, fn _, _ ->
-           Query.Currency.create(
-             guild,
-             name,
-             unit,
-             creator,
-             creator_amount,
-             pool_amount
-           )
-         end)
-         |> Repo.transaction() do
-      {:ok, _} ->
-        {:ok}
+    case Repo.transaction(fn ->
+           r =
+             Query.Currency.enact(
+               name,
+               unit
+             )
 
-      {:error, :create, :guild, _} ->
-        {:error, :guild}
+           case r do
+             {:ok, r} -> r
+             {:error, err} -> Repo.rollback(err)
+           end
+         end) do
+      {:ok, currency} ->
+        {:ok,currency}
 
-      {:error, :create, :invalid_amount, _} ->
-        {:error, :invalid_amount}
-
-      {:error, :create, :unit, _} ->
+      {:error, :unit} ->
         {:error, :unit}
 
-      {:error, :create, :name, _} ->
+      {:error, :name} ->
         {:error, :name}
 
-      {:error, _, _, _} ->
-        _create(guild, name, unit, creator, creator_amount, pool_amount, retry - 1)
+      {:error, _} ->
+        _enact(m, retry - 1)
     end
   end
 
-  defp _create(_, _, _, _, _, _, _) do
+  defp _enact(_, 0) do
     {:error, :retry_limit}
   end
 
   @doc """
   Only calls discord context!
   """
-  @spec create(
-          guild: non_neg_integer(),
-          name: String.t(),
-          unit: String.t(),
-          retry_count: pos_integer(),
-          creator: DiscordUser.t(),
-          creator_amount: pos_integer()
+  @spec enact_embedded_issuer_bypass(
+          %{name: String.t(), unit: String.t()},
+          retry_count: pos_integer()
         ) ::
-          {:ok}
-          | {:error, :guild}
+          {:ok,%VirtualCrypto.Money.Currency{}}
           | {:error, :unit}
           | {:error, :name}
           | {:error, :retry_limit}
-          | {:error, :invalid_amount}
-  def create(kw) do
-    creator_amount = Keyword.fetch!(kw, :creator_amount)
-    creator = Keyword.fetch!(kw, :creator)
-
-    _create(
-      Keyword.fetch!(kw, :guild),
-      Keyword.fetch!(kw, :name),
-      Keyword.fetch!(kw, :unit),
-      creator,
-      creator_amount,
-      max(div(creator_amount + 199, 200), 5),
-      Keyword.get(kw, :retry_count, 5)
-    )
+  def enact_embedded_issuer_bypass(%{name: name, unit: unit}, kw \\ []) do
+    if name_unit_check(name, unit) do
+      _enact(
+        %{name: name, unit: unit},
+        Keyword.get(kw, :retry_count, 5)
+      )
+    else
+      {:error, :invalid_parameter}
+    end
   end
 
   # TODO: separate this
@@ -252,20 +223,17 @@ defmodule VirtualCrypto.Money do
     x
   end
 
-  @spec info(name: String.t(), unit: String.t(), guild: non_neg_integer(), id: non_neg_integer()) ::
+  @spec info(name: String.t(), unit: String.t(), id: non_neg_integer()) ::
           %{
             amount: non_neg_integer(),
             name: String.t(),
             unit: String.t(),
-            guild: non_neg_integer(),
-            pool_amount: non_neg_integer()
           }
           | nil
   def info(kw) do
     raw =
       with {:name, nil} <- {:name, Keyword.get(kw, :name)},
            {:unit, nil} <- {:unit, Keyword.get(kw, :unit)},
-           {:guild, nil} <- {:guild, Keyword.get(kw, :guild)},
            {:id, nil} <- {:id, Keyword.get(kw, :id)} do
         raise "Invalid Argument. Must supply one or more arguments."
       else
@@ -273,24 +241,16 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, currency_name, currency_unit, currency_guild_id, pool_amount} ->
+      {amount, currency_name, currency_unit} ->
         %{
           amount: Decimal.to_integer(amount),
           name: currency_name,
-          unit: currency_unit,
-          guild: currency_guild_id,
-          pool_amount: pool_amount
+          unit: currency_unit
         }
 
       nil ->
         nil
     end
-  end
-
-  @spec reset_pool_amount() :: nil
-  def reset_pool_amount() do
-    Query.Currency.reset_pool_amount()
-    nil
   end
 
   # FIXME: take too many arguments
@@ -396,8 +356,6 @@ defmodule VirtualCrypto.Money do
         id: currency.id,
         unit: currency.unit,
         name: currency.name,
-        guild: to_string(currency.guild_id),
-        pool_amount: to_string(currency.pool_amount)
       }
     }
   end

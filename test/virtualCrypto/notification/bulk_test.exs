@@ -44,9 +44,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim1.claim.id,
                metadata: %{"x" => "y"},
@@ -62,9 +60,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim2.claim.id,
                metadata: %{},
@@ -124,9 +120,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim1.claim.id,
                metadata: %{"x" => "y"},
@@ -142,9 +136,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim2.claim.id,
                metadata: %{},
@@ -208,9 +200,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim1.claim.id,
                metadata: %{"x" => "y"},
@@ -226,9 +216,7 @@ defmodule VirtualCrypto.Test.Bulk do
                currency: %{
                  id: currency.id,
                  name: currency.name,
-                 pool_amount: to_string(currency.pool_amount),
                  unit: currency.unit,
-                 guild: to_string(currency.guild_id)
                },
                id: claim2.claim.id,
                metadata: %{},
@@ -296,9 +284,7 @@ defmodule VirtualCrypto.Test.Bulk do
                 currency: %{
                   id: currency.id,
                   name: currency.name,
-                  pool_amount: to_string(currency.pool_amount),
                   unit: currency.unit,
-                  guild: to_string(currency.guild_id)
                 },
                 id: claim1.claim.id,
                 metadata: %{"x" => "y"},
@@ -316,9 +302,7 @@ defmodule VirtualCrypto.Test.Bulk do
                  currency: %{
                    id: currency.id,
                    name: currency.name,
-                   pool_amount: to_string(currency.pool_amount),
                    unit: currency.unit,
-                   guild: to_string(currency.guild_id)
                  },
                  id: claim2.claim.id,
                  metadata: %{},
@@ -388,9 +372,7 @@ defmodule VirtualCrypto.Test.Bulk do
                 currency: %{
                   id: currency.id,
                   name: currency.name,
-                  pool_amount: to_string(currency.pool_amount),
                   unit: currency.unit,
-                  guild: to_string(currency.guild_id)
                 },
                 id: claim1.claim.id,
                 metadata: %{"x" => "y"},
@@ -408,9 +390,7 @@ defmodule VirtualCrypto.Test.Bulk do
                  currency: %{
                    id: currency.id,
                    name: currency.name,
-                   pool_amount: to_string(currency.pool_amount),
                    unit: currency.unit,
-                   guild: to_string(currency.guild_id)
                  },
                  id: claim2.claim.id,
                  metadata: %{},
@@ -487,9 +467,7 @@ defmodule VirtualCrypto.Test.Bulk do
                 currency: %{
                   id: currency.id,
                   name: currency.name,
-                  pool_amount: to_string(currency.pool_amount),
                   unit: currency.unit,
-                  guild: to_string(currency.guild_id)
                 },
                 id: claim1.claim.id,
                 metadata: %{"x" => "y"},
@@ -507,9 +485,7 @@ defmodule VirtualCrypto.Test.Bulk do
                  currency: %{
                    id: currency.id,
                    name: currency.name,
-                   pool_amount: to_string(currency.pool_amount),
                    unit: currency.unit,
-                   guild: to_string(currency.guild_id)
                  },
                  id: claim2.claim.id,
                  metadata: %{},

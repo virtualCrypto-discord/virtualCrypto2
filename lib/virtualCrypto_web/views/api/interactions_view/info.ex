@@ -9,48 +9,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     ~s/`#{data.amount}#{data.unit}`/
   end
 
-  def render_pool_amount(data) do
-    ~s/`#{data.pool_amount}#{data.unit}`/
-  end
-
-  def render_guild(guild) do
-    case guild do
-      nil ->
-        nil
-
-      guild ->
-        %{
-          name: ~s/#{guild["name"]}/
-        }
-        |> Map.merge(
-          case Map.fetch(guild, "icon") do
-            {:ok, nil} ->
-              %{}
-
-            {:ok, hash} ->
-              format =
-                if String.starts_with?(hash, "a_") do
-                  "gif"
-                else
-                  "webp"
-                end
-
-              %{
-                icon_url: ~s"https://cdn.discordapp.com/icons/#{guild["id"]}/#{hash}.#{format}"
-              }
-
-            :error ->
-              %{}
-          end
-        )
-    end
-  end
-
   def render_user_amount(data, user_amount) do
     ~s/`#{user_amount}#{data.unit}`/
   end
 
-  def render(:error, :must_supply_argument_when_run_in_dm) do
+  def render(:error, :must_supply_argument) do
     %{
       type: channel_message_with_source(),
       data: %{
@@ -59,7 +22,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
           %{
             title: "エラー",
             color: color_error(),
-            description: "DMで実行する場合はオプションを指定する必要があります。"
+            description: "オプションを指定する必要があります。"
           }
         ],
         allowed_mentions: %{
@@ -88,7 +51,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     }
   end
 
-  def render(:ok, %{info: data, amount: user_amount, guild: guild}) do
+  def render(:ok, %{info: data, amount: user_amount}) do
     %{
       type: channel_message_with_source(),
       data: %{
@@ -96,7 +59,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
         embeds: [
           %{
             title: render_title(data),
-            author: render_guild(guild),
             color: color_brand(),
             fields: [
               %{
@@ -105,19 +67,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
                 inline: true
               },
               %{
-                name: "発行枠",
-                value: render_pool_amount(data),
-                inline: true
-              },
-              %{
                 name: "あなたの所持量",
                 value: render_user_amount(data, user_amount),
                 inline: true
               }
-            ],
-            footer: %{
-              text: "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"
-            }
+            ]
           }
         ]
       }

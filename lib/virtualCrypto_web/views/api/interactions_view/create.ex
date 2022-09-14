@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
   import VirtualCryptoWeb.Api.InteractionsView.Util
 
-  defp render_error(:guild, _) do
+  defp render_error(:duplicate_guild, _) do
     "このギルドではすでに通貨が作成されています。"
   end
 
@@ -13,7 +13,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
     "`#{options["unit"]}`という単位の通貨は存在しています。別の単位を使用してください。"
   end
 
-  defp render_error(:invalid, _) do
+  defp render_error(:invalid_parameter, _) do
     "通貨の名前は2から16文字以内の英数字、単位は1から10文字以内の英小文字を使ってください。"
   end
 

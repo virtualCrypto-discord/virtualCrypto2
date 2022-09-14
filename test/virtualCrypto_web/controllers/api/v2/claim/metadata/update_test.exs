@@ -36,7 +36,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 201)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 20,
@@ -81,7 +81,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -132,7 +132,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -179,7 +179,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -224,7 +224,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -301,7 +301,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -357,7 +357,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
       )
 
     res = json_response(conn, 200)
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -437,7 +437,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
       )
 
     res = json_response(conn, 200)
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -510,7 +510,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
       )
 
     res = json_response(conn, 200)
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
@@ -583,7 +583,7 @@ defmodule ClaimControllerTest.Metadata.Update.V2 do
       )
 
     res = json_response(conn, 200)
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: amount,
