@@ -6,6 +6,21 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     System.unique_integer([:positive])
   end
 
+  @spec setup_money(map) :: %{
+          :currency => non_neg_integer,
+          :currency2 => non_neg_integer,
+          :currency2_guild => non_neg_integer,
+          :currency_guild => non_neg_integer,
+          :guild => non_neg_integer,
+          :guild2 => non_neg_integer,
+          :name => String.t(),
+          :name2 => String.t(),
+          :unit => String.t(),
+          :unit2 => String.t(),
+          :user1 => non_neg_integer,
+          :user2 => non_neg_integer,
+          optional(any) => any
+        }
   def setup_money(ctx) do
     guild = counter()
     guild2 = counter()
@@ -65,6 +80,8 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     })
   end
 
+  @spec create_claim(non_neg_integer(), non_neg_integer(), String.t(), non_neg_integer()) ::
+          {:ok, VirtualCrypto.Money.claim_t()}
   defp create_claim(user_id1, user_id2, unit, amount) do
     VirtualCrypto.Money.create_claim(
       %DiscordUser{id: user_id1},
@@ -75,6 +92,22 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     )
   end
 
+  @spec setup_claim(map()) :: %{
+          :currency => non_neg_integer,
+          :currency2 => non_neg_integer,
+          :currency2_guild => non_neg_integer,
+          :currency_guild => non_neg_integer,
+          :guild => non_neg_integer,
+          :guild2 => non_neg_integer,
+          :name => String.t(),
+          :name2 => String.t(),
+          :unit => String.t(),
+          :unit2 => String.t(),
+          :user1 => non_neg_integer,
+          :user2 => non_neg_integer,
+          :claims => list(VirtualCrypto.Money.claim_t()),
+          optional(any) => any
+        }
   def setup_claim(ctx) do
     d = setup_money(ctx)
 

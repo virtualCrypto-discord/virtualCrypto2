@@ -344,7 +344,8 @@ defmodule VirtualCryptoWeb.Interaction.Command do
       {:error, err} ->
         {:error, "show", err}
 
-      claim ->
+      %{payer: payer, claimant: claimant} = claim
+      when int_user_id in [payer.discord_id, claimant.discord_id] ->
         data =
           claim
           |> Map.merge(%{
@@ -363,6 +364,9 @@ defmodule VirtualCryptoWeb.Interaction.Command do
           end
 
         {:ok, "show", data}
+
+      %{} ->
+        {:error, "show", :not_found}
     end
   end
 end

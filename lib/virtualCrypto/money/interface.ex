@@ -972,6 +972,9 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec get_claim_by_id(UserResolvable.t(), non_neg_integer()) :: claim_t | {:error, :not_found}
+  @doc """
+  This function does not verify that the executor is the claim owner.
+  """
   def get_claim_by_id(executor, id) do
     {:ok, x} =
       Repo.transaction(fn ->
@@ -986,6 +989,9 @@ defmodule VirtualCrypto.Money do
   end
 
   @spec get_claim_by_ids(UserResolvable.t(), list(non_neg_integer())) :: list(claim_t | nil)
+  @doc """
+  This function does not verify that the executor is the claim owner.
+  """
   def get_claim_by_ids(executor, ids) do
     {:ok, x} =
       Repo.transaction(fn ->
