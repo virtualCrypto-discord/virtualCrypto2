@@ -50,9 +50,9 @@ defmodule InteractionsControllerTest.Create do
            } = json_response(conn, 200)
 
     currency = VirtualCrypto.Repo.get_by(VirtualCrypto.Money.Currency, unit: unit)
-
+    issuer = VirtualCrypto.Repo.get_by(VirtualCryptoLegacyIssuer.LegacyIssuer, currency_id: currency.id)
     assert currency.name == name
-    assert currency.pool_amount == div(amount + 199, 200)
+    assert issuer.pool_amount == div(amount + 199, 200)
 
     asset =
       VirtualCrypto.Money.balance(

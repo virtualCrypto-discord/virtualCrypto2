@@ -110,9 +110,7 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
       "id" => claim.id |> to_string,
       "currency" => %{
         "name" => currency.name,
-        "unit" => currency.unit,
-        "guild" => to_string(currency.guild_id),
-        "pool_amount" => to_string(currency.pool_amount)
+        "unit" => currency.unit
       },
       "amount" => to_string(claim.amount),
       "claimant" => %{

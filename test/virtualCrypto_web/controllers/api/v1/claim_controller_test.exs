@@ -50,16 +50,7 @@ defmodule ClaimControllerTest.V1 do
 
   defp verify_currency(currency, currency_) do
     assert currency["unit"] == currency_.unit
-    assert to_integer(currency["guild"]) == currency_.guild
     assert currency["name"] == currency_.name
-
-    case Map.get(currency_, :pool_amount) do
-      nil ->
-        nil
-
-      pool_amount ->
-        assert to_integer(currency["pool_amount"]) == pool_amount
-    end
 
     case Map.fetch(currency_, :total_amount) do
       {:ok, total_amount} ->
@@ -88,7 +79,7 @@ defmodule ClaimControllerTest.V1 do
     res = res |> Enum.sort(&(to_integer(&1["id"]) <= to_integer(&2["id"])))
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     assert length(res) == 3
 
@@ -125,7 +116,7 @@ defmodule ClaimControllerTest.V1 do
     res = res |> Enum.sort(&(to_integer(&1["id"]) <= to_integer(&2["id"])))
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
     assert length(res) == 2
 
     verify_claim(at(res, 0), %{
@@ -152,7 +143,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -170,7 +161,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 9_999_999,
@@ -193,7 +184,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -212,7 +203,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -235,7 +226,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -253,7 +244,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     _user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 100,
@@ -271,7 +262,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -289,7 +280,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 9_999_999,
@@ -312,7 +303,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -331,7 +322,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -354,7 +345,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 200)
     user1 = %{discord: %{id: ctx.user1}}
     user2 = %{discord: %{id: ctx.user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 500,
@@ -440,7 +431,7 @@ defmodule ClaimControllerTest.V1 do
     conn = set_user_auth(conn, :user, user2, ["vc.claim"])
     claimant = %{discord: %{id: user1}}
     payer = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     before_claimant =
       VirtualCrypto.Money.balance(
@@ -524,7 +515,7 @@ defmodule ClaimControllerTest.V1 do
     conn = set_user_auth(conn, :user, user2, ["vc.claim"])
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     conn =
       patch(
@@ -557,7 +548,7 @@ defmodule ClaimControllerTest.V1 do
 
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
     res = json_response(conn, 200)
 
     verify_claim(res, %{
@@ -754,7 +745,7 @@ defmodule ClaimControllerTest.V1 do
     res = json_response(conn, 201)
     user1 = %{discord: %{id: user1}}
     user2 = %{discord: %{id: user2}}
-    currency = %{guild: ctx.guild, name: ctx.name, pool_amount: 500, unit: ctx.unit}
+    currency = %{name: ctx.name, unit: ctx.unit}
 
     verify_claim(res, %{
       amount: 20,

@@ -18,17 +18,13 @@ defmodule VirtualCryptoWeb.Api.V1V2.CurrenciesViewCommon do
         params: %{
           amount: amount,
           name: name,
-          unit: unit,
-          guild: guild,
-          pool_amount: pool
+          unit: unit
         }
       }) do
     %{
       total_amount: to_string(amount),
       name: name,
-      unit: unit,
-      guild: to_string(guild),
-      pool_amount: to_string(pool)
+      unit: unit
     }
   end
 end

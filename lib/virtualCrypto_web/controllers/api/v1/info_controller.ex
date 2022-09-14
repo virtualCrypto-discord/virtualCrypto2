@@ -4,16 +4,8 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
 
   defp get(%{"id" => id}) do
     case Integer.parse(id) do
-      # TODO: it is bug #234
-      {int_id, ""} when int_id >= 1 -> {:ok, {:guild, int_id}}
+      {int_id, ""} when int_id >= 1 -> {:ok, {:id, int_id}}
       _ -> {:error, {:invalid_request, :id_must_be_positive_integer}}
-    end
-  end
-
-  defp get(%{"guild" => guild_id}) do
-    case Integer.parse(guild_id) do
-      {int_guild_id, ""} when int_guild_id >= 1 -> {:ok, {:guild, int_guild_id}}
-      _ -> {:error, {:invalid_request, :guild_id_must_be_positive_integer}}
     end
   end
 
@@ -34,7 +26,7 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
   end
 
   def index(conn, params) do
-    m = Map.take(params, ["id", "guild", "name", "unit"])
+    m = Map.take(params, ["id", "name", "unit"])
 
     params =
       case map_size(m) do
@@ -51,7 +43,7 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
           end
 
         _ ->
-          {:error, {:invalid_request, :need_one_parameter_from_id_guild_name_or_unit}}
+          {:error, {:invalid_request, :need_one_parameter_from_id_name_or_unit}}
       end
 
     case params do

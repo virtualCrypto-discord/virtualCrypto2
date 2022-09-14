@@ -2,15 +2,13 @@ defmodule InfoControllerTest.V1 do
   use VirtualCryptoWeb.RestCase, async: true
   setup :setup_money
 
-  @need_one_parameter_from_id_guild_name_or_unit %{
+  @need_one_parameter_from_id_name_or_unit %{
     "error" => "invalid_request",
-    "error_description" => "need_one_parameter_from_id_guild_name_or_unit"
+    "error_description" => "need_one_parameter_from_id_name_or_unit"
   }
   defp success(m) do
     %{
-      "guild" => to_string(m.guild),
       "name" => m.name,
-      "pool_amount" => "500",
       "total_amount" => "200500",
       "unit" => m.unit
     }
@@ -24,50 +22,47 @@ defmodule InfoControllerTest.V1 do
     "error" => "invalid_request",
     "error_description" => "id_must_be_positive_integer"
   }
-  @guild_id_must_be_positive_integer %{
-    "error" => "invalid_request",
-    "error_description" => "guild_id_must_be_positive_integer"
-  }
+
   test "not supply parameter", %{conn: conn} do
     conn = get(conn, Routes.v1_info_path(conn, :index))
 
-    assert json_response(conn, 400) == @need_one_parameter_from_id_guild_name_or_unit
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply invalid named parameter", %{conn: conn} do
     conn = get(conn, Routes.v1_info_path(conn, :index, %{invalid: "x"}))
 
-    assert json_response(conn, 400) == @need_one_parameter_from_id_guild_name_or_unit
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply too many parameter", %{conn: conn} do
-    conn = get(conn, Routes.v1_info_path(conn, :index, %{guild: "1", id: 1}))
+    conn = get(conn, Routes.v1_info_path(conn, :index, %{unit: "n", id: 1}))
 
-    assert json_response(conn, 400) == @need_one_parameter_from_id_guild_name_or_unit
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply invalid guild parameter", %{conn: conn} do
     conn = get(conn, Routes.v1_info_path(conn, :index, %{guild: "x"}))
 
-    assert json_response(conn, 400) == @guild_id_must_be_positive_integer
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply invalid guild parameter2", %{conn: conn} do
     conn = get(conn, Routes.v1_info_path(conn, :index, %{guild: "-21"}))
 
-    assert json_response(conn, 400) == @guild_id_must_be_positive_integer
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply no_match guild parameter", %{conn: conn} do
     conn = get(conn, Routes.v1_info_path(conn, :index, %{guild: "123"}))
 
-    assert json_response(conn, 404) == @not_found
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply match guild parameter", %{conn: conn} = ctx do
     conn = get(conn, Routes.v1_info_path(conn, :index, %{guild: ctx.guild}))
 
-    assert json_response(conn, 200) == success(ctx)
+    assert json_response(conn, 400) == @need_one_parameter_from_id_name_or_unit
   end
 
   test "supply no_match unit parameter", %{conn: conn} do
@@ -114,7 +109,7 @@ defmodule InfoControllerTest.V1 do
 
   test "supply match id parameter", %{conn: conn} = ctx do
     # TODO: it is bug #234
-    conn = get(conn, Routes.v1_info_path(conn, :index, %{id: ctx.guild}))
+    conn = get(conn, Routes.v1_info_path(conn, :index, %{id: ctx.currency}))
 
     assert json_response(conn, 200) == success(ctx)
   end

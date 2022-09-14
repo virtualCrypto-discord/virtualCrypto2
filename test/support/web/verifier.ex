@@ -34,16 +34,7 @@ defmodule VirtualCryptoWeb.TestDataVerifier do
 
       def verify_currency(currency, currency_) do
         assert currency["unit"] == currency_.unit
-        assert to_integer(currency["guild"]) == currency_.guild
         assert currency["name"] == currency_.name
-
-        case Map.get(currency_, :pool_amount) do
-          nil ->
-            nil
-
-          pool_amount ->
-            assert to_integer(currency["pool_amount"]) == pool_amount
-        end
 
         case Map.fetch(currency_, :total_amount) do
           {:ok, total_amount} ->
