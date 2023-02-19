@@ -21,6 +21,40 @@ defmodule InteractionsControllerTest.Create do
     encode(counter())
   end
 
+  defmodule TestDiscordAPI do
+    # @behaviour Discord.Api.Behaviour
+
+    def get_guild_with_status_code(guild_id) do
+      {200,
+       %{
+         "id" => to_string(guild_id),
+         "name" => "TestGuild",
+         "features" => ["APPLICATION_COMMAND_PERMISSIONS_V2"]
+       }}
+    end
+  end
+
+  defmodule TestDiscordAPIPermissionsV2 do
+    # @behaviour Discord.Api.Behaviour
+
+    def get_guild_with_status_code(guild_id) do
+      {200, %{"id" => to_string(guild_id), "name" => "TestGuild", "features" => []}}
+    end
+  end
+
+  def execute(conn, req, v2 \\ false) do
+    conn =
+      if v2 do
+        conn
+        |> VirtualCryptoWeb.Plug.DiscordApiService.set_service(TestDiscordAPIPermissionsV2)
+      else
+        conn
+        |> VirtualCryptoWeb.Plug.DiscordApiService.set_service(TestDiscordAPI)
+      end
+
+    execute_interaction(conn, req)
+  end
+
   test "valid request", ctx do
     sender = counter()
     amount = 10000
@@ -28,9 +62,51 @@ defmodule InteractionsControllerTest.Create do
     name = "funyu#{encode()}"
 
     conn =
-      execute_interaction(
+      execute(
         ctx.conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
+      )
+
+    color = color_ok()
+    description = "✅ 通貨の作成に成功しました！ `/info unit: #{unit}`コマンドで通貨の情報をご覧ください。"
+
+    assert %{
+             "data" => %{
+               "embeds" => [
+                 %{
+                   "color" => ^color,
+                   "description" => ^description
+                 }
+               ],
+               "allowed_mentions" => %{"parse" => []}
+             },
+             "type" => 4
+           } = json_response(conn, 200)
+
+    currency = VirtualCrypto.Repo.get_by(VirtualCrypto.Money.Currency, unit: unit)
+
+    assert currency.name == name
+    assert currency.pool_amount == div(amount + 199, 200)
+
+    asset =
+      VirtualCrypto.Money.balance(
+        user: %DiscordUser{id: sender},
+        currency: currency.id
+      ).asset
+
+    assert asset.amount == amount
+  end
+
+  test "not admin without v2 flag", ctx do
+    sender = counter()
+    amount = 10000
+    unit = encode()
+    name = "funyu#{encode()}"
+
+    conn =
+      execute(
+        ctx.conn,
+        from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
 
     color = color_ok()
@@ -71,7 +147,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -103,7 +179,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -135,7 +211,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818)
       )
@@ -159,7 +235,7 @@ defmodule InteractionsControllerTest.Create do
            } = json_response(conn, 200)
   end
 
-  test "not enough permission", ctx do
+  test "not enough permission with v2 flag", ctx do
     sender = counter()
     amount = 10000
     unit = encode()
@@ -167,9 +243,15 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
-        from_guild(%{amount: amount, unit: unit, name: name}, sender, 494_780_225_280_802_818, 0)
+        from_guild(
+          %{amount: amount, unit: unit, name: name},
+          sender,
+          1_234_567_890_123_456_789,
+          0
+        ),
+        true
       )
 
     color = color_error()
@@ -199,7 +281,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender, ctx.currency_guild)
       )
@@ -231,7 +313,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
       )
@@ -263,7 +345,7 @@ defmodule InteractionsControllerTest.Create do
     conn = ctx.conn
 
     conn =
-      execute_interaction(
+      execute(
         conn,
         from_guild(%{amount: amount, unit: unit, name: name}, sender)
       )

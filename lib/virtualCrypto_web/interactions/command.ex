@@ -43,6 +43,14 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     end
   end
 
+  defp continue_management_command?(guild, int_permissions) do
+    if "APPLICATION_COMMAND_PERMISSIONS_V2" in guild["features"] do
+      true
+    else
+      Discord.Permissions.check(int_permissions, Discord.Permissions.administrator())
+    end
+  end
+
   def handle(
         "bal",
         _options,
@@ -82,13 +90,19 @@ defmodule VirtualCryptoWeb.Interaction.Command do
           "guild_id" => guild,
           "member" => %{"permissions" => perms}
         },
-        _conn
+        conn
       ) do
     int_permissions = String.to_integer(perms)
+    int_guild = String.to_integer(guild)
 
-    if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
+    guild =
+      Discord.Api.Cached.get_guild(
+        int_guild,
+        VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn)
+      )
+
+    if continue_management_command?(guild, int_permissions) do
       int_receiver = %DiscordUser{id: String.to_integer(receiver)}
-      int_guild = String.to_integer(guild)
       int_amount = cast_int(amount)
 
       case VirtualCrypto.Money.give(receiver: int_receiver, amount: int_amount, guild: int_guild) do
@@ -131,14 +145,20 @@ defmodule VirtualCryptoWeb.Interaction.Command do
         "create",
         options,
         %{"guild_id" => guild_id, "member" => %{"user" => user}} = params,
-        _conn
+        conn
       ) do
     int_guild_id = String.to_integer(guild_id)
     int_user_id = String.to_integer(user["id"])
     int_permissions = String.to_integer(params["member"]["permissions"])
     options = %{options | "amount" => cast_int(options["amount"])}
 
-    if Discord.Permissions.check(int_permissions, Discord.Permissions.administrator()) do
+    guild =
+      Discord.Api.Cached.get_guild(
+        int_guild_id,
+        VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn)
+      )
+
+    if continue_management_command?(guild, int_permissions) do
       if name_unit_check(options["name"], options["unit"]) do
         case VirtualCrypto.Money.create(
                guild: int_guild_id,
