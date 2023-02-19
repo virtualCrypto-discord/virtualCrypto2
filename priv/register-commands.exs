@@ -33,7 +33,8 @@ defmodule Command do
           "type" => 4,
           "required" => false
         }
-      ]
+      ],
+      "default_member_permissions" => "0"
     }
   end
 
@@ -111,7 +112,8 @@ defmodule Command do
           "type" => 4,
           "required" => true
         }
-      ]
+      ],
+      "default_member_permissions" => "0"
     }
   end
 
