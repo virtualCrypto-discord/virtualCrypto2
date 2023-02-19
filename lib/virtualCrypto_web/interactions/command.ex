@@ -45,9 +45,9 @@ defmodule VirtualCryptoWeb.Interaction.Command do
 
   defp continue_management_command?(guild, int_permissions) do
     if "APPLICATION_COMMAND_PERMISSIONS_V2" in guild["features"] do
-      true
-    else
       Discord.Permissions.check(int_permissions, Discord.Permissions.administrator())
+    else
+      true
     end
   end
 

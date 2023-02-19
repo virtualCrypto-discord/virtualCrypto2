@@ -23,7 +23,13 @@ defmodule InteractionsControllerTest.Create do
 
   defmodule TestDiscordAPI do
     # @behaviour Discord.Api.Behaviour
+    def get_guild_with_status_code(guild_id) do
+      {200, %{"id" => to_string(guild_id), "name" => "TestGuild", "features" => []}}
+    end
+  end
 
+  defmodule TestDiscordAPIPermissionsV2 do
+    # @behaviour Discord.Api.Behaviour
     def get_guild_with_status_code(guild_id) do
       {200,
        %{
@@ -31,14 +37,6 @@ defmodule InteractionsControllerTest.Create do
          "name" => "TestGuild",
          "features" => ["APPLICATION_COMMAND_PERMISSIONS_V2"]
        }}
-    end
-  end
-
-  defmodule TestDiscordAPIPermissionsV2 do
-    # @behaviour Discord.Api.Behaviour
-
-    def get_guild_with_status_code(guild_id) do
-      {200, %{"id" => to_string(guild_id), "name" => "TestGuild", "features" => []}}
     end
   end
 
