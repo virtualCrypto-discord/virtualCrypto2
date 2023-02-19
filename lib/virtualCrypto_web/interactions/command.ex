@@ -197,7 +197,10 @@ defmodule VirtualCryptoWeb.Interaction.Command do
 
           info ->
             guild =
-              VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn).get_guild(info.guild)
+              Discord.Api.Cached.get_guild(
+                info.guild,
+                VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn)
+              )
 
             case Money.balance(user: %DiscordUser{id: int_user_id})
                  # FIXME: do not client side filtering
