@@ -54,7 +54,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
               DiscordAuth.refresh_user(owner_discord_id)},
            {{:validate_token, :user_verification_failed}, false} <-
              {{:validate_token, :user_verification_failed},
-              Map.get(Discord.Api.V8.OAuth2.get_user_info(discord_access_token), "bot", false)} do
+              Map.get(Discord.Api.OAuth2.get_user_info(discord_access_token), "bot", false)} do
         Auth.register_application(
           user_id,
           %{

@@ -13,7 +13,7 @@ defmodule VirtualCryptoWeb.AuthPlug do
       state: state,
       continue: url
     })
-    |> redirect(external: Discord.Api.V8.OAuth2.authorize_url(state))
+    |> redirect(external: Discord.Api.OAuth2.authorize_url(state))
     |> halt()
   end
 
