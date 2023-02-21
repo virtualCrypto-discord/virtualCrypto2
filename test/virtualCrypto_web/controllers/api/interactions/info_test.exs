@@ -6,8 +6,8 @@ defmodule InteractionsControllerTest.Info do
   defmodule TestDiscordAPI do
     # @behaviour Discord.Api.Behaviour
 
-    def get_guild(guild_id) do
-      %{"id" => to_string(guild_id), "name" => "TestGuild"}
+    def get_guild_with_status_code(guild_id) do
+      {200, %{"id" => to_string(guild_id), "name" => "TestGuild"}}
     end
   end
 
@@ -283,8 +283,8 @@ defmodule InteractionsControllerTest.Info do
     defmodule TestDiscordAPINotHasIcon do
       # @behaviour Discord.Api.Behaviour
 
-      def get_guild(guild_id) do
-        %{"id" => to_string(guild_id), "name" => "TestGuild", "icon" => nil}
+      def get_guild_with_status_code(guild_id) do
+        {200, %{"id" => to_string(guild_id), "name" => "TestGuild", "icon" => nil}}
       end
     end
 
@@ -312,12 +312,13 @@ defmodule InteractionsControllerTest.Info do
     defmodule TestDiscordAPIHasIcon do
       # @behaviour Discord.Api.Behaviour
 
-      def get_guild(guild_id) do
-        %{
-          "id" => to_string(guild_id),
-          "name" => "TestGuild",
-          "icon" => "981b65442cb7cffa5a60b6b94a10d263"
-        }
+      def get_guild_with_status_code(guild_id) do
+        {200,
+         %{
+           "id" => to_string(guild_id),
+           "name" => "TestGuild",
+           "icon" => "981b65442cb7cffa5a60b6b94a10d263"
+         }}
       end
     end
 
@@ -349,12 +350,13 @@ defmodule InteractionsControllerTest.Info do
     defmodule TestDiscordAPIHasAnimatedIcon do
       # @behaviour Discord.Api.Behaviour
 
-      def get_guild(guild_id) do
-        %{
-          "id" => to_string(guild_id),
-          "name" => "TestGuild",
-          "icon" => "a_981b65442cb7cffa5a60b6b94a10d263"
-        }
+      def get_guild_with_status_code(guild_id) do
+        {200,
+         %{
+           "id" => to_string(guild_id),
+           "name" => "TestGuild",
+           "icon" => "a_981b65442cb7cffa5a60b6b94a10d263"
+         }}
       end
     end
 

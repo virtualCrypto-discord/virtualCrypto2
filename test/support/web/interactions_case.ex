@@ -35,9 +35,12 @@ defmodule VirtualCryptoWeb.InteractionsCase do
       def execute_interaction(conn, body) do
         body = Jason.encode!(body)
 
+        conn =
+          conn
+          |> Plug.Conn.put_req_header("content-type", "application/json")
+          |> sign_request(body)
+
         conn
-        |> Plug.Conn.put_req_header("content-type", "application/json")
-        |> sign_request(body)
         |> Phoenix.ConnTest.post(
           "/api/integrations/discord/interactions",
           body
