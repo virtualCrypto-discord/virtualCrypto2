@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.Api.V1V2.UserController do
         {:ok, %{"sub" => user_id}} = VirtualCrypto.Guardian.decode_and_verify(token)
         user = VirtualCrypto.User.get_user_by_id(user_id)
         discord_user_authz_info = VirtualCrypto.DiscordAuth.refresh_user(user.discord_id)
-        discord_user = Discord.Api.V8.OAuth2.get_user_info(discord_user_authz_info.token)
+        discord_user = Discord.Api.OAuth2.get_user_info(discord_user_authz_info.token)
 
         render(
           conn,

@@ -70,7 +70,7 @@ defmodule VirtualCrypto.DiscordAuth do
         expire_time = NaiveDateTime.add(user.updated_at, 604_800)
 
         with true <- NaiveDateTime.diff(expire_time, NaiveDateTime.utc_now()) <= 60 * 15,
-             {:ok, client} <- Discord.Api.V8.OAuth2.refresh_token(user.refresh_token) do
+             {:ok, client} <- Discord.Api.OAuth2.refresh_token(user.refresh_token) do
           update_token(discord_user_id, client)
         else
           false -> user

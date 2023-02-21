@@ -1,4 +1,4 @@
-defmodule Discord.Api.V8.OAuth2 do
+defmodule Discord.Api.OAuth2 do
   # TODO: really v8?
   @client_data [
     strategy: OAuth2.Strategy.AuthCode,

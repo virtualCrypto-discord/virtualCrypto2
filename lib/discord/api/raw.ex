@@ -1,7 +1,7 @@
 defmodule Discord.Api.Raw do
   alias Discord.Api.Behaviour
   @behaviour Behaviour
-  @base_url "https://discord.com/api/v9/"
+  @base_url "https://discord.com/api/v10/"
   def base_headers,
     do: [
       {"Authorization", "Bot #{Application.get_env(:virtualCrypto, :bot_token)}"},

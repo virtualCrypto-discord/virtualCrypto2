@@ -31,7 +31,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
     token = token_data["access_token"]
     expires = NaiveDateTime.add(NaiveDateTime.utc_now(), token_data["expires_in"])
     refresh_token = token_data["refresh_token"]
-    user_data = Discord.Api.V8.OAuth2.get_user_info(token)
+    user_data = Discord.Api.OAuth2.get_user_info(token)
     discord_user_id = String.to_integer(user_data["id"])
 
     {:ok, %{virtual_crypto: vc}} =
@@ -69,7 +69,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
   def discord_callback(conn, %{"state" => state, "code" => code}) do
     case get_session(conn, :discord_oauth2) do
       %{state: ^state} ->
-        case Discord.Api.V8.OAuth2.exchange_code(code) do
+        case Discord.Api.OAuth2.exchange_code(code) do
           :error ->
             conn
             |> configure_session(drop: true)
