@@ -19,7 +19,7 @@
       id: "elm-header",
       data: [is_logged_in: is_logged_in?(@conn)])
     %>
-<main role="main">
+<main role="main" class="site-background">
     <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
     <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
     <%= @inner_content %>
