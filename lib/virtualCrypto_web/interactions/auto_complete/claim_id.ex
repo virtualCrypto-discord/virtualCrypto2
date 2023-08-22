@@ -1,6 +1,10 @@
 defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
 
+  defp user_tag(%{"username" => name, "discriminator" => "0"}) do
+    name
+  end
+
   defp user_tag(%{"username" => name, "discriminator" => discriminator}) do
     "#{name}##{discriminator}"
   end

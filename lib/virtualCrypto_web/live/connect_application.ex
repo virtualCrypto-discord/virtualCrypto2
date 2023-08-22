@@ -99,20 +99,20 @@ defmodule VirtualCryptoWeb.ConnectApplication do
       {:find_target_integration, _} ->
         # must get flesh data
         case Discord.Api.Raw.get_user_with_status(assigns.bot_id) do
-          {200, %{"username" => username, "discriminator" => discriminator, "bot" => true}} ->
+          {200, %{"username" => username, "bot" => true}} ->
             case Discord.Api.Raw.get_guild_with_status_code(assigns.guild_id) do
               {200, %{"name" => name}} ->
                 failed(
                   socket,
-                  "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。サーバー、#{name}にBot、#{username}##{discriminator}が導入されていることを確認してください。",
+                  "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。サーバー、#{name}にBot、#{username}が導入されていることを確認してください。",
                   edit: true
                 )
             end
 
-          {200, %{"username" => username, "discriminator" => discriminator}} ->
+          {200, %{"username" => username}} ->
             failed(
               socket,
-              "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。#{username}##{discriminator}はBotではありません。",
+              "取得したIntegrationに指定のIdのIntegrationが見つかりませんでした。#{username}はBotではありません。",
               edit: true
             )
 
