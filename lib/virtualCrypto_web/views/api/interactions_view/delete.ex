@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Delete do
   end
 
   defp render_error(:confirmation_failed) do
-    "エラー: 確認に失敗しました。再度`\\delete`コマンドを実行してください。"
+    "エラー: 確認に失敗しました。再度`/delete`コマンドを実行してください。"
   end
 
   def render(_, :confirm, currency) do
