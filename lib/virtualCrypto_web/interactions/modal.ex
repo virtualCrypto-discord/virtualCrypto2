@@ -16,7 +16,7 @@ defmodule VirtualCryptoWeb.Interaction.Modal do
         {:ok, :deleted, currency} ->
           required_text = "delete #{currency.unit}"
 
-          if required_text == v do
+          if String.downcase(required_text) == String.downcase(v) do
             case VirtualCrypto.Money.delete(int_guild_id,
                    dry_run: false,
                    now: now
