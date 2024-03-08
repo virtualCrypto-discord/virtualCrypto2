@@ -34,6 +34,7 @@ defmodule Command do
           "required" => false
         }
       ],
+      "dm_permission" => false,
       "default_member_permissions" => "0"
     }
   end
@@ -113,6 +114,16 @@ defmodule Command do
           "required" => true
         }
       ],
+      "dm_permission" => false,
+      "default_member_permissions" => "0"
+    }
+  end
+
+  def delete do
+    %{
+      "name" => "delete",
+      "description" => "通貨を削除します。削除は、作成後72時間の間のみ可能です",
+      "dm_permission" => false,
       "default_member_permissions" => "0"
     }
   end
@@ -271,8 +282,7 @@ defmodule Command do
       {"Content-Type", "application/json"}
     ]
 
-    commands = [help(), invite(), give(), pay(), info(), create(), bal(), claim()]
-
+    commands = [help(), invite(), give(), pay(), info(), create(), delete(), bal(), claim()]
 
     {:ok,r} = HTTPoison.put(url, Jason.encode!(commands), headers)
     IO.puts(r.status_code)

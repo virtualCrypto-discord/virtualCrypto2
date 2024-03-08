@@ -34,7 +34,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => name
@@ -62,7 +63,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => name
@@ -113,7 +115,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => name
@@ -164,7 +167,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{ctx.unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{ctx.unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{ctx.unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{ctx.unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => ctx.name
@@ -192,7 +196,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`199500#{unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => name
@@ -243,7 +248,8 @@ defmodule InteractionsControllerTest.Info do
                      "fields" => [
                        %{"inline" => true, "name" => "総発行量", "value" => "`200500#{unit}`"},
                        %{"inline" => true, "name" => "発行枠", "value" => "`500#{unit}`"},
-                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{unit}`"}
+                       %{"inline" => true, "name" => "あなたの所持量", "value" => "`0#{unit}`"},
+                       %{"inline" => true, "name" => "削除可能", "value" => "はい"}
                      ],
                      "footer" => %{"text" => "発行枠は一日一回総発行量の0.5%増加し、最大で総発行量の3.5%となります。"},
                      "title" => name

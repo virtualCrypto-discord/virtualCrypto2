@@ -27,6 +27,10 @@ defmodule VirtualCryptoWeb.Api.InteractionsView do
     InteractionsView.Create.render(response, reason, options)
   end
 
+  def render("delete.json", %{params: {status, reason, data}}) do
+    InteractionsView.Delete.render(status, reason, data)
+  end
+
   def render("info.json", %{params: {status, data}}) do
     InteractionsView.Info.render(status, data)
   end

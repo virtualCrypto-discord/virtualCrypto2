@@ -226,7 +226,8 @@ defmodule VirtualCrypto.Money.Query.Currency do
       where: currency.guild_id == ^guild_id,
       group_by: currency.id,
       select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount,
+         currency.inserted_at}
     )
   end
 
@@ -237,7 +238,8 @@ defmodule VirtualCrypto.Money.Query.Currency do
       where: currency.name == ^name,
       group_by: currency.id,
       select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount,
+         currency.inserted_at}
     )
   end
 
@@ -248,7 +250,8 @@ defmodule VirtualCrypto.Money.Query.Currency do
       where: currency.unit == ^unit,
       group_by: currency.id,
       select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount,
+         currency.inserted_at}
     )
   end
 
@@ -259,7 +262,33 @@ defmodule VirtualCrypto.Money.Query.Currency do
       where: currency.id == ^id,
       group_by: currency.id,
       select:
-        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount}
+        {sum(asset.amount), currency.name, currency.unit, currency.guild_id, currency.pool_amount,
+         currency.inserted_at}
     )
+  end
+
+  def delete(currency_id) do
+    Money.Asset
+    |> where([a], a.currency_id == ^currency_id)
+    |> Repo.delete_all()
+
+    Money.GivenHistory
+    |> where([a], a.currency_id == ^currency_id)
+    |> Repo.delete_all()
+
+    Money.PaymentHistory
+    |> where([a], a.currency_id == ^currency_id)
+    |> Repo.delete_all()
+
+    Money.Claim
+    |> where([a], a.currency_id == ^currency_id)
+    |> Repo.delete_all()
+
+    {count, _} =
+      Money.Currency
+      |> where([a], a.id == ^currency_id)
+      |> Repo.delete_all()
+
+    count != 0
   end
 end
