@@ -66,7 +66,9 @@ defmodule InteractionsControllerTest.Create do
       )
 
     color = color_ok()
-    description = "✅ 通貨の作成に成功しました！ `/info unit: #{unit}`コマンドで通貨の情報をご覧ください。\n削除したい場合は、72時間以内に`/delete`コマンドを実行してください。"
+
+    description =
+      "✅ 通貨の作成に成功しました！ `/info unit: #{unit}`コマンドで通貨の情報をご覧ください。\n削除したい場合は、72時間以内に`/delete`コマンドを実行してください。"
 
     assert %{
              "data" => %{
@@ -108,7 +110,9 @@ defmodule InteractionsControllerTest.Create do
       )
 
     color = color_ok()
-    description = "✅ 通貨の作成に成功しました！ `/info unit: #{unit}`コマンドで通貨の情報をご覧ください。\n削除したい場合は、72時間以内に`/delete`コマンドを実行してください。"
+
+    description =
+      "✅ 通貨の作成に成功しました！ `/info unit: #{unit}`コマンドで通貨の情報をご覧ください。\n削除したい場合は、72時間以内に`/delete`コマンドを実行してください。"
 
     assert %{
              "data" => %{

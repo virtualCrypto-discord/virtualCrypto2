@@ -49,6 +49,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
   def render_user_amount(data, user_amount) do
     ~s/`#{user_amount}#{data.unit}`/
   end
+
   def render_deletable(data) do
     if data.deletable do
       "はい"
@@ -120,7 +121,8 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
                 name: "あなたの所持量",
                 value: render_user_amount(data, user_amount),
                 inline: true
-              },%{
+              },
+              %{
                 name: "削除可能",
                 value: render_deletable(data),
                 inline: true

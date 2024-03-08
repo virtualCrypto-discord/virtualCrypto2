@@ -6,7 +6,6 @@ defmodule InteractionsControllerTest.Delete do
 
   test "delete command",
        %{conn: conn, unit: unit, user1: user, currency_guild: guild} do
-
     conn =
       execute_interaction(
         conn,
@@ -43,7 +42,6 @@ defmodule InteractionsControllerTest.Delete do
 
   test "confirm delete",
        %{conn: conn, unit: unit, user1: user, currency_guild: guild} do
-
     conn =
       execute_interaction(
         conn,
@@ -89,7 +87,6 @@ defmodule InteractionsControllerTest.Delete do
           guild
         )
       )
-
 
     assert %{
              "data" => %{

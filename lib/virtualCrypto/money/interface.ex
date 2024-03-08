@@ -211,7 +211,7 @@ defmodule VirtualCrypto.Money do
   def is_deletable?(created_at, kw \\ []) do
     now = Keyword.get_lazy(kw, :now, fn -> NaiveDateTime.utc_now() end)
 
-    NaiveDateTime.diff(now,created_at, :second) <=
+    NaiveDateTime.diff(now, created_at, :second) <=
       3 * 24 * 60 * 60
   end
 
@@ -306,16 +306,18 @@ defmodule VirtualCrypto.Money do
       else
         {atom, key} -> Repo.one(Query.Currency.info(atom, key))
       end
+
     case raw do
-      {amount, currency_name, currency_unit, currency_guild_id, pool_amount,inserted_at} ->
+      {amount, currency_name, currency_unit, currency_guild_id, pool_amount, inserted_at} ->
         now = Keyword.get_lazy(kw, :now, fn -> NaiveDateTime.utc_now() end)
+
         %{
           amount: Decimal.to_integer(amount),
           name: currency_name,
           unit: currency_unit,
           guild: currency_guild_id,
           pool_amount: pool_amount,
-          deletable: is_deletable?(inserted_at,now: now)
+          deletable: is_deletable?(inserted_at, now: now)
         }
 
       nil ->
