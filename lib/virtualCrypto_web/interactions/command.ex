@@ -191,6 +191,19 @@ defmodule VirtualCryptoWeb.Interaction.Command do
     {:error, :run_in_dm, %{}}
   end
 
+  def handle("delete", _options, %{"guild_id" => guild_id}, _conn) do
+    int_guild_id = String.to_integer(guild_id)
+
+    case VirtualCrypto.Money.delete(int_guild_id,
+           dry_run: true,
+           now: Process.get(:test_delete_now) || NaiveDateTime.utc_now()
+         ) do
+      {:ok, :deleted, currency} -> {:ok, :confirm, currency}
+      {:ok, :not_exist, currency} -> {:error, :not_exist, currency}
+      {:error, :out_of_term, currency} -> {:error, :out_of_term, currency}
+    end
+  end
+
   def handle("info", options, payload, conn) do
     user = get_user(payload)
     int_user_id = String.to_integer(user["id"])

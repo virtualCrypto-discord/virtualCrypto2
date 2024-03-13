@@ -40,7 +40,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Create do
         embeds: [
           %{
             description:
-              ~s"\u2705 通貨の作成に成功しました！ `/info unit: #{options["unit"]}`コマンドで通貨の情報をご覧ください。",
+              ~s"\u2705 通貨の作成に成功しました！ `/info unit: #{options["unit"]}`コマンドで通貨の情報をご覧ください。\n削除したい場合は、72時間以内に`/delete`コマンドを実行してください。",
             color: color_ok()
           }
         ],

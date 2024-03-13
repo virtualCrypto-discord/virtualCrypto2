@@ -208,6 +208,40 @@ defmodule VirtualCrypto.Money do
     )
   end
 
+  def is_deletable?(created_at, kw \\ []) do
+    now = Keyword.get_lazy(kw, :now, fn -> NaiveDateTime.utc_now() end)
+
+    NaiveDateTime.diff(now, created_at, :second) <=
+      3 * 24 * 60 * 60
+  end
+
+  @spec delete(non_neg_integer(), dry_run: bool(), now: NaiveDateTime.t()) ::
+          {:ok, :deleted | :not_exist} | {:error, :out_of_term}
+  def delete(guild, kw \\ []) do
+    dry_run = Keyword.get(kw, :dry_run, false)
+
+    {:ok, r} =
+      Repo.transaction(fn ->
+        currency = Query.Currency.get_currency_by_guild_id_with_lock(guild)
+
+        with {:currency, true} <- {:currency, currency != nil},
+             now <- Keyword.get_lazy(kw, :now, fn -> NaiveDateTime.utc_now() end),
+             {:term, true} <-
+               {:term, is_deletable?(currency.inserted_at, now: now)} do
+          unless dry_run do
+            Query.Currency.delete(currency.id)
+          end
+
+          {:ok, :deleted, currency}
+        else
+          {:currency, _} -> {:ok, :not_exist, nil}
+          {:term, _} -> {:error, :out_of_term, currency}
+        end
+      end)
+
+    r
+  end
+
   # TODO: separate this
   @spec balance(user: UserResolvable.t(), currency: non_neg_integer()) ::
           [
@@ -258,7 +292,8 @@ defmodule VirtualCrypto.Money do
             name: String.t(),
             unit: String.t(),
             guild: non_neg_integer(),
-            pool_amount: non_neg_integer()
+            pool_amount: non_neg_integer(),
+            deletable: bool()
           }
           | nil
   def info(kw) do
@@ -273,13 +308,16 @@ defmodule VirtualCrypto.Money do
       end
 
     case raw do
-      {amount, currency_name, currency_unit, currency_guild_id, pool_amount} ->
+      {amount, currency_name, currency_unit, currency_guild_id, pool_amount, inserted_at} ->
+        now = Keyword.get_lazy(kw, :now, fn -> NaiveDateTime.utc_now() end)
+
         %{
           amount: Decimal.to_integer(amount),
           name: currency_name,
           unit: currency_unit,
           guild: currency_guild_id,
-          pool_amount: pool_amount
+          pool_amount: pool_amount,
+          deletable: is_deletable?(inserted_at, now: now)
         }
 
       nil ->

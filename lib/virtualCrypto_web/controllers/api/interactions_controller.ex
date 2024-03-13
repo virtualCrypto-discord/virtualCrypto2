@@ -191,13 +191,34 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       |> CustomId.parse()
       |> CustomId.UI.SelectMenu.parse()
 
-    Map.get(d, "values", [])
-
     {name, params} =
       VirtualCryptoWeb.Interaction.SelectMenu.handle(
         path,
         data,
         Map.get(d, "values", []),
+        params,
+        conn
+      )
+
+    render(conn, "#{name}.json", params: params)
+  end
+
+  def verified(
+        conn,
+        %{
+          "type" => 5,
+          "data" => %{"custom_id" => custom_id}
+        } = params
+      ) do
+    {path, data} =
+      custom_id
+      |> CustomId.parse()
+      |> CustomId.UI.Modal.parse()
+
+    {name, params} =
+      VirtualCryptoWeb.Interaction.Modal.handle(
+        path,
+        data,
         params,
         conn
       )

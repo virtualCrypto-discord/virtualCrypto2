@@ -50,6 +50,14 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
     ~s/`#{user_amount}#{data.unit}`/
   end
 
+  def render_deletable(data) do
+    if data.deletable do
+      "はい"
+    else
+      "いいえ"
+    end
+  end
+
   def render(:error, :must_supply_argument_when_run_in_dm) do
     %{
       type: channel_message_with_source(),
@@ -112,6 +120,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Info do
               %{
                 name: "あなたの所持量",
                 value: render_user_amount(data, user_amount),
+                inline: true
+              },
+              %{
+                name: "削除可能",
+                value: render_deletable(data),
                 inline: true
               }
             ],

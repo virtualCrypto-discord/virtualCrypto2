@@ -1,6 +1,5 @@
 defmodule InteractionsControllerTest.Claim.Show do
   use VirtualCryptoWeb.InteractionsCase, async: true
-  import InteractionsControllerTest.Claim.Helper
   import InteractionsControllerTest.Helper.Common
   import VirtualCryptoWeb.Api.InteractionsView.Util
   setup :setup_claim
