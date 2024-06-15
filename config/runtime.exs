@@ -85,7 +85,7 @@ if config_env() == :prod do
     ]
 
   config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
-    webhook_proxy: "https://webhook-emitter.vcrypto.sumidora.com/",
+    webhook_proxy: "https://vcrypto-webhook-emitter.sumidora.com/",
     ssl: [
       cert:
         :public_key.pem_decode(cert_pem)
