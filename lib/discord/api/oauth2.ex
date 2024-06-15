@@ -1,21 +1,23 @@
 defmodule Discord.Api.OAuth2 do
-  @client_data [
-    strategy: OAuth2.Strategy.AuthCode,
-    client_id: Application.get_env(:virtualCrypto, :client_id),
-    client_secret: Application.get_env(:virtualCrypto, :client_secret),
-    token_url: "https://discord.com/api/oauth2/token",
-    authorize_url: "https://discord.com/api/oauth2/authorize",
-    redirect_uri: Application.get_env(:virtualCrypto, :discord_oauth2_redirect_uri)
-  ]
+  def client_data() do
+    [
+      strategy: OAuth2.Strategy.AuthCode,
+      client_id: Application.fetch_env!(:virtualCrypto, :client_id),
+      client_secret: Application.fetch_env!(:virtualCrypto, :client_secret),
+      token_url: "https://discord.com/api/oauth2/token",
+      authorize_url: "https://discord.com/api/oauth2/authorize",
+      redirect_uri: Application.fetch_env!(:virtualCrypto, :discord_oauth2_redirect_uri)
+    ]
+  end
   @spec authorize_url(String.t()) :: String.t()
   def authorize_url(state) do
-    client = OAuth2.Client.new(@client_data)
+    client = OAuth2.Client.new(client_data())
     OAuth2.Client.authorize_url!(client, state: state, scope: "identify", prompt: "none")
   end
 
   @spec exchange_code(String.t()) :: %OAuth2.Client{} | :error
   def exchange_code(code) do
-    client = OAuth2.Client.new(@client_data)
+    client = OAuth2.Client.new(client_data())
 
     try do
       client
@@ -28,7 +30,7 @@ defmodule Discord.Api.OAuth2 do
 
   def get_user_info(token) do
     {:ok, response} =
-      @client_data
+      client_data()
       |> Keyword.merge(token: token)
       |> OAuth2.Client.new()
       |> OAuth2.Client.get("https://discord.com/api/users/@me")
@@ -40,7 +42,7 @@ defmodule Discord.Api.OAuth2 do
   def refresh_token(refresh_token_) do
     try do
       client =
-        @client_data
+        client_data()
         |> Keyword.merge(strategy: OAuth2.Strategy.Refresh)
         |> OAuth2.Client.new()
         |> OAuth2.Client.put_param(:refresh_token, refresh_token_)

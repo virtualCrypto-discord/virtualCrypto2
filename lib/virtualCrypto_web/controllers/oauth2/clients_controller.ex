@@ -3,7 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
-
+  defp site_url,do: Application.fetch_env!(:virtualCrypto, :site_url)
   def get(conn, %{"user" => "@me"}) do
     with cr <- Guardian.Plug.current_resource(conn),
          {{:validate_token, :invalid_token}, %{"sub" => user_id, "kind" => "user"}} <-
@@ -92,7 +92,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
           application: application_data.application,
           registration_access_token: access_token,
           registration_client_uri:
-            Application.get_env(:virtualCrypto, :site_url)
+            site_url()
             |> URI.parse()
             |> Map.put(:path, "/oauth2/clients/@me")
             |> URI.to_string()

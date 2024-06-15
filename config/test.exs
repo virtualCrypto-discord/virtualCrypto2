@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure your database
 config :virtualCrypto, VirtualCrypto.Repo,
@@ -31,7 +31,6 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
       "node_modules/webpack/bin/webpack.js",
       "--mode",
       "development",
-      "--watch-stdin",
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
@@ -74,15 +73,20 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
 
 config :logger, backends: []
 
-{pubkey, privkey} = :crypto.generate_key(:eddsa, :ed25519)
+# :crypto.generate_key(:eddsa, :ed25519)
 
 config :virtualCrypto,
        :public_key,
-       Base.encode16(pubkey, case: :lower)
+       Base.encode16(
+         <<119, 232, 241, 107, 20, 166, 118, 250, 178, 169, 189, 154, 197, 157, 21, 103, 3, 154,
+           33, 56, 192, 17, 49, 103, 17, 197, 204, 105, 104, 74, 241, 226>>,
+         case: :lower
+       )
 
 config :virtualCrypto,
        :private_key,
-       privkey
+       <<39, 17, 61, 144, 80, 58, 130, 10, 180, 113, 133, 86, 163, 239, 126, 99, 222, 218, 21, 76,
+         55, 75, 56, 158, 183, 252, 253, 147, 84, 164, 94, 253>>
 
 config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
   children: [VirtualCryptoTest.Notification.Sink]

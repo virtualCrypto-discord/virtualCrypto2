@@ -278,7 +278,7 @@ defmodule Command do
     HTTPoison.start()
 
     headers = [
-      {"Authorization", "Bot " <> Application.get_env(:virtualCrypto, :bot_token)},
+      {"Authorization", "Bot " <> Application.compile_env!(:virtualCrypto, :bot_token)},
       {"Content-Type", "application/json"}
     ]
 
@@ -290,7 +290,7 @@ defmodule Command do
 end
 
 url = case System.argv() do
-  [] -> "https://discord.com/api/v10/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/commands"
-  [guild] -> "https://discord.com/api/v10/applications/"<>Application.get_env(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
+  [] -> "https://discord.com/api/v10/applications/"<>Application.compile_env!(:virtualCrypto, :client_id)<>"/commands"
+  [guild] -> "https://discord.com/api/v10/applications/"<>Application.compile_env!(:virtualCrypto, :client_id)<>"/guilds/"<>guild<>"/commands"
 end
 Command.put(url)

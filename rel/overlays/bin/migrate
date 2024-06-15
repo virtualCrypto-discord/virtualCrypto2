@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+cd -P -- "$(dirname -- "$0")"
+exec ./virtual_crypto eval VirtualCrypto.Release.migrate
+exec ./virtual_crypto eval priv/register-commands.exs

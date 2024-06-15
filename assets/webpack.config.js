@@ -1,11 +1,9 @@
 const path = require('path');
 const glob = require('glob');
-const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
 module.exports = (env, options) => {
   const devMode = options.mode !== 'production';
 
@@ -13,23 +11,23 @@ module.exports = (env, options) => {
     optimization: {
       minimizer: [
         new TerserPlugin({ cache: true, parallel: true, sourceMap: devMode }),
-        new OptimizeCSSAssetsPlugin({})
+        new CssMinimizerPlugin()
       ],
       splitChunks: {
-        name: true,
-        chunks: 'all'
+        name: 'vendor',
+        chunks: 'all',
       },
     },
     entry: {
       'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js']),
-      'index': './js/index.js',
-      'header': './js/header.js',
-      'mypage': './js/mypage.js',
-      'document': './js/document.js',
-      'authorize': './js/authorize.js',
-      'application': './js/application.js',
-      'credential-manager-sw': './js/credential-manager-sw.js',
-      'credential-manager-cb': './js/credential-manager-cb.js',
+      'index': ['./js/index.js'],
+      'header': ['./js/header.js'],
+      'mypage': ['./js/mypage.js'],
+      'document': ['./js/document.js'],
+      'authorize': ['./js/authorize.js'],
+      'application': ['./js/application.js'],
+      'credential-manager-sw': ['./js/credential-manager-sw.js'],
+      'credential-manager-cb': ['./js/credential-manager-cb.js'],
     },
     output: {
       filename: '[name].js',
@@ -61,7 +59,7 @@ module.exports = (env, options) => {
           use: {
             loader: 'elm-webpack-loader',
             options: {
-              cwd: path.resolve(__dirname, 'elm')
+              cwd: path.resolve(__dirname, 'elm'),
             }
           }
         },
@@ -69,8 +67,7 @@ module.exports = (env, options) => {
     },
     plugins: [
       new MiniCssExtractPlugin({ filename: '../css/app.css' }),
-      new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
+      new CopyWebpackPlugin({ patterns: [{ from: 'static/', to: '../' }] })
     ]
-      .concat(devMode ? [new HardSourceWebpackPlugin()] : []),
   }
 };

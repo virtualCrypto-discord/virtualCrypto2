@@ -155,11 +155,11 @@ defmodule VirtualCrypto.Money.Query.Claim.Raw.Get do
     q =
       from(claim in Money.Claim,
         join: currency in Money.Currency,
+        on: claim.currency_id == currency.id,
         join: claimant in VirtualCrypto.User.User,
+        on: claim.claimant_user_id == claimant.id,
         join: payer in VirtualCrypto.User.User,
-        on:
-          claim.payer_user_id == payer.id and claim.currency_id == currency.id and
-            claim.claimant_user_id == claimant.id,
+        on: claim.payer_user_id == payer.id,
         select: count(claim.id)
       )
 

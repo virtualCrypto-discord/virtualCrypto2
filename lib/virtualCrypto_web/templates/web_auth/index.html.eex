@@ -1,4 +1,3 @@
-    <script type="text/javascript" src="<%= "/static" <> Routes.static_path(@conn, "/js/vendors~credential-manager-cb~credential-manager-sw~mypage.js") %>"></script>
     <%= content_tag(
       :script,
       raw(""),

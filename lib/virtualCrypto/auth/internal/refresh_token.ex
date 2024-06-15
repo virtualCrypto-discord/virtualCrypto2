@@ -1,7 +1,6 @@
 defmodule VirtualCrypto.Auth.InternalAction.RefreshToken do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.Repo
-  import VirtualCrypto.Auth.InternalAction.Util
   import Ecto.Query
 
   def create_refresh_token(_grant_id, _lc \\ 5)

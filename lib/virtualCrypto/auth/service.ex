@@ -207,10 +207,9 @@ defmodule VirtualCrypto.Auth do
         left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
         on: redirect_uris.application_id == application.id,
         join: owner_users in VirtualCrypto.User.User,
+        on: owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id,
         join: application_users in VirtualCrypto.User.User,
-        on:
-          owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
-            application_users.application_id == application.id,
+        on: application_users.application_id == application.id,
         select: {application, application_users, redirect_uris}
 
     Repo.all(q)
@@ -222,10 +221,9 @@ defmodule VirtualCrypto.Auth do
         left_join: redirect_uris in VirtualCrypto.Auth.RedirectUri,
         on: redirect_uris.application_id == application.id,
         join: owner_users in VirtualCrypto.User.User,
+        on: owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id,
         join: application_users in VirtualCrypto.User.User,
-        on:
-          owner_users.id == ^user_id and owner_users.discord_id == application.owner_discord_id and
-            application_users.application_id == application.id,
+        on: application_users.application_id == application.id,
         where: application.client_id == ^id,
         select: {application, application_users, redirect_uris}
 

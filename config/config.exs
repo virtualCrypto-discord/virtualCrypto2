@@ -5,7 +5,7 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 config :virtualCrypto,
   ecto_repos: [VirtualCrypto.Repo]
@@ -35,10 +35,10 @@ config :virtualCrypto, VirtualCrypto.Scheduler,
   overlap: false,
   timezone: :utc,
   jobs: [
-    {"@daily", fn -> VirtualCrypto.Money.reset_pool_amount() end},
-    {"* * * * *", fn -> VirtualCrypto.Auth.purge_user_access_tokens() end},
-    {"* * * * *", fn -> VirtualCrypto.Auth.purge_access_tokens() end},
-    {"* * * * *", fn -> VirtualCryptoWeb.IdempotencyLayer.Payments.purge_idempotency_keys() end}
+    {"@daily", &VirtualCrypto.Money.reset_pool_amount/0},
+    {"* * * * *", &VirtualCrypto.Auth.purge_user_access_tokens/0},
+    {"* * * * *", &VirtualCrypto.Auth.purge_access_tokens/0},
+    {"* * * * *", &VirtualCryptoWeb.IdempotencyLayer.Payments.purge_idempotency_keys/0}
   ]
 
 config :virtualCrypto, :discord_ua_website, "https://vcrypto.sumidora.com"

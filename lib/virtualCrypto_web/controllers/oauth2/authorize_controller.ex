@@ -1,8 +1,8 @@
 defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   use VirtualCryptoWeb, :controller
-  use Bitwise
+  import Bitwise
   alias VirtualCrypto.Auth
-
+  defp client_id, do: Application.fetch_env!(:virtualCrypto, :client_id)
   defp validate_executor(conn, guild) do
     guild_id = guild["id"]
 
@@ -52,7 +52,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
              {:guild_id,
               Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
-                Application.get_env(:virtualCrypto, :client_id)
+                client_id()
               )},
            :ok <- validate_executor(conn, guild) do
         {:ok,
@@ -126,7 +126,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
              {:guild_id,
               Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
-                Application.get_env(:virtualCrypto, :client_id)
+                client_id()
               )},
            :ok <- validate_executor(conn, guild),
            {:ok, info} <-

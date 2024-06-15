@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
@@ -10,7 +10,7 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-  url: [host: "vcrypto.sumidora.com", port: 4430],
+  url: [host: "vcrypto.sumidora.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
@@ -55,5 +55,3 @@ config :logger, level: :info
 
 config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
   children: [VirtualCrypto.Notification.Webhook.CloudflareWorkers]
-
-import_config "prod.secret.exs"
