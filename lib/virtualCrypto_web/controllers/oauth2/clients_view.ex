@@ -1,7 +1,5 @@
 defmodule VirtualCryptoWeb.OAuth2.ClientsView do
-  use VirtualCryptoWeb, :view
-
-  def render("ok.register.json", %{
+  def ok(%{
         application: application,
         registration_access_token: registration_access_token,
         registration_client_uri: registration_client_uri
@@ -15,14 +13,14 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsView do
     }
   end
 
-  def render("error.register.json", %{error: error, error_description: error_description}) do
+  def error(%{error: error, error_description: error_description}) do
     %{
       "error" => to_string(error),
       "error_description" => to_string(error_description)
     }
   end
 
-  def render("clients.register.json", %{applications: applications}) do
+  def clients(%{applications: applications}) do
     Enum.group_by(applications, fn {application, _, _} -> application.id end)
     |> Enum.map(fn {_application_id, [{application, user, _redirect_uri} | _tail] = list} ->
       VirtualCryptoWeb.Clients.render_application(%{

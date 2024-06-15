@@ -72,6 +72,7 @@ RUN npm install --prefix assets
 
 # compile assets
 RUN mix assets.deploy
+RUN mix phx.digest
 
 # Compile the release
 RUN mix compile

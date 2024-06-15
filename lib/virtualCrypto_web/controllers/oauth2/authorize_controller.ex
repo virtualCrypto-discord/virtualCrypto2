@@ -80,7 +80,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
       {:error, x} ->
         case x do
           err when err in [:invalid_client_id, :invalid_redirect_uri] ->
-            render(conn, "error.authorize.html", error: :invalid_request, desc: err)
+            render(conn, "error.html", error: :invalid_request, desc: err)
 
           {error, error_description} ->
             conn
@@ -111,7 +111,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   end
 
   def get(conn, _) do
-    render(conn, "error.authorize.html", error: :invalid_request, desc: :invalid_response_type)
+    render(conn, "error.html", error: :invalid_request, desc: :invalid_response_type)
   end
 
   @spec post(Plug.Conn.t(), map()) :: Plug.Conn.t()

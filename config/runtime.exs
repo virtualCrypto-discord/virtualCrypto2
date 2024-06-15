@@ -1,6 +1,10 @@
 import Config
 
 if config_env() == :prod do
+  cert_pem = System.get_env("VCRYPTO_WEBHOOK_PROXY_CERT") |> String.replace("#", "\n")
+  private_key_pem = System.get_env("VCRYPTO_WEBHOOK_PROXY_KEY") |> String.replace("#", "\n")
+  [{ty, der, :not_encrypted}] = :public_key.pem_decode(private_key_pem)
+
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :virtualCrypto, VirtualCrypto.Repo, socket_options: maybe_ipv6
@@ -73,12 +77,19 @@ if config_env() == :prod do
          System.get_env("VCRYPTO_DISCORD_CALLBACK_URI") ||
            raise("missing VCRYPTO_DISCORD_CALLBACK_URI")
 
-  config :virtualCrypto, VirtualCryptoWeb.Endpoint, live_view: [signing_salt: ""]
+  config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+    live_view: [
+      signing_salt:
+        System.get_env("VCRYPTO_LIVE_VIEW_SIGNING_SALT") ||
+          raise("missing VCRYPTO_LIVE_VIEW_SIGNING_SALT")
+    ]
 
   config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
     webhook_proxy: "https://webhook-emitter.vcrypto.sumidora.com/",
     ssl: [
-      certfile: "priv/credentials/webhook-proxy/cert.pem",
-      keyfile: "priv/credentials/webhook-proxy/key.pem"
+      cert:
+        :public_key.pem_decode(cert_pem)
+        |> Enum.map(fn {:Certificate, der, :not_encrypted} -> der end),
+      key: {ty, der}
     ]
 end

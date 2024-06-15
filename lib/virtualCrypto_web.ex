@@ -19,7 +19,8 @@ defmodule VirtualCryptoWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: VirtualCryptoWeb
+      use Phoenix.Controller,
+        namespace: VirtualCryptoWeb
 
       import Plug.Conn
       import VirtualCryptoWeb.Gettext

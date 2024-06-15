@@ -1,7 +1,7 @@
 defmodule VirtualCryptoWeb.OAuth2.ClientView do
   use VirtualCryptoWeb, :view
 
-  def render("client.register.json", %{
+  def render("client.json", %{
         application: application,
         redirect_uris: redirect_uris,
         user: user
@@ -13,7 +13,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientView do
     })
   end
 
-  def render("error.register.json", %{error: error, error_description: error_description}) do
+  def render("error.json", %{error: error, error_description: error_description}) do
     %{
       "error" => to_string(error),
       "error_description" => to_string(error_description)
