@@ -1,7 +1,10 @@
 defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
   alias VirtualCryptoWeb.Interaction.CustomId
-  defp public_key, do: Application.fetch_env!(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+
+  defp public_key,
+    do: Application.fetch_env!(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+
   defp parse_options(options) do
     options
     |> Enum.map(fn

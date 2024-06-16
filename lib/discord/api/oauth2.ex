@@ -9,6 +9,7 @@ defmodule Discord.Api.OAuth2 do
       redirect_uri: Application.fetch_env!(:virtualCrypto, :discord_oauth2_redirect_uri)
     ]
   end
+
   @spec authorize_url(String.t()) :: String.t()
   def authorize_url(state) do
     client = OAuth2.Client.new(client_data())

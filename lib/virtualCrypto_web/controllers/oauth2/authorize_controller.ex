@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   import Bitwise
   alias VirtualCrypto.Auth
   defp client_id, do: Application.fetch_env!(:virtualCrypto, :client_id)
+
   defp validate_executor(conn, guild) do
     guild_id = guild["id"]
 

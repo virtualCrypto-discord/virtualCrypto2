@@ -195,9 +195,9 @@ defmodule VirtualCrypto.Money.Query.Claim do
     query =
       from(claim in Money.Claim,
         join: currency in Money.Currency,
-        on:  claim.currency_id == currency.id,
+        on: claim.currency_id == currency.id,
         join: claimant in VirtualCrypto.User.User,
-        on:  claim.claimant_user_id == claimant.id,
+        on: claim.claimant_user_id == claimant.id,
         join: payer in VirtualCrypto.User.User,
         on: claim.payer_user_id == payer.id,
         left_join: claim_metadata in VirtualCrypto.Money.ClaimMetadata,

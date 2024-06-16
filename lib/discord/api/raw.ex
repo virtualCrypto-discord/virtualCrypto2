@@ -3,7 +3,11 @@ defmodule Discord.Api.Raw do
   @behaviour Behaviour
   @base_url "https://discord.com/api/v10/"
   def authorization_header, do: "Bot #{Application.fetch_env!(:virtualCrypto, :bot_token)}"
-  def user_agent_header, do: "DiscordBot (#{Application.fetch_env!(:virtualCrypto, :discord_ua_website)}, #{Application.fetch_env!(:virtualCrypto, :discord_ua_version)})"
+
+  def user_agent_header,
+    do:
+      "DiscordBot (#{Application.fetch_env!(:virtualCrypto, :discord_ua_website)}, #{Application.fetch_env!(:virtualCrypto, :discord_ua_version)})"
+
   def base_headers,
     do: [
       {"Authorization", authorization_header()},

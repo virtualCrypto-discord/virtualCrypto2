@@ -204,7 +204,8 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     conn
   end
 
-  @public_key Application.compile_env!(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+  @public_key Application.compile_env!(:virtualCrypto, :public_key)
+              |> Base.decode16!(case: :lower)
   @private_key Application.compile_env!(:virtualCrypto, :private_key)
   @spec sign_request(Plug.Conn.t(), binary()) :: Plug.Conn.t()
   def sign_request(conn, body) do
