@@ -19,8 +19,8 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
       end
 
     case params do
-      {:ok, params} -> render(conn, "success.code.token.json", params: params)
-      {:error, params} -> render(conn, "error.code.token.json", params: params)
+      {:ok, params} -> render(conn, :success, params: params)
+      {:error, params} -> render(conn, :error_code, params: params)
     end
   end
 
@@ -34,12 +34,12 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
 
     case params do
       {:ok, _} ->
-        render(conn, "refresh.token.json", params: params)
+        render(conn, :refresh, params: params)
 
       {:error, _} ->
         conn
         |> put_status(400)
-        |> render("refresh.token.json", params: params)
+        |> render(:refresh, params: params)
     end
   end
 
@@ -58,12 +58,12 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
 
     case params do
       {:ok, _} ->
-        render(conn, "credentials.token.json", params: params)
+        render(conn, :credentials, params: params)
 
       {:error, _} ->
         conn
         |> put_status(400)
-        |> render("credentials.token.json", params: params)
+        |> render(:credentials, params: params)
     end
   end
 
@@ -104,24 +104,24 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
 
     case params do
       {:ok, _} ->
-        render(conn, "credentials.token.json", params: params)
+        render(conn, :credentials, params: params)
 
       {:error, _} ->
         conn
         |> put_status(400)
-        |> render("credentials.token.json", params: params)
+        |> render(:credentials, params: params)
     end
   end
 
   def post(conn, %{"grant_type" => _}) do
     conn
     |> put_status(400)
-    |> render("error.token.json", params: :unsupported_grant_type)
+    |> render(:error, params: :unsupported_grant_type)
   end
 
   def post(conn, _) do
     conn
     |> put_status(400)
-    |> render("error.token.json", params: :grant_type_parameter_missing)
+    |> render(:error, params: :grant_type_parameter_missing)
   end
 end

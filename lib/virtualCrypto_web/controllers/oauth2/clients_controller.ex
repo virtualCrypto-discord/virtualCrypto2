@@ -3,6 +3,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   alias VirtualCrypto.Auth
   alias VirtualCrypto.User
   alias VirtualCrypto.DiscordAuth
+  defp site_url, do: Application.fetch_env!(:virtualCrypto, :site_url)
 
   def get(conn, %{"user" => "@me"}) do
     with cr <- Guardian.Plug.current_resource(conn),
@@ -10,12 +11,12 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
            {{:validate_token, :invalid_token}, cr},
          {{:validate_token, :insufficient_scope}, %{"oauth2.register" => true}} <-
            {{:validate_token, :insufficient_scope}, cr} do
-      conn |> render("clients.register.json", applications: Auth.get_user_applications(user_id))
+      conn |> render(:clients, %{applications: Auth.get_user_applications(user_id)})
     else
       {{:validate_token, :invalid_token}, _} ->
         conn
         |> put_status(401)
-        |> render("error.register.json",
+        |> render(:error,
           error: :invalid_token,
           error_description: :invalid_kind
         )
@@ -23,7 +24,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
       {{:validate_token, :insufficient_scope}, _} ->
         conn
         |> put_status(403)
-        |> render("error.register.json",
+        |> render(:error,
           error: :insufficient_scope,
           error_description: :required_oauth2_register
         )
@@ -33,7 +34,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   def get(conn, _) do
     conn
     |> put_status(400)
-    |> render("error.register.json",
+    |> render(:error,
       error: :invalid_request,
       error_description: :required_user_parameter
     )
@@ -88,11 +89,11 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
 
         conn
         |> put_status(201)
-        |> render("ok.register.json",
+        |> render(:ok,
           application: application_data.application,
           registration_access_token: access_token,
           registration_client_uri:
-            Application.get_env(:virtualCrypto, :site_url)
+            site_url()
             |> URI.parse()
             |> Map.put(:path, "/oauth2/clients/@me")
             |> URI.to_string()
@@ -101,17 +102,17 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
       {:error, {:invalid_token, more}} ->
         conn
         |> put_status(401)
-        |> render("error.register.json", error: :invalid_token, error_description: more)
+        |> render(:error, error: :invalid_token, error_description: more)
 
       {:error, {:insufficient_scope, more}} ->
         conn
         |> put_status(403)
-        |> render("error.register.json", error: :insufficient_scope, error_description: more)
+        |> render(:error, error: :insufficient_scope, error_description: more)
 
       {:error, {error, error_description}} ->
         conn
         |> put_status(400)
-        |> render("error.register.json", error: error, error_description: error_description)
+        |> render(:error, error: error, error_description: error_description)
     end
   end
 end

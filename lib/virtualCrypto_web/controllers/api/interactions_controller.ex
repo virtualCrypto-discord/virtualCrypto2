@@ -2,6 +2,9 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
   use VirtualCryptoWeb, :controller
   alias VirtualCryptoWeb.Interaction.CustomId
 
+  defp public_key,
+    do: Application.fetch_env!(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+
   defp parse_options(options) do
     options
     |> Enum.map(fn
@@ -23,7 +26,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
   end
 
   def verify(conn) do
-    public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
+    public_key = public_key()
 
     encoded_signature =
       case Plug.Conn.get_req_header(conn, "x-signature-ed25519") do

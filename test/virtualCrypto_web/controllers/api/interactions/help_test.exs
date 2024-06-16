@@ -2,7 +2,9 @@ defmodule InteractionsControllerTest.Help do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Helper.Common
   import VirtualCryptoWeb.Api.InteractionsView.Util
-
+  @bot_invite_url Application.compile_env!(:virtualCrypto, :invite_url)
+  @support_guild_invite_url Application.compile_env!(:virtualCrypto, :support_guild_invite_url)
+  @site_url Application.compile_env!(:virtualCrypto, :site_url)
   test "help", %{conn: conn} do
     conn =
       execute_interaction(
@@ -16,9 +18,9 @@ defmodule InteractionsControllerTest.Help do
       )
 
     color = color_brand()
-    bot_invite_url = Application.get_env(:virtualCrypto, :invite_url)
-    support_guild_invite_url = Application.get_env(:virtualCrypto, :support_guild_invite_url)
-    site_url = Application.get_env(:virtualCrypto, :site_url)
+    bot_invite_url = @bot_invite_url
+    support_guild_invite_url = @support_guild_invite_url
+    site_url = @site_url
     command_url = site_url <> "/document/commands"
     description = ~s/VirtualCryptoはDiscord上でサーバーに独自の通貨を作成できるBotです。
 [コマンドの使い方の詳細](#{command_url})

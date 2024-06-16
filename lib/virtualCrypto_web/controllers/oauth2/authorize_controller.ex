@@ -1,7 +1,8 @@
 defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   use VirtualCryptoWeb, :controller
-  use Bitwise
+  import Bitwise
   alias VirtualCrypto.Auth
+  defp client_id, do: Application.fetch_env!(:virtualCrypto, :client_id)
 
   defp validate_executor(conn, guild) do
     guild_id = guild["id"]
@@ -52,7 +53,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
              {:guild_id,
               Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
-                Application.get_env(:virtualCrypto, :client_id)
+                client_id()
               )},
            :ok <- validate_executor(conn, guild) do
         {:ok,
@@ -80,7 +81,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
       {:error, x} ->
         case x do
           err when err in [:invalid_client_id, :invalid_redirect_uri] ->
-            render(conn, "error.authorize.html", error: :invalid_request, desc: err)
+            render(conn, "error.html", error: :invalid_request, desc: err)
 
           {error, error_description} ->
             conn
@@ -111,7 +112,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   end
 
   def get(conn, _) do
-    render(conn, "error.authorize.html", error: :invalid_request, desc: :invalid_response_type)
+    render(conn, "error.html", error: :invalid_request, desc: :invalid_response_type)
   end
 
   @spec post(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -126,7 +127,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
              {:guild_id,
               Discord.Api.Raw.get_guild_member_with_status_code(
                 guild_id,
-                Application.get_env(:virtualCrypto, :client_id)
+                client_id()
               )},
            :ok <- validate_executor(conn, guild),
            {:ok, info} <-

@@ -1,5 +1,5 @@
 defmodule VirtualCryptoWeb.Interaction.CustomId do
-  use Bitwise
+  import Bitwise
 
   def encode(k, bytes) do
     Stream.unfold(<<k::8>> <> bytes, fn

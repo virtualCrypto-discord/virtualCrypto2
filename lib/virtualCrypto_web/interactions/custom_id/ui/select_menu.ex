@@ -1,5 +1,5 @@
 defmodule VirtualCryptoWeb.Interaction.CustomId.UI.SelectMenu do
-  use Bitwise
+  import Bitwise
   # select menus
   def claim_select(), do: <<0xF0, 1>>
 

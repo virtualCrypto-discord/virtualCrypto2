@@ -5,9 +5,9 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   import VirtualCryptoWeb.Interaction.Util, only: [get_user: 1]
 
   @moduledoc false
-  @bot_invite_url Application.get_env(:virtualCrypto, :invite_url)
-  @guild_invite_url Application.get_env(:virtualCrypto, :support_guild_invite_url)
-  @site_url Application.get_env(:virtualCrypto, :site_url)
+  defp bot_invite_url, do: Application.fetch_env!(:virtualCrypto, :invite_url)
+  defp guild_invite_url, do: Application.fetch_env!(:virtualCrypto, :support_guild_invite_url)
+  defp site_url, do: Application.fetch_env!(:virtualCrypto, :site_url)
 
   # NOTE: https://github.com/virtualCrypto-discord/virtualCrypto2/issues/167
   defp cast_int(v) when is_binary(v) do
@@ -23,7 +23,7 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   end
 
   defp logo_url,
-    do: @site_url <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
+    do: site_url() <> "/static" <> VirtualCryptoWeb.Endpoint.static_path("/images/logo.jpg")
 
   def name_unit_check(name, unit) do
     with true <- Regex.match?(~r/[a-zA-Z0-9]{2,16}/, name),
@@ -246,11 +246,11 @@ defmodule VirtualCryptoWeb.Interaction.Command do
   end
 
   def handle("help", _options, _params, _conn) do
-    {logo_url(), @bot_invite_url, @guild_invite_url, @site_url}
+    {logo_url(), bot_invite_url(), guild_invite_url(), site_url()}
   end
 
   def handle("invite", _, _, _conn) do
-    {logo_url(), @bot_invite_url, @guild_invite_url}
+    {logo_url(), bot_invite_url(), guild_invite_url()}
   end
 
   def handle(

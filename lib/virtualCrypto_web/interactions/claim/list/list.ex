@@ -2,7 +2,6 @@ defmodule VirtualCryptoWeb.Interaction.Claim.List do
   alias VirtualCrypto.Money
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   alias VirtualCryptoWeb.Interaction.Claim.List.Options
-  use Bitwise
 
   defp extract_statuses(m) do
     m = Map.take(m, [:pending, :approved, :denied, :canceled])

@@ -1,6 +1,6 @@
 defmodule Discord.Permissions do
   @moduledoc false
-  use Bitwise
+  import Bitwise
 
   @spec check(integer, integer) :: bool
   def check(permissions, permission) do

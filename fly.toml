@@ -1,0 +1,25 @@
+app = "virtualcrypto"
+primary_region = "phx"
+
+
+[build]
+dockerfile = "Dockerfile"
+ignorefile = ".dockerignore"
+
+[deploy]
+release_command = "/app/bin/migrate"
+
+[http_service]
+internal_port = 8080
+force_https = true
+
+[[services.ports]]
+handlers = ["tls"]
+port = 443
+tls_options = { "alpn" = [
+  "h2",
+  "http/1.1",
+], "versions" = [
+  "TLSv1.2",
+  "TLSv1.3",
+] }

@@ -204,10 +204,13 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     conn
   end
 
+  @public_key Application.compile_env!(:virtualCrypto, :public_key)
+              |> Base.decode16!(case: :lower)
+  @private_key Application.compile_env!(:virtualCrypto, :private_key)
   @spec sign_request(Plug.Conn.t(), binary()) :: Plug.Conn.t()
   def sign_request(conn, body) do
-    public_key = Application.get_env(:virtualCrypto, :public_key) |> Base.decode16!(case: :lower)
-    private_key = Application.get_env(:virtualCrypto, :private_key)
+    public_key = @public_key
+    private_key = @private_key
 
     timestamp = to_string(System.system_time(:second))
 

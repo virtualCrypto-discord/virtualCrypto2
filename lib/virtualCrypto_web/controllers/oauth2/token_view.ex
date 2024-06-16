@@ -1,66 +1,64 @@
 defmodule VirtualCryptoWeb.OAuth2.TokenView do
-  use VirtualCryptoWeb, :view
-
-  def render("success.code.token.json", %{params: params}) do
+  def success(%{params: params}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
 
-  def render("error.code.token.json", %{params: {err, desc}}) do
+  def error_code(%{params: {err, desc}}) do
     %{
       "error" => to_string(err),
       "error_description" => to_string(desc)
     }
   end
 
-  def render("error.code.token.json", %{params: :invalid_client_id}) do
+  def error_code(%{params: :invalid_client_id}) do
     %{
       "error" => "invalid_client"
     }
   end
 
-  def render("error.code.token.json", %{params: v}) do
+  def error_code(%{params: v}) do
     %{
       "error" => "invalid_request",
       "error_description" => to_string(v)
     }
   end
 
-  def render("error.token.json", %{params: :unsupported_grant_type}) do
+  def error(%{params: :unsupported_grant_type}) do
     %{
       "error" => "unsupported_grant_type"
     }
   end
 
-  def render("error.token.json", %{params: :grant_type_parameter_missing}) do
+  def error(%{params: :grant_type_parameter_missing}) do
     %{
       "error" => "invalid_request",
       "error_description" => "grant_type_parameter_missing"
     }
   end
 
-  def render("refresh.token.json", %{params: {:ok, params}}) do
+  def refresh(%{params: {:ok, params}}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
 
-  def render("refresh.token.json", %{params: {:error, {err, desc}}}) do
+  def refresh(%{params: {:error, {err, desc}}}) do
     %{
       "error" => to_string(err),
       "error_description" => to_string(desc)
     }
   end
 
-  def render("refresh.token.json", %{params: {:error, v}}) do
+  def refresh(%{params: {:error, v}}) do
     %{
       "error" => "invalid_request",
       "error_description" => to_string(v)
     }
   end
 
-  def render("credentials.token.json", %{params: {:ok, params}}) do
+  def credentials(%{params: {:ok, params}}) do
     params |> Enum.map(fn {k, v} -> {to_string(k), v} end) |> Map.new()
   end
 
-  def render("credentials.token.json", %{params: {:error, v}}) do
+  def credentials(%{params: {:error, v}}) do
     %{
       "error" => to_string(v)
     }

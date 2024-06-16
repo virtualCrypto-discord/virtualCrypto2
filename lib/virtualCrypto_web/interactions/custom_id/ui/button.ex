@@ -1,5 +1,5 @@
 defmodule VirtualCryptoWeb.Interaction.CustomId.UI.Button do
-  use Bitwise
+  import Bitwise
 
   # buttons
   def claim_list(:all), do: <<0xF0, 1>>

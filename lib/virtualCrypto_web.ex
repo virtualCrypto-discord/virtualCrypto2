@@ -19,7 +19,8 @@ defmodule VirtualCryptoWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: VirtualCryptoWeb
+      use Phoenix.Controller,
+        namespace: VirtualCryptoWeb
 
       import Plug.Conn
       import VirtualCryptoWeb.Gettext
@@ -64,7 +65,9 @@ defmodule VirtualCryptoWeb do
   defp view_helpers do
     quote do
       # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
+      import Phoenix.HTML
+      import Phoenix.HTML.Form
+      use PhoenixHTMLHelpers
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
