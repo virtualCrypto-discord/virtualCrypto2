@@ -31,8 +31,6 @@ defmodule VirtualCryptoWeb.Api.InteractionsView.Delete do
                 custom_id: "confirm",
                 style: text_input_style_short(),
                 label: "確認のため、「#{required_text}」と入力してください。",
-                min_length: String.length(required_text),
-                max_length: String.length(required_text),
                 placeholder: required_text
               }
             ]
