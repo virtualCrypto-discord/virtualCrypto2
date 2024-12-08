@@ -9,6 +9,10 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
     "#{name}##{discriminator}"
   end
 
+  defp user_tag(nil) do
+    "deleted"
+  end
+
   defp claim_status_emoji("approved") do
     "✅"
   end
@@ -31,18 +35,30 @@ defmodule VirtualCryptoWeb.Interaction.AutoComplete.ClaimId do
       %{
         currency: %{unit: unit},
         claim: %{amount: amount, id: id, status: status},
-        payer: %{discord_id: payer_discord_id},
-        claimant: %{discord_id: claimant_discord_id}
+        payer: %{application_id: payer_application_id, discord_id: payer_discord_id},
+        claimant: %{application_id: claimant_application_id, discord_id: claimant_discord_id}
       } ->
         [payer, claimant] =
           Task.await_many([
-            Task.async(fn -> Discord.Api.Cached.get_user(payer_discord_id) end),
-            Task.async(fn -> Discord.Api.Cached.get_user(claimant_discord_id) end)
+            Task.async(fn ->
+              if payer_discord_id do
+                user_tag(Discord.Api.Cached.get_user(payer_discord_id))
+              else
+                "#{VirtualCrypto.Auth.get_application(payer_application_id).application.client_name}(app)"
+              end
+            end),
+            Task.async(fn ->
+              if claimant_discord_id do
+                user_tag(Discord.Api.Cached.get_user(claimant_discord_id))
+              else
+                "#{VirtualCrypto.Auth.get_application(claimant_application_id).application.client_name}(app)"
+              end
+            end)
           ])
 
         %{
           name:
-            "#{claim_status_emoji(status)}  請求id: #{id}  金額: #{amount}#{unit}  請求元: #{user_tag(claimant)}  請求先: #{user_tag(payer)}",
+            "#{claim_status_emoji(status)}  請求id: #{id}  金額: #{amount}#{unit}  請求元: #{claimant}  請求先: #{payer}",
           value: id
         }
     end)
