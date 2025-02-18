@@ -980,6 +980,10 @@ defmodule VirtualCrypto.Money do
     VirtualCrypto.Metadata.Validator.validate_metadata(d)
   end
 
+  defp validate_metadata(_) do
+    ["metadata field must be object or nil"]
+  end
+
   @doc """
   payer must be discord user
   """

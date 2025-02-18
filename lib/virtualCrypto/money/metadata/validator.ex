@@ -19,17 +19,21 @@ defmodule VirtualCrypto.Metadata.Validator do
     end
   end
 
-  def validate_metadata_value(key, value) do
-    if value do
-      if count_codepoints(value) > 500 do
-        {:error,
-         "too large metadata value(max: 500) at #{slice_string(key, 40)}(#{slice_string(value, 500)})"}
-      else
-        :ok
-      end
+  def validate_metadata_value(key, value) when is_binary(value) do
+    if count_codepoints(value) > 500 do
+      {:error,
+       "too large metadata value(max: 500) at #{slice_string(key, 40)}(#{slice_string(value, 500)})"}
     else
       :ok
     end
+  end
+
+  def validate_metadata_value(_key, value) when is_nil(value) do
+    :ok
+  end
+
+  def validate_metadata_value(key, _value) do
+    {:error, "invalid value at #{slice_string(key, 40)}(value must be string or null)"}
   end
 
   def validate_metadata_entry({key, value}) do
