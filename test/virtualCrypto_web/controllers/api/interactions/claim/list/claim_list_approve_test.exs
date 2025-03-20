@@ -6,7 +6,7 @@ defmodule InteractionsControllerTest.Claim.List.Approve do
   alias VirtualCryptoWeb.Interaction.Claim.List.Options, as: ListOptions
   alias VirtualCryptoWeb.Interaction.Claim.List.Helper
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
   import Enum, only: [at: 2]
 
   setup :setup_claim

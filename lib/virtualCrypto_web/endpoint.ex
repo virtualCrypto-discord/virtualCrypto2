@@ -9,24 +9,27 @@ defmodule VirtualCryptoWeb.Endpoint do
     key: "_virtualCrypto_key",
     signing_salt: "E66iB1bz",
     same_site: "Lax",
-    secure: true
+    secure: Mix.env() == :prod
   ]
 
   socket "/socket", VirtualCryptoWeb.UserSocket,
     websocket: true,
     longpoll: false
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket,
+    websocket: [connect_info: [session: @session_options]],
+    longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.
+  plug VirtualCryptoWeb.ServiceWorkerPlug
   plug Plug.Static,
-    at: "/static",
+    at: "/",
     from: :virtualCrypto,
     gzip: true,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+    only: VirtualCryptoWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

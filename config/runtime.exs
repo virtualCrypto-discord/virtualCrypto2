@@ -1,5 +1,25 @@
 import Config
 
+# config/runtime.exs is executed for all environments, including
+# during releases. It is executed after compilation and before the
+# system starts, so it is typically used to load production configuration
+# and secrets from environment variables or elsewhere. Do not define
+# any compile-time configuration in here, as it won't be applied.
+# The block below contains prod specific runtime configuration.
+
+# ## Using releases
+#
+# If you use `mix release`, you need to explicitly enable the server
+# by passing the PHX_SERVER=true when you start it:
+#
+#     PHX_SERVER=true bin/virtualCrypto start
+#
+# Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
+# script that automatically sets the env var above.
+if System.get_env("PHX_SERVER") do
+  config :virtualCrypto, VirtualCryptoWeb.Endpoint, server: true
+end
+
 if config_env() == :prod do
   cert_pem = System.get_env("VCRYPTO_WEBHOOK_PROXY_CERT") |> String.replace("#", "\n")
   private_key_pem = System.get_env("VCRYPTO_WEBHOOK_PROXY_KEY") |> String.replace("#", "\n")
@@ -9,10 +29,6 @@ if config_env() == :prod do
 
   config :virtualCrypto, VirtualCrypto.Repo, socket_options: maybe_ipv6
 
-  if System.get_env("PHX_SERVER") do
-    config :virtualCrypto, VirtualCryptoWeb.Endpoint, server: true
-  end
-
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
@@ -21,9 +37,16 @@ if config_env() == :prod do
       """
 
   config :virtualCrypto, VirtualCrypto.Repo,
+    # ssl: true,
     url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+    socket_options: maybe_ipv6
 
+  # The secret key base is used to sign/encrypt cookies and other secrets.
+  # A default value is used in config/dev.exs and config/test.exs but you
+  # want to use a different value for prod and you most likely don't want
+  # to check this value into version control, so we use an environment
+  # variable instead.
   secret_key_base =
     System.get_env("SECRET_KEY_BASE") ||
       raise """
@@ -31,65 +54,63 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-    http: [
-      port: 8080,
-      transport_options: [socket_opts: [:inet6]]
-    ],
-    secret_key_base: secret_key_base
-
-  config :virtualCrypto,
-         :bot_token,
-         System.get_env("VCRYPTO_BOT_TOKEN") || raise("missing VCRYPTO_BOT_TOKEN")
-
-  config :virtualCrypto,
-         :public_key,
-         System.get_env("VCRYPTO_PUBLIC_KEY") || raise("missing VCRYPTO_PUBLIC_KEY")
-
-  config :virtualCrypto,
-         :client_id,
-         System.get_env("VCRYPTO_CLIENT_ID") || raise("missing VCRYPTO_CLIENT_ID")
-
-  config :virtualCrypto,
-         :client_secret,
-         System.get_env("VCRYPTO_CLIENT_SECRET") || raise("missing VCRYPTO_CLIENT_SECRET")
-
-  config :virtualCrypto,
-         :invite_url,
-         System.get_env("VCRYPTO_INVITE_URL") || raise("missing VCRYPTO_INVITE_URL")
-
-  config :virtualCrypto,
-         :support_guild_invite_url,
-         System.get_env("VCRYPTO_SUPPORT_GUILD_INVITE_URL") ||
-           raise("missing VCRYPTO_SUPPORT_GUILD_INVITE_URL")
-
-  config :virtualCrypto, VirtualCrypto.Guardian,
-    issuer: "virtualCrypto",
-    secret_key:
-      System.get_env("VCRYPTO_API_JWT_SECRET_KEY") || raise("missing VCRYPTO_API_JWT_SECRET_KEY")
-
-  config :virtualCrypto,
-         :site_url,
-         System.get_env("VCRYPTO_SITE_URL") || raise("missing VCRYPTO_SITE_URL")
-
-  config :virtualCrypto,
-         :discord_oauth2_redirect_uri,
-         System.get_env("VCRYPTO_DISCORD_CALLBACK_URI") ||
-           raise("missing VCRYPTO_DISCORD_CALLBACK_URI")
+  host = System.get_env("PHX_HOST") || "example.com"
+  port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-    live_view: [
-      signing_salt:
-        System.get_env("VCRYPTO_LIVE_VIEW_SIGNING_SALT") ||
-          raise("missing VCRYPTO_LIVE_VIEW_SIGNING_SALT")
-    ]
+     http: [
+       port: 8080,
+       transport_options: [socket_opts: [:inet6]]
+     ],
+     secret_key_base: secret_key_base
 
-  config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
-    webhook_proxy: "https://vcrypto-webhook-emitter.sumidora.com/",
-    ssl: [
-      cert:
-        :public_key.pem_decode(cert_pem)
-        |> Enum.map(fn {:Certificate, der, :not_encrypted} -> der end),
-      key: {ty, der}
-    ]
+  # ## SSL Support
+  #
+  # To get SSL working, you will need to add the `https` key
+  # to your endpoint configuration:
+  #
+  #     config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+  #       https: [
+  #         ...,
+  #         port: 443,
+  #         cipher_suite: :strong,
+  #         keyfile: System.get_env("SOME_APP_SSL_KEY_PATH"),
+  #         certfile: System.get_env("SOME_APP_SSL_CERT_PATH")
+  #       ]
+  #
+  # The `cipher_suite` is set to `:strong` to support only the
+  # latest and more secure SSL ciphers. This means old browsers
+  # and clients may not be supported. You can set it to
+  # `:compatible` for wider support.
+  #
+  # `:keyfile` and `:certfile` expect an absolute path to the key
+  # and cert in disk or a relative path inside priv, for example
+  # "priv/ssl/server.key". For all supported SSL configuration
+  # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
+  #
+  # We also recommend setting `force_ssl` in your config/prod.exs,
+  # ensuring no data is ever sent via http, always redirecting to https:
+  #
+  #     config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+  #       force_ssl: [hsts: true]
+  #
+  # Check `Plug.SSL` for all available options in `force_ssl`.
+
+  # ## Configuring the mailer
+  #
+  # In production you need to configure the mailer to use a different adapter.
+  # Also, you may need to configure the Swoosh API client of your choice if you
+  # are not using SMTP. Here is an example of the configuration:
+  #
+  #     config :virtualCrypto, VirtualCrypto.Mailer,
+  #       adapter: Swoosh.Adapters.Mailgun,
+  #       api_key: System.get_env("MAILGUN_API_KEY"),
+  #       domain: System.get_env("MAILGUN_DOMAIN")
+  #
+  # For this example you need include a HTTP client required by Swoosh API client.
+  # Swoosh supports Hackney and Finch out of the box:
+  #
+  #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
+  #
+  # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end

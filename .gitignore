@@ -19,13 +19,20 @@ erl_crash.dump
 # Also ignore archive artifacts (built via "mix archive.build").
 *.ez
 
+# Temporary files, for example, from tests.
+/tmp/
+
 # Ignore package tarball (built via "mix hex.build").
 virtualCrypto-*.tar
 
-# If NPM crashes, it generates a log, let's ignore it too.
-npm-debug.log
+# Ignore assets that are produced by build tools.
+/priv/static/assets/
 
-# The directory NPM downloads your dependencies sources to.
+# Ignore digested assets cache.
+/priv/static/cache_manifest.json
+
+# In case you use Node.js/npm, you want to ignore these.
+npm-debug.log
 /assets/node_modules/
 
 
@@ -36,18 +43,6 @@ npm-debug.log
 /config/dev.exs
 /config/prod.secret.exs
 
-
-# Created by https://www.toptal.com/developers/gitignore/api/elm
-# Edit at https://www.toptal.com/developers/gitignore?templates=elm
-
-### Elm ###
-# elm-package generated files
-assets/elm/elm-stuff/
-# elm-repl generated files
-repl-temp-*
-
-# End of https://www.toptal.com/developers/gitignore/api/elm
-
 docs/parsed/*.html
 
 # ssl files
@@ -55,3 +50,5 @@ docs/parsed/*.html
 priv/ssl/key.pem
 priv/ssl/cert.pem
 *.env
+
+.idea/

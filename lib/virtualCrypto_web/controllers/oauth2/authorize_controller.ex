@@ -76,12 +76,19 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
 
     case props do
       {:ok, {app, session}} ->
-        render(conn, "authorize.html", app: app, session: session)
+        render(conn, :auth, redirect_uri: session.redirect_uri,
+        scope: session.scope,
+        client_id: session.client_id,
+        csrf_token: Phoenix.Controller.get_csrf_token(),
+        response_type: session.response_type,
+        guild_id: session.guild_id,
+        state: Map.get(session, :state)
+        )
 
       {:error, x} ->
         case x do
           err when err in [:invalid_client_id, :invalid_redirect_uri] ->
-            render(conn, "error.html", error: :invalid_request, desc: err)
+            render(conn, :error, error: :invalid_request, desc: err)
 
           {error, error_description} ->
             conn
@@ -112,7 +119,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
   end
 
   def get(conn, _) do
-    render(conn, "error.html", error: :invalid_request, desc: :invalid_response_type)
+    render(conn, :error, %{error: :invalid_request, desc: :invalid_response_type})
   end
 
   @spec post(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -165,7 +172,7 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
         )
 
       {:error, err} ->
-        render(conn, "authorize.html", error: err)
+        render(conn, :error, %{error: err, desc: :not_provided})
     end
   end
 end

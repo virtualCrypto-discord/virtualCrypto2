@@ -15,11 +15,11 @@ defmodule VirtualCryptoWeb.Api.V1V2.UserController do
 
         render(
           conn,
-          "me.json",
-          params: %{
+          :me,
+          %{params: %{
             id: to_string(user.id),
             discord: Filtering.user(discord_user)
-          }
+          }}
         )
     end
   end

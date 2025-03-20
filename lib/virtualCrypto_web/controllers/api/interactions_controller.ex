@@ -75,7 +75,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
       )
 
-    render(conn, "#{name}.json", params: params)
+    render(conn, :"#{name}", params: params)
   end
 
   defp handle_button(
@@ -92,7 +92,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
       )
 
-    conn = render(conn, "#{name}.json", params: params)
+    conn = render(conn, :"#{name}", params: params)
     adapter = VirtualCryptoWeb.Plug.DiscordApiService.get_service(conn)
 
     {200, _} =
@@ -114,11 +114,11 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
       )
 
-    render(conn, "#{name}.json", params: params)
+    render(conn, :"#{name}", params: params)
   end
 
   def verified(conn, %{"type" => 1}) do
-    render(conn, "pong.json")
+    render(conn, :pong_resp)
   end
 
   def verified(conn, %{"type" => 2, "data" => %{"name" => name} = data} = params) do
@@ -126,7 +126,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       Map.get(data, "options", [])
       |> parse_options
 
-    render(conn, name <> ".json",
+    render(conn, :"#{name}",
       params: VirtualCryptoWeb.Interaction.Command.handle(name, options, params, conn)
     )
   end
@@ -149,7 +149,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       ) do
     focused = options |> Enum.find(&Map.get(&1, "focused", false))
 
-    render(conn, "autocomplete.json",
+    render(conn, :autocomplete,
       params:
         VirtualCryptoWeb.Interaction.AutoComplete.handle(
           [name, subcommand_name],
@@ -167,7 +167,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
       ) do
     focused = options |> Enum.find(&Map.get(&1, "focused", false))
 
-    render(conn, "autocomplete.json",
+    render(conn, :autocomplete,
       params:
         VirtualCryptoWeb.Interaction.AutoComplete.handle([name], focused, options, params, conn)
     )
@@ -203,7 +203,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
       )
 
-    render(conn, "#{name}.json", params: params)
+    render(conn, :"#{name}", params: params)
   end
 
   def verified(
@@ -226,7 +226,7 @@ defmodule VirtualCryptoWeb.Api.InteractionsController do
         conn
       )
 
-    render(conn, "#{name}.json", params: params)
+    render(conn, :"#{name}", params: params)
   end
 
   def verified(conn, _) do

@@ -37,10 +37,10 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
         conn |> send_resp(204, "")
 
       {:error, {:insufficient_scope, _} = err} ->
-        conn |> put_status(403) |> render("error.json", error: err)
+        conn |> put_status(403) |> render(:error, %{error: err})
 
       {:error, err} ->
-        conn |> put_status(400) |> render("error.json", error: err)
+        conn |> put_status(400) |> render(:error, %{error: err})
     end
   end
 
@@ -51,7 +51,7 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
       }) do
     conn
     |> put_status(400)
-    |> render("error.json", error: {:invalid_request, :invalid_type_of_variable})
+    |> render(:error, %{error: {:invalid_request, :invalid_type_of_variable}})
   end
 
   def post(conn, %{"_json" => list}) when is_list(list) do
@@ -64,22 +64,22 @@ defmodule VirtualCryptoWeb.Api.V1.UserTransactionController do
       {:param, {tag, idx}} ->
         conn
         |> put_status(400)
-        |> render("error.json", error: {:invalid_request, "invalid_#{tag}_at_#{idx}"})
+        |> render(:error, %{error: {:invalid_request, "invalid_#{tag}_at_#{idx}"}})
 
       {:token, _} ->
         conn
         |> put_status(403)
-        |> render("error.json", error: {:insufficient_scope, :token_verification_failed})
+        |> render(:error, %{error: {:insufficient_scope, :token_verification_failed}})
 
       {:error, err} ->
-        conn |> put_status(400) |> render("error.json", error: err)
+        conn |> put_status(400) |> render(:error, %{error: err})
     end
   end
 
   def post(conn, _) do
     conn
     |> put_status(400)
-    |> render("error.json", error: {:invalid_request, :missing_parameter})
+    |> render(:error, %{error: {:invalid_request, :missing_parameter}})
   end
 
   defp convert_list(list) do

@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Info do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Info.Helper
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
 
   defmodule TestDiscordAPI do
     # @behaviour Discord.Api.Behaviour

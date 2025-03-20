@@ -2,10 +2,6 @@ defmodule VirtualCryptoWeb.ConnectApplication do
   use Phoenix.LiveView
   alias VirtualCrypto.Auth
 
-  def render(assigns) do
-    VirtualCryptoWeb.LiveView.render("connect.html", assigns)
-  end
-
   def mount(params, session, socket) do
     user = session["user"]
 
