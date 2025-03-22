@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.PageHTML do
+defmodule VirtualCryptoWeb.LandingHTML do
   @moduledoc """
   This module contains pages rendered by PageController.
 
@@ -6,5 +6,5 @@ defmodule VirtualCryptoWeb.PageHTML do
   """
   use VirtualCryptoWeb, :html
 
-  embed_templates "page_html/*"
+  embed_templates "landing_html/*"
 end

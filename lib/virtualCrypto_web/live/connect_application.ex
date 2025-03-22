@@ -11,7 +11,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
 
         case app do
           nil ->
-            {:ok, push_redirect(socket, to: "/applications/" <> params["id"])}
+            {:ok, push_navigate(socket, to: "/applications/" <> params["id"])}
 
           _ ->
             {application, app_user, _redirect_uris} = app

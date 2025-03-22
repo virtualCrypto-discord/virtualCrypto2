@@ -10,6 +10,10 @@ defmodule VirtualCryptoWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :landing_page do
+    plug :put_layout, html: {VirtualCryptoWeb.Layouts, :landing}
+  end
+
   pipeline :browser_auth do
     plug VirtualCryptoWeb.AuthPlug
   end
@@ -24,8 +28,13 @@ defmodule VirtualCryptoWeb.Router do
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
+    pipe_through :landing_page
 
-    get "/", PageController, :home
+    get "/", LandingController, :home
+  end
+
+  scope "/", VirtualCryptoWeb do
+    pipe_through :browser
 
     get "/logout", LogoutController, :index
 

@@ -29,7 +29,8 @@ defmodule VirtualCryptoWeb.Endpoint do
     at: "/",
     from: :virtualCrypto,
     gzip: true,
-    only: VirtualCryptoWeb.static_paths()
+    only: VirtualCryptoWeb.static_paths(),
+    cache_control_for_etags: if Mix.env() == :prod, do: "public, max-age=31536000", else: "public, max-age=0"
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

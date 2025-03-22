@@ -9,7 +9,8 @@ module.exports = {
   content: [
     "./js/**/*.js",
     "../lib/virtualCrypto_web.ex",
-    "../lib/virtualCrypto_web/**/*.*ex"
+    "../lib/virtualCrypto_web/**/*.*ex",
+    "../lib/**/*.html.heex",
   ],
   theme: {
     extend: {
