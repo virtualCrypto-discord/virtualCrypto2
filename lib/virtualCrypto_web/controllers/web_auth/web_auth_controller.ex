@@ -96,6 +96,7 @@ defmodule VirtualCryptoWeb.WebAuthController do
     case get_session(conn, :user) do
       %{id: id} ->
         {:ok, access_token, expires_in} = issue_token(id)
+
         conn
         |> put_view(html: VirtualCryptoWeb.WebAuthHTML, json: VirtualCryptoWeb.WebAuthJSON)
         |> render(:token, %{access_token: access_token, expires_in: expires_in})

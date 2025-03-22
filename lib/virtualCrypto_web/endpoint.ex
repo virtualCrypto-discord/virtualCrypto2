@@ -25,12 +25,14 @@ defmodule VirtualCryptoWeb.Endpoint do
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.
   plug VirtualCryptoWeb.ServiceWorkerPlug
+
   plug Plug.Static,
     at: "/",
     from: :virtualCrypto,
     gzip: true,
     only: VirtualCryptoWeb.static_paths(),
-    cache_control_for_etags: if Mix.env() == :prod, do: "public, max-age=31536000", else: "public, max-age=0"
+    cache_control_for_etags:
+      if(Mix.env() == :prod, do: "public, max-age=31536000", else: "public, max-age=0")
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

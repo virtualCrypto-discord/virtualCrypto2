@@ -320,19 +320,22 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
             conn
             |> put_status(400)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :invalid_request,
-                error_description: :not_found_currency}
+            |> render(
+              :error,
+              %{error: :invalid_request, error_description: :not_found_currency}
             )
 
           {:error, {:invalid_metadata, x}} ->
             conn
             |> put_status(400)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :invalid_request,
+            |> render(
+              :error,
+              %{
+                error: :invalid_request,
                 error_description: "invalid_metadata",
-                error_description_details: x}
+                error_description_details: x
+              }
             )
         end
 
@@ -340,18 +343,18 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
         conn
         |> put_status(400)
         |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-        |> render(:error,
-          %{error: :invalid_request,
-            error_description: :invalid_payer_discord_id_value}
+        |> render(
+          :error,
+          %{error: :invalid_request, error_description: :invalid_payer_discord_id_value}
         )
 
       {_, {_, x}, _} when x != "" ->
         conn
         |> put_status(400)
         |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-        |> render(:error,
-          %{error: :invalid_request,
-            error_description: :invalid_payer_discord_id_value}
+        |> render(
+          :error,
+          %{error: :invalid_request, error_description: :invalid_payer_discord_id_value}
         )
 
       {_, _, :error} ->
@@ -376,9 +379,9 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     conn
     |> put_status(400)
     |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-    |> render(:error,
-      %{error: :invalid_request,
-        error_description: :invalid_payer_discord_id_type}
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :invalid_payer_discord_id_type}
     )
   end
 
@@ -407,9 +410,9 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
     conn
     |> put_status(400)
     |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-    |> render(:error,
-      %{error: :invalid_request,
-        error_description: :payer_discord_id_field_is_required}
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :payer_discord_id_field_is_required}
     )
   end
 
@@ -444,48 +447,53 @@ defmodule VirtualCryptoWeb.Api.V2.ClaimController do
             conn
             |> put_status(400)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :invalid_request,
-                error_description: :not_found_currency}
+            |> render(
+              :error,
+              %{error: :invalid_request, error_description: :not_found_currency}
             )
 
           {:error, :not_found_sender_asset} ->
             conn
             |> put_status(409)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :conflict,
-                error_info: :not_enough_amount}
+            |> render(
+              :error,
+              %{error: :conflict, error_info: :not_enough_amount}
             )
 
           {:error, :not_enough_amount} ->
             conn
             |> put_status(409)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :conflict,
-                error_info: :not_enough_amount}
+            |> render(
+              :error,
+              %{error: :conflict, error_info: :not_enough_amount}
             )
 
           {:error, {:invalid_metadata, errors}} ->
             conn
             |> put_status(400)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-              %{error: :invalid_request,
+            |> render(
+              :error,
+              %{
+                error: :invalid_request,
                 error_description: "invalid_metadata",
-                error_description_details: errors}
+                error_description_details: errors
+              }
             )
 
           {:error, :metadata_limit} ->
             conn
             |> put_status(400)
             |> put_view(json: VirtualCryptoWeb.Api.V1V2.ClaimViewCommon)
-            |> render(:error,
-            %{error: :invalid_request,
-              error_description:
-                "The upper limit of the number of metadata is 50, and it is highly possible that this has been reached. (Maybe for other reasons)"
-            }
+            |> render(
+              :error,
+              %{
+                error: :invalid_request,
+                error_description:
+                  "The upper limit of the number of metadata is 50, and it is highly possible that this has been reached. (Maybe for other reasons)"
+              }
             )
         end
 

@@ -58,11 +58,11 @@ if config_env() == :prod do
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-     http: [
-       port: 8080,
-       transport_options: [socket_opts: [:inet6]]
-     ],
-     secret_key_base: secret_key_base
+    http: [
+      port: 8080,
+      transport_options: [socket_opts: [:inet6]]
+    ],
+    secret_key_base: secret_key_base
 
   # ## SSL Support
   #

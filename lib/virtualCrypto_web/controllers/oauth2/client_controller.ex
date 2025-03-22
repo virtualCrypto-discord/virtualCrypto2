@@ -21,13 +21,11 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
 
     case params do
       {:ok, %{application: application, redirect_uris: redirect_uris, user: user}} ->
-        render(conn, :client,
-          %{
-            application: application,
-            redirect_uris: redirect_uris,
-            user: user
-          }
-        )
+        render(conn, :client, %{
+          application: application,
+          redirect_uris: redirect_uris,
+          user: user
+        })
 
       {:error, {:invalid_token, more}} ->
         conn

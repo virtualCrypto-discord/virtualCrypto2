@@ -8,13 +8,13 @@ defmodule VirtualCryptoWeb.WebAuthHTML do
 
   def redirect(assigns) do
     ~H"""
-    <%= content_tag(
+    {content_tag(
       :script,
       raw(""),
       type: "text/javascript",
       src: "/assets/credential-manager-cb.js",
-      data: [redirect_to: @redirect_to,access_token: @access_token,expires_in: @expires_in])
-    %>
+      data: [redirect_to: @redirect_to, access_token: @access_token, expires_in: @expires_in]
+    )}
     """
   end
 end

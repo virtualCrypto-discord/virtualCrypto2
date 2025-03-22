@@ -6,8 +6,13 @@ defmodule VirtualCryptoWeb.Api.InteractionsJSON do
   def bal(%{params: params}), do: Interactions.Bal.render(params)
   def pay(%{params: {res, v}}), do: Interactions.Pay.render(res, v)
   def give(%{params: {res, v}}), do: Interactions.Give.render(res, v)
-  def create(%{params: {response, reason, options}}), do: Interactions.Create.render(response, reason, options)
-  def delete(%{params: {status, reason, data}}), do: Interactions.Delete.render(status, reason, data)
+
+  def create(%{params: {response, reason, options}}),
+    do: Interactions.Create.render(response, reason, options)
+
+  def delete(%{params: {status, reason, data}}),
+    do: Interactions.Delete.render(status, reason, data)
+
   def info(%{params: {status, data}}), do: Interactions.Info.render(status, data)
   def claim(%{params: params}), do: Interactions.Claim.render(params)
 

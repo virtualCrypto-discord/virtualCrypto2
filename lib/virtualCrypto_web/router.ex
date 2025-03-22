@@ -164,8 +164,8 @@ defmodule VirtualCryptoWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard",
-                     ecto_repos: [VirtualCrypto.Repo],
-                     metrics: VirtualCryptoWeb.Telemetry
+        ecto_repos: [VirtualCrypto.Repo],
+        metrics: VirtualCryptoWeb.Telemetry
     end
   end
 end

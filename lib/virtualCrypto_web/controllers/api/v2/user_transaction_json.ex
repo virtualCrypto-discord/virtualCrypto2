@@ -29,8 +29,8 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionView.Pure do
   end
 
   def render("error.json", %{
-    error: {error, error_description}
-  }) do
+        error: {error, error_description}
+      }) do
     %{
       error: to_string(error),
       error_description: to_string(error_description)
@@ -38,8 +38,8 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionView.Pure do
   end
 
   def render("error.json", %{
-    error: error
-  }) do
+        error: error
+      }) do
     render_error(error)
   end
 

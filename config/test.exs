@@ -2,13 +2,13 @@ import Config
 
 # Configure your database
 config :virtualCrypto, VirtualCrypto.Repo,
-       username: "sizumita",
-       password: "postgres",
-       hostname: "localhost",
-       database: "virtualcrypto_dev",
-       show_sensitive_data_on_connection_error: true,
-       pool: Ecto.Adapters.SQL.Sandbox,
-       pool_size: 40
+  username: "sizumita",
+  password: "postgres",
+  hostname: "localhost",
+  database: "virtualcrypto_dev",
+  show_sensitive_data_on_connection_error: true,
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 40
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -17,23 +17,23 @@ config :virtualCrypto, VirtualCrypto.Repo,
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-       http: [port: 5001],
-       https: [
-         port: 5000,
-         cipher_suite: :strong,
-         keyfile: "priv/cert/selfsigned_key.pem",
-         certfile: "priv/cert/selfsigned.pem"
-       ],
-       debug_errors: true,
-       check_origin: false,
-       watchers: [
-         node: [
-           "node_modules/webpack/bin/webpack.js",
-           "--mode",
-           "development",
-           cd: Path.expand("../assets", __DIR__)
-         ]
-       ]
+  http: [port: 5001],
+  https: [
+    port: 5000,
+    cipher_suite: :strong,
+    keyfile: "priv/cert/selfsigned_key.pem",
+    certfile: "priv/cert/selfsigned.pem"
+  ],
+  debug_errors: true,
+  check_origin: false,
+  watchers: [
+    node: [
+      "node_modules/webpack/bin/webpack.js",
+      "--mode",
+      "development",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -61,15 +61,15 @@ config :virtualCrypto,
 config :virtualCrypto, :support_guild_invite_url, "https://discord.com/invite/Hgp5DpG"
 
 config :virtualCrypto, VirtualCrypto.Guardian,
-       issuer: "virtualCrypto",
-       secret_key: "a188rolUOVnGqP7wseWeTW0qkFCfsDMNvbo2Bz6O3dmO9TEyKPD8+Yf1bfiUFRBI"
+  issuer: "virtualCrypto",
+  secret_key: "a188rolUOVnGqP7wseWeTW0qkFCfsDMNvbo2Bz6O3dmO9TEyKPD8+Yf1bfiUFRBI"
 
 config :virtualCrypto, :site_url, "https://vcrypto.sumidora.com"
 
 config :virtualCrypto, :discord_oauth2_redirect_uri, "https://localhost:4000/callback/discord"
 
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-       live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
+  live_view: [signing_salt: "VxwCTydmJ5qXLUvG8/IH+u14glj9NR3y"]
 
 config :logger, backends: []
 
@@ -89,4 +89,4 @@ config :virtualCrypto,
          55, 75, 56, 158, 183, 252, 253, 147, 84, 164, 94, 253>>
 
 config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
-       children: [VirtualCryptoTest.Notification.Sink]
+  children: [VirtualCryptoTest.Notification.Sink]

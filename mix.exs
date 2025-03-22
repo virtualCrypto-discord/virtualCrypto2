@@ -71,7 +71,7 @@ defmodule VirtualCrypto.MixProject do
       {:cachex, "~> 3.3"},
       {:ecto_psql_extras, "~> 0.2"},
       {:plug_cowboy, "~> 2.0"},
-      {:httpoison, "~> 1.7"},
+      {:httpoison, "~> 1.7"}
     ]
   end
 

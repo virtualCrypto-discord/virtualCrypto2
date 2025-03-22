@@ -6,5 +6,4 @@ defmodule VirtualCryptoWeb.WebAuthJSON do
       token_type: "Bearer"
     }
   end
-
 end

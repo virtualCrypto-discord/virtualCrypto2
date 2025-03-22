@@ -76,13 +76,14 @@ defmodule VirtualCryptoWeb.OAuth2.AuthorizeController do
 
     case props do
       {:ok, {app, session}} ->
-        render(conn, :auth, redirect_uri: session.redirect_uri,
-        scope: session.scope,
-        client_id: session.client_id,
-        csrf_token: Phoenix.Controller.get_csrf_token(),
-        response_type: session.response_type,
-        guild_id: session.guild_id,
-        state: Map.get(session, :state)
+        render(conn, :auth,
+          redirect_uri: session.redirect_uri,
+          scope: session.scope,
+          client_id: session.client_id,
+          csrf_token: Phoenix.Controller.get_csrf_token(),
+          response_type: session.response_type,
+          guild_id: session.guild_id,
+          state: Map.get(session, :state)
         )
 
       {:error, x} ->

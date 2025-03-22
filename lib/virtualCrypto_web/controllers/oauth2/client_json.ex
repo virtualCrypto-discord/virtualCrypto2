@@ -1,9 +1,9 @@
 defmodule VirtualCryptoWeb.OAuth2.ClientJSON do
   def client(%{
-    application: application,
-    redirect_uris: redirect_uris,
-    user: user
-  }) do
+        application: application,
+        redirect_uris: redirect_uris,
+        user: user
+      }) do
     VirtualCryptoWeb.Clients.render_application(%{
       application: application,
       user: user,

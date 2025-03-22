@@ -58,7 +58,9 @@ defmodule VirtualCryptoWeb.Api.V2.CurrenciesController do
 
     case params do
       {:ok, res} ->
-        conn |> put_view(json: VirtualCryptoWeb.Api.V1V2.CurrenciesViewCommon) |> render(:ok, params: res)
+        conn
+        |> put_view(json: VirtualCryptoWeb.Api.V1V2.CurrenciesViewCommon)
+        |> render(:ok, params: res)
 
       {:error, {error, error_description}} ->
         conn

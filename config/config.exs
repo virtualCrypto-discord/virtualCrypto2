@@ -27,8 +27,7 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
 config :esbuild,
   version: "0.17.11",
   virtualCrypto: [
-    args:
-      ~w(js/app.js
+    args: ~w(js/app.js
        js/credential-manager-cb.js
        js/credential-manager-common.js
        js/credential-manager-dom.js
@@ -64,15 +63,15 @@ config :phoenix, :json_library, Jason
 import_config "#{config_env()}.exs"
 
 config :virtualCrypto, VirtualCrypto.Scheduler,
-       debug_logging: false,
-       overlap: false,
-       timezone: :utc,
-       jobs: [
-         {"@daily", &VirtualCrypto.Money.reset_pool_amount/0},
-         {"* * * * *", &VirtualCrypto.Auth.purge_user_access_tokens/0},
-         {"* * * * *", &VirtualCrypto.Auth.purge_access_tokens/0},
-         {"* * * * *", &VirtualCryptoWeb.IdempotencyLayer.Payments.purge_idempotency_keys/0}
-       ]
+  debug_logging: false,
+  overlap: false,
+  timezone: :utc,
+  jobs: [
+    {"@daily", &VirtualCrypto.Money.reset_pool_amount/0},
+    {"* * * * *", &VirtualCrypto.Auth.purge_user_access_tokens/0},
+    {"* * * * *", &VirtualCrypto.Auth.purge_access_tokens/0},
+    {"* * * * *", &VirtualCryptoWeb.IdempotencyLayer.Payments.purge_idempotency_keys/0}
+  ]
 
 config :virtualCrypto, :discord_ua_website, "https://vcrypto.sumidora.com"
 config :virtualCrypto, :discord_ua_version, "1"
@@ -80,6 +79,6 @@ config :virtualCrypto, :discord_ua_version, "1"
 config :phoenix, :template_engines, leex: Phoenix.LiveView.Engine
 
 config :hammer,
-       backend:
-         {Hammer.Backend.ETS,
-         [expiry_ms: 4 * 24 * 60 * 60 * 1000, cleanup_interval_ms: 10 * 60 * 1000]}
+  backend:
+    {Hammer.Backend.ETS,
+     [expiry_ms: 4 * 24 * 60 * 60 * 1000, cleanup_interval_ms: 10 * 60 * 1000]}

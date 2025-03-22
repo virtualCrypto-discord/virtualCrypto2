@@ -92,26 +92,26 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
           {:error, :not_found_currency} ->
             conn
             |> put_status(400)
-            |> render(:error,
-              %{error: :invalid_request,
-                error_description: :not_found_currency}
+            |> render(
+              :error,
+              %{error: :invalid_request, error_description: :not_found_currency}
             )
         end
 
       {_, :error, _} ->
         conn
         |> put_status(400)
-        |> render(:error,
-          %{error: :invalid_request,
-            error_description: :invalid_payer_discord_id_value}
+        |> render(
+          :error,
+          %{error: :invalid_request, error_description: :invalid_payer_discord_id_value}
         )
 
       {_, {_, x}, _} when x != "" ->
         conn
         |> put_status(400)
-        |> render(:error,
-          %{error: :invalid_request,
-            error_description: :invalid_payer_discord_id_value}
+        |> render(
+          :error,
+          %{error: :invalid_request, error_description: :invalid_payer_discord_id_value}
         )
 
       {_, _, :error} ->
@@ -133,9 +133,9 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
       when not is_binary(payer_discord_id) do
     conn
     |> put_status(400)
-    |> render(:error,
-      %{error: :invalid_request,
-        error_description: :invalid_payer_discord_id_type}
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :invalid_payer_discord_id_type}
     )
   end
 
@@ -160,9 +160,9 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
   def post(conn, %{}) do
     conn
     |> put_status(400)
-    |> render(:error,
-      %{error: :invalid_request,
-                error_description: :payer_discord_id_field_is_required}
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :payer_discord_id_field_is_required}
     )
   end
 
@@ -181,25 +181,25 @@ defmodule VirtualCryptoWeb.Api.V1.ClaimController do
           {:error, :not_found_currency} ->
             conn
             |> put_status(400)
-            |> render(:error,
-              %{error: :invalid_request,
-                       error_description: :not_found_currency}
+            |> render(
+              :error,
+              %{error: :invalid_request, error_description: :not_found_currency}
             )
 
           {:error, :not_found_sender_asset} ->
             conn
             |> put_status(400)
-            |> render(:error,
-              %{error: :not_enough_amount,
-                        error_description: :not_enough_amount}
+            |> render(
+              :error,
+              %{error: :not_enough_amount, error_description: :not_enough_amount}
             )
 
           {:error, :not_enough_amount} ->
             conn
             |> put_status(400)
-            |> render(:error,
-              %{error: :not_enough_amount,
-                     error_description: :not_enough_amount}
+            |> render(
+              :error,
+              %{error: :not_enough_amount, error_description: :not_enough_amount}
             )
         end
 

@@ -16,17 +16,17 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
       {{:validate_token, :invalid_token}, _} ->
         conn
         |> put_status(401)
-        |> render(:error,
-          %{error: :invalid_token,
-            error_description: :invalid_kind}
+        |> render(
+          :error,
+          %{error: :invalid_token, error_description: :invalid_kind}
         )
 
       {{:validate_token, :insufficient_scope}, _} ->
         conn
         |> put_status(403)
-        |> render(:error,
-          %{error: :insufficient_scope,
-            error_description: :required_oauth2_register}
+        |> render(
+          :error,
+          %{error: :insufficient_scope, error_description: :required_oauth2_register}
         )
     end
   end
@@ -34,9 +34,9 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   def get(conn, _) do
     conn
     |> put_status(400)
-    |> render(:error,
-      %{error: :invalid_request,
-        error_description: :required_user_parameter}
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :required_user_parameter}
     )
   end
 
@@ -89,7 +89,8 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
 
         conn
         |> put_status(201)
-        |> render(:ok,
+        |> render(
+          :ok,
           %{
             application: application_data.application,
             registration_access_token: access_token,

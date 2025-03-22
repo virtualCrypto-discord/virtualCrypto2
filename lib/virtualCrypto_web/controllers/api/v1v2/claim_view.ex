@@ -1,9 +1,9 @@
 defmodule VirtualCryptoWeb.Api.V1V2.ClaimViewCommon do
   def error(%{
-    error: error,
-    error_info: error_info,
-    error_description: error_description
-  }) do
+        error: error,
+        error_info: error_info,
+        error_description: error_description
+      }) do
     %{
       error: error,
       error_description: error_description,
@@ -12,10 +12,10 @@ defmodule VirtualCryptoWeb.Api.V1V2.ClaimViewCommon do
   end
 
   def error(%{
-    error: error,
-    error_description: error_description,
-    error_description_details: details
-  }) do
+        error: error,
+        error_description: error_description,
+        error_description_details: details
+      }) do
     %{
       error: error,
       error_description: error_description,
