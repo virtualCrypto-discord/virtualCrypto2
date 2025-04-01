@@ -62,6 +62,12 @@ defmodule VirtualCryptoWeb.Router do
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
+
+    live "/contract/:id", Contract.ApproveApplication
+  end
+
+  scope "/", VirtualCryptoWeb do
+    pipe_through :browser
     pipe_through :browser_auth
 
     live "/applications/:id/connect", ConnectApplication
