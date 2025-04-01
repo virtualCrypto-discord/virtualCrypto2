@@ -31,6 +31,7 @@ defmodule VirtualCryptoWeb.Router do
     pipe_through :landing_page
 
     get "/", LandingController, :home
+    get "/features", LandingController, :features
   end
 
   scope "/", VirtualCryptoWeb do

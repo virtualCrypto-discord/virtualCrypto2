@@ -6,12 +6,6 @@ const fs = require("fs")
 const path = require("path")
 
 module.exports = {
-  content: [
-    "./js/**/*.js",
-    "../lib/virtualCrypto_web.ex",
-    "../lib/virtualCrypto_web/**/*.*ex",
-    "../lib/**/*.html.heex",
-  ],
   theme: {
     extend: {
       colors: {

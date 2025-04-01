@@ -18,21 +18,7 @@
         class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
       >
         <span class="sr-only">Open main menu</span>
-        <svg
-          class="size-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          aria-hidden="true"
-          data-slot="icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-          />
-        </svg>
+        <.icon name="hero-bars-3" class="size-6" />
       </button>
     </div>
     <div class="hidden md:flex">
@@ -44,5 +30,32 @@
 </header>
 <main>
   <.flash_group flash={@flash} />
-  {@inner_content}
+  <div class="mx-auto max-w-7xl px-6 py-12 sm:py-16 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-20">
+    {@inner_content}
+  </div>
 </main>
+<footer class="bg-gray-900">
+  <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
+    <nav
+      class="-mb-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm/6"
+      aria-label="Footer"
+    >
+      <a href={~p"/features"} class="text-gray-400 hover:text-white">Features</a>
+      <a href={~p"/docs"} class="text-gray-400 hover:text-white">Document</a>
+      <a href={~p"/developer"} class="text-gray-400 hover:text-white">Developer</a>
+      <a href={~p"/me"} class="text-gray-400 hover:text-white">Dashboard</a>
+      <a href={~p"/pos"} class="text-gray-400 hover:text-white">ToS</a>
+      <a href={~p"/privacy"} class="text-gray-400 hover:text-white">Privacy Policy</a>
+    </nav>
+    <div class="mt-16 flex justify-center gap-x-10">
+      <a href="https://github.com/virtualCrypto-discord" class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">GitHub</span>
+        <.icon name="simple-github" class="size-6 bg-white" />
+      </a>
+      <a href={~p"/support"} class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">YouTube</span>
+        <.icon name="simple-discord" class="size-6 bg-white" />
+      </a>
+    </div>
+  </div>
+</footer>

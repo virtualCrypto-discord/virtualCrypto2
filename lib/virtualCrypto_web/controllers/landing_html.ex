@@ -5,6 +5,7 @@ defmodule VirtualCryptoWeb.LandingHTML do
   See the `page_html` directory for all templates available.
   """
   use VirtualCryptoWeb, :html
+  import VirtualCryptoWeb.LandingComponents
 
   embed_templates "landing_html/*"
 end
