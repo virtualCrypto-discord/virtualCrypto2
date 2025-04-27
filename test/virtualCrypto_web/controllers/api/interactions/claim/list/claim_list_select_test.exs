@@ -8,7 +8,7 @@ defmodule InteractionsControllerTest.Claim.List.Select do
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   import InteractionsControllerTest.Helper.Common
   import InteractionsControllerTest.Claim.Helper
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
 
   setup :setup_claim
 

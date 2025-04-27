@@ -2,10 +2,6 @@ defmodule VirtualCryptoWeb.ConnectApplication do
   use Phoenix.LiveView
   alias VirtualCrypto.Auth
 
-  def render(assigns) do
-    VirtualCryptoWeb.LiveView.render("connect.html", assigns)
-  end
-
   def mount(params, session, socket) do
     user = session["user"]
 
@@ -15,7 +11,7 @@ defmodule VirtualCryptoWeb.ConnectApplication do
 
         case app do
           nil ->
-            {:ok, push_redirect(socket, to: "/applications/" <> params["id"])}
+            {:ok, push_navigate(socket, to: "/applications/" <> params["id"])}
 
           _ ->
             {application, app_user, _redirect_uris} = app

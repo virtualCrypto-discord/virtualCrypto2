@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@plugin "../js/plugin/hero-icon.js";
+@plugin "../js/plugin/simple-icon.js";
+
+@theme {
+    --color-brand: #4e2ae2;
+}

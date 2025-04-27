@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :virtualCrypto, VirtualCrypto.Repo,
-  username: "postgres",
+  username: "sizumita",
   password: "postgres",
-  database: "virtualcrypto_test",
   hostname: "localhost",
+  database: "virtualcrypto_dev",
   show_sensitive_data_on_connection_error: true,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 40

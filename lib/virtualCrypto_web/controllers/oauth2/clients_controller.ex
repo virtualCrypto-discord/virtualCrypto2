@@ -16,17 +16,17 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
       {{:validate_token, :invalid_token}, _} ->
         conn
         |> put_status(401)
-        |> render(:error,
-          error: :invalid_token,
-          error_description: :invalid_kind
+        |> render(
+          :error,
+          %{error: :invalid_token, error_description: :invalid_kind}
         )
 
       {{:validate_token, :insufficient_scope}, _} ->
         conn
         |> put_status(403)
-        |> render(:error,
-          error: :insufficient_scope,
-          error_description: :required_oauth2_register
+        |> render(
+          :error,
+          %{error: :insufficient_scope, error_description: :required_oauth2_register}
         )
     end
   end
@@ -34,9 +34,9 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
   def get(conn, _) do
     conn
     |> put_status(400)
-    |> render(:error,
-      error: :invalid_request,
-      error_description: :required_user_parameter
+    |> render(
+      :error,
+      %{error: :invalid_request, error_description: :required_user_parameter}
     )
   end
 
@@ -89,30 +89,33 @@ defmodule VirtualCryptoWeb.OAuth2.ClientsController do
 
         conn
         |> put_status(201)
-        |> render(:ok,
-          application: application_data.application,
-          registration_access_token: access_token,
-          registration_client_uri:
-            site_url()
-            |> URI.parse()
-            |> Map.put(:path, "/oauth2/clients/@me")
-            |> URI.to_string()
+        |> render(
+          :ok,
+          %{
+            application: application_data.application,
+            registration_access_token: access_token,
+            registration_client_uri:
+              site_url()
+              |> URI.parse()
+              |> Map.put(:path, "/oauth2/clients/@me")
+              |> URI.to_string()
+          }
         )
 
       {:error, {:invalid_token, more}} ->
         conn
         |> put_status(401)
-        |> render(:error, error: :invalid_token, error_description: more)
+        |> render(:error, %{error: :invalid_token, error_description: more})
 
       {:error, {:insufficient_scope, more}} ->
         conn
         |> put_status(403)
-        |> render(:error, error: :insufficient_scope, error_description: more)
+        |> render(:error, %{error: :insufficient_scope, error_description: more})
 
       {:error, {error, error_description}} ->
         conn
         |> put_status(400)
-        |> render(:error, error: error, error_description: error_description)
+        |> render(:error, %{error: error, error_description: error_description})
     end
   end
 end

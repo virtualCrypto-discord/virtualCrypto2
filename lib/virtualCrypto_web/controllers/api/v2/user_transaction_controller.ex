@@ -27,7 +27,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
         conn
         |> put_status(http_status)
         |> put_resp_header("idempotency-status", "Duplicate")
-        |> render("pass.json", _json: entry.body)
+        |> render(:pass, _json: entry.body)
         |> Plug.Conn.halt()
 
       {:create, nil} ->
@@ -50,7 +50,7 @@ defmodule VirtualCryptoWeb.Api.V2.UserTransactionController do
         conn |> put_resp_header("idempotency-status", "Not Requested")
       end
 
-    render(conn, "pass.json", %{_json: json})
+    render(conn, :pass, %{_json: json})
   end
 
   def post(conn, %{

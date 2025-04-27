@@ -1,0 +1,61 @@
+<header class="bg-white">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+    <div class="flex items-center gap-x-12">
+      <a href={~p"/"} class="-m-1.5 p-1.5">
+        <span class="sr-only">Your Company</span>
+        <img class="h-8 w-auto" src={~p"/images/logo.jpg"} width="64" height="64" alt="" />
+      </a>
+      <div class="hidden md:flex md:gap-x-12">
+        <a href={~p"/features"} class="text-sm/6 font-semibold text-gray-900">Features</a>
+        <a href={~p"/docs"} class="text-sm/6 font-semibold text-gray-900">Document</a>
+        <a href={~p"/docs/developer"} class="text-sm/6 font-semibold text-gray-900">Developer</a>
+        <a href={~p"/support"} class="text-sm/6 font-semibold text-gray-900">Support</a>
+      </div>
+    </div>
+    <div class="flex md:hidden">
+      <button
+        type="button"
+        class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+      >
+        <span class="sr-only">Open main menu</span>
+        <.icon name="hero-bars-3" class="size-6" />
+      </button>
+    </div>
+    <div class="hidden md:flex">
+      <a href={~p"/me"} class="text-sm/6 font-semibold text-gray-900">
+        Log in <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </nav>
+</header>
+<main>
+  <.flash_group flash={@flash} />
+  <div class="mx-auto max-w-7xl px-6 py-12 sm:py-16 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-20">
+    {@inner_content}
+  </div>
+</main>
+<footer class="bg-gray-900">
+  <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
+    <nav
+      class="-mb-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm/6"
+      aria-label="Footer"
+    >
+      <a href={~p"/features"} class="text-gray-400 hover:text-white">Features</a>
+      <a href={~p"/docs"} class="text-gray-400 hover:text-white">Document</a>
+      <a href={~p"/developer"} class="text-gray-400 hover:text-white">Developer</a>
+      <a href={~p"/me"} class="text-gray-400 hover:text-white">Dashboard</a>
+      <a href={~p"/pos"} class="text-gray-400 hover:text-white">ToS</a>
+      <a href={~p"/privacy"} class="text-gray-400 hover:text-white">Privacy Policy</a>
+    </nav>
+    <div class="mt-16 flex justify-center gap-x-10">
+      <a href="https://github.com/virtualCrypto-discord" class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">GitHub</span>
+        <.icon name="simple-github" class="size-6 bg-white" />
+      </a>
+      <a href={~p"/support"} class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">YouTube</span>
+        <.icon name="simple-discord" class="size-6 bg-white" />
+      </a>
+    </div>
+  </div>
+</footer>

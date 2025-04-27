@@ -4,18 +4,12 @@ defmodule VirtualCrypto.MixProject do
   def project do
     [
       app: :virtualCrypto,
-      version: "0.1.0",
-      elixir: "~> 1.7",
+      version: "3.0.0",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps(),
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls.html": :test],
-      releases: [
-        virtual_crypto: []
-      ]
+      deps: deps()
     ]
   end
 
@@ -25,7 +19,7 @@ defmodule VirtualCrypto.MixProject do
   def application do
     [
       mod: {VirtualCrypto.Application, []},
-      extra_applications: [:logger, :runtime_tools, :httpoison, :crypto, :public_key]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -38,34 +32,53 @@ defmodule VirtualCrypto.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7"},
-      {:phoenix_ecto, "~> 4.1"},
-      {:ecto_sql, "~> 3.4"},
+      {:phoenix, "~> 1.7.20"},
+      {:phoenix_ecto, "~> 4.5"},
+      {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_html, "~> 4.0"},
+      {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.8"},
-      {:telemetry_metrics, "~> 0.4"},
-      {:telemetry_poller, "~> 0.4"},
-      {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"},
-      {:httpoison, "~> 1.7"},
-      {:ecto_psql_extras, "~> 0.2"},
-      {:oauth2, "~> 2.0"},
-      {:guardian, "~> 2.0"},
-      {:quantum, "~> 3.0"},
-      {:ex_url, "~> 1.3"},
-      {:cachex, "~> 3.3"},
-      {:phoenix_live_view, "~> 0.20"},
+      {:phoenix_live_view, "~> 1.0.0"},
       {:phoenix_html_helpers, "~> 1.0"},
       {:phoenix_view, "~> 2.0"},
+      {:floki, ">= 0.30.0", only: :test},
+      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
+      {:heroicons,
+       github: "tailwindlabs/heroicons",
+       tag: "v2.2.0",
+       sparse: "optimized",
+       app: false,
+       compile: false,
+       depth: 1},
+      {:simpleicons,
+       github: "simple-icons/simple-icons",
+       tag: "14.12.0",
+       sparse: "icons",
+       app: false,
+       compile: false,
+       depth: 1},
+      {:finch, "~> 0.13"},
+      {:telemetry_metrics, "~> 1.0"},
+      {:telemetry_poller, "~> 1.0"},
+      {:gettext, "~> 0.26"},
+      {:jason, "~> 1.2"},
+      {:bandit, "~> 1.5"},
       {:elixir_uuid, "~> 1.2"},
       {:tzdata, "~> 1.1"},
       {:excoveralls, "~> 0.3", only: :test},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:hammer, "~> 6.0"},
-      {:castore, "~> 0.1.11"}
+      {:castore, "~> 0.1.11"},
+      {:oauth2, "~> 2.0"},
+      {:guardian, "~> 2.0"},
+      {:quantum, "~> 3.0"},
+      {:ex_url, "~> 1.3"},
+      {:cachex, "~> 3.3"},
+      {:ecto_psql_extras, "~> 0.2"},
+      {:plug_cowboy, "~> 2.0"},
+      {:httpoison, "~> 1.7"}
     ]
   end
 
@@ -77,11 +90,17 @@ defmodule VirtualCrypto.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
-      "assets.deploy": ["cmd npm run --prefix assets deploy"],
+      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.build": ["tailwind virtualCrypto", "esbuild virtualCrypto"],
+      "assets.deploy": [
+        "tailwind virtualCrypto --minify",
+        "esbuild virtualCrypto --minify",
+        "phx.digest"
+      ],
       "register.commands": ["run priv/register-commands.exs"]
     ]
   end

@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Help do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Helper.Common
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
   @bot_invite_url Application.compile_env!(:virtualCrypto, :invite_url)
   @support_guild_invite_url Application.compile_env!(:virtualCrypto, :support_guild_invite_url)
   @site_url Application.compile_env!(:virtualCrypto, :site_url)
