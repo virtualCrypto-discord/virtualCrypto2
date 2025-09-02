@@ -56,7 +56,7 @@ defmodule VirtualCryptoWeb.Router do
     # required auth
     scope "/" do
       pipe_through :browser_auth
-      get "/me", DashboardController, :index
+      live "/me", DashboardApplication
       get "/applications/:id", ApplicationController, :index
     end
   end
