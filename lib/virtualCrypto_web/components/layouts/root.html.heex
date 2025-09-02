@@ -30,11 +30,11 @@
                 window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
             })();
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register("/assets/sw.js", {scope: '/'}).catch(console.error);
+                navigator.serviceWorker.register("/assets/js/sw.js", {scope: '/'}).catch(console.error);
             }
         </script>
     </head>
     <body>
     {@inner_content}
-    </body>
+  </body>
 </html>

@@ -10,10 +10,6 @@ defmodule VirtualCryptoWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :landing_page do
-    plug :put_layout, html: {VirtualCryptoWeb.Layouts, :landing}
-  end
-
   pipeline :browser_auth do
     plug VirtualCryptoWeb.AuthPlug
   end
@@ -28,11 +24,14 @@ defmodule VirtualCryptoWeb.Router do
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
-    pipe_through :landing_page
 
-    get "/", LandingController, :home
-    get "/features", LandingController, :features
+    get "/", PageController, :home
   end
+
+  # Other scopes may use custom stacks.
+  # scope "/api", VirtualCryptoWeb do
+  #   pipe_through :api
+  # end
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
@@ -158,7 +157,7 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
+  # Enable LiveDashboard in development
   if Application.compile_env(:virtualCrypto, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
     # it behind authentication and allow only admins to access it.

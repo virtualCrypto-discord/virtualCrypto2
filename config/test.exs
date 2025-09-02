@@ -1,6 +1,10 @@
 import Config
 
 # Configure your database
+#
+# The MIX_TEST_PARTITION environment variable can be used
+# to provide built-in test partitioning in CI environment.
+# Run `mix help test` for more information.
 config :virtualCrypto, VirtualCrypto.Repo,
   username: "postgres",
   password: "postgres",
@@ -10,38 +14,17 @@ config :virtualCrypto, VirtualCrypto.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 40
 
-# For development, we disable any cache and enable
-# debugging and code reloading.
-#
-# The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with webpack to recompile .js and .css sources.
+# We don't run a server during test. If one is required,
+# you can enable the server option below.
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
-  http: [port: 5001],
-  https: [
-    port: 5000,
-    cipher_suite: :strong,
-    keyfile: "priv/cert/selfsigned_key.pem",
-    certfile: "priv/cert/selfsigned.pem"
-  ],
-  debug_errors: true,
-  check_origin: false,
-  watchers: [
-    node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      cd: Path.expand("../assets", __DIR__)
-    ]
-  ]
+  http: [ip: {127, 0, 0, 1}, port: 4002],
+  secret_key_base: "BM4jAHO/GfVvvUhVSqfTI0pJ226JI8pTJds3/a/515aLJ96Kl6/ndSKK2CnVNIBC",
+  server: false
 
-# Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
-# Set a higher stacktrace during development. Avoid configuring such
-# in production as building large stacktraces may be expensive.
-config :phoenix, :stacktrace_depth, 20
+# Print only warnings and errors during test
+config :logger, level: :warning
 
-# Initialize plugs at runtime for faster development compilation
+# Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
 
 config :virtualCrypto, :bot_token, "NzkxOTg0MzA2NjMyNjU0ODY5.X-XG3Q.AtToj0KWghevc517MP69VqEIn8g"

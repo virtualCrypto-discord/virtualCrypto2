@@ -11,6 +11,7 @@ defmodule VirtualCrypto.Application do
     children = [
       VirtualCryptoWeb.Telemetry,
       VirtualCrypto.Repo,
+      {DNSCluster, query: Application.get_env(:virtualCrypto, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: VirtualCrypto.PubSub},
       # Start a worker by calling: VirtualCrypto.Worker.start_link(arg)
       # {VirtualCrypto.Worker, arg},

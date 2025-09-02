@@ -8,20 +8,19 @@
 import Config
 
 config :virtualCrypto,
-  ecto_repos: [VirtualCrypto.Repo]
+  ecto_repos: [VirtualCrypto.Repo],
+  generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "A/SrOULNNrea5K+dL0aCBe2nQzCiXNduURF8NeXOJ9g5TbBZZcUjEHePFDINzTk0",
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    accepts: ~w(html json),
     formats: [html: VirtualCryptoWeb.ErrorHTML, json: VirtualCryptoWeb.ErrorJSON],
     layout: false
   ],
   pubsub_server: VirtualCrypto.PubSub,
-  live_view: [signing_salt: "5bW/V9s1"]
+  live_view: [signing_salt: "aiQYikhx"]
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -33,24 +32,24 @@ config :esbuild,
        js/credential-manager-dom.js
        js/credential-manager-sw.js
         js/sw.js --bundle
-         --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+        --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "4.0.15",
+  version: "4.1.7",
   virtualCrypto: [
     args: ~w(
       --input=assets/css/app.css
-      --output=priv/static/assets/app.css
+      --output=priv/static/assets/css/app.css
     ),
     cd: Path.expand("..", __DIR__)
   ]
 
 # Configures Elixir's Logger
-config :logger, :console,
+config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
