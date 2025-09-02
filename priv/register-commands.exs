@@ -278,7 +278,7 @@ defmodule Command do
     HTTPoison.start()
 
     headers = [
-      {"Authorization", "Bot " <> Application.compile_env!(:virtualCrypto, :bot_token)},
+      {"Authorization", "Bot " <> Application.fetch_env!(:virtualCrypto, :bot_token)},
       {"Content-Type", "application/json"}
     ]
 

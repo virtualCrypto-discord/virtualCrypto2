@@ -32,7 +32,7 @@ defmodule VirtualCrypto.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7.20"},
+      {:phoenix, "~> 1.8"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
@@ -76,7 +76,7 @@ defmodule VirtualCrypto.MixProject do
       {:quantum, "~> 3.0"},
       {:ex_url, "~> 1.3"},
       {:cachex, "~> 3.3"},
-      {:ecto_psql_extras, "~> 0.2"},
+      {:ecto_psql_extras, "~> 0.8.8"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.7"}
     ]
