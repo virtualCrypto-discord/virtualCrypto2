@@ -1,5 +1,6 @@
 defmodule VirtualCryptoWeb.Router do
   use VirtualCryptoWeb, :router
+  alias VirtualCryptoWeb.App
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -26,6 +27,13 @@ defmodule VirtualCryptoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+  end
+
+  scope "/" do
+    pipe_through :browser
+    pipe_through :browser_auth
+    live "/app", App.OverviewLive
+    get "/applications/:id", ApplicationController, :index
   end
 
   # Other scopes may use custom stacks.

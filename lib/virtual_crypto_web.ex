@@ -51,6 +51,14 @@ defmodule VirtualCryptoWeb do
     end
   end
 
+  def app_live_view do
+    quote do
+      use Phoenix.LiveView
+
+      unquote(html_helpers())
+    end
+  end
+
   def live_view do
     quote do
       use Phoenix.LiveView
@@ -93,6 +101,7 @@ defmodule VirtualCryptoWeb do
       # Common modules used in templates
       alias Phoenix.LiveView.JS
       alias VirtualCryptoWeb.Layouts
+      alias VirtualCryptoWeb.AppLayouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())
