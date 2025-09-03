@@ -96,7 +96,7 @@ config :virtualCrypto, :invite_url, "https://discord.com/api/oauth2/authorize?cl
 
 config :virtualCrypto, :support_guild_invite_url, "https://discord.com/invite/Hgp5DpG"
 
-config :virtualCrypto, VirtualCrypto.Guardian, issuer: "virtualCrypto", secret_key: "jhbZT8a/8ystZKNI+SkN9GHmPAMCcIqv1PLCT4I5BRfe+QxGEmtstjeZoWtlNju6"
+config :virtualCrypto, VirtualCrypto.Guardian, issuer: "virtualCrypto", secret_key: "mix guardian.gen.secret"
 
 config :virtualCrypto, :site_url, "https://localhost:4000"
 
@@ -110,7 +110,3 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
 
 config :virtualCrypto, VirtualCrypto.Notification.Dispatcher,
        children: [VirtualCrypto.Notification.Webhook.CloudflareWorkers]
-
-# https://github.com/virtualCrypto-discord/webhook-emitter-cf-workers
-config :virtualCrypto, VirtualCrypto.Notification.Webhook.CloudflareWorkers,
-       webhook_proxy: "http://127.0.0.1:8787"
