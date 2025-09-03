@@ -1,20 +1,13 @@
 defmodule VirtualCryptoWeb.Router do
   use VirtualCryptoWeb, :router
+  alias VirtualCryptoWeb.App
 
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
+    plug :put_root_layout, html: {VirtualCryptoWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
-  end
-
-  pipeline :live_browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_live_flash
-    plug :protect_from_forgery
-    plug :put_root_layout, {VirtualCryptoWeb.LayoutView, :liveapp}
     plug :put_secure_browser_headers
   end
 
@@ -30,11 +23,26 @@ defmodule VirtualCryptoWeb.Router do
     plug VirtualCryptoWeb.ApiAuthPlug
   end
 
-  # for human
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    get "/", PageController, :home
+  end
+
+  scope "/" do
+    pipe_through :browser
+    pipe_through :browser_auth
+    live "/app", App.OverviewLive
+    get "/applications/:id", ApplicationController, :index
+  end
+
+  # Other scopes may use custom stacks.
+  # scope "/api", VirtualCryptoWeb do
+  #   pipe_through :api
+  # end
+
+  scope "/", VirtualCryptoWeb do
+    pipe_through :browser
 
     get "/logout", LogoutController, :index
 
@@ -55,13 +63,19 @@ defmodule VirtualCryptoWeb.Router do
     # required auth
     scope "/" do
       pipe_through :browser_auth
-      get "/me", MyPageController, :index
+      live "/me", DashboardApplication
       get "/applications/:id", ApplicationController, :index
     end
   end
 
   scope "/", VirtualCryptoWeb do
-    pipe_through :live_browser
+    pipe_through :browser
+
+    live "/contract/:id", Contract.ApproveApplication
+  end
+
+  scope "/", VirtualCryptoWeb do
+    pipe_through :browser
     pipe_through :browser_auth
 
     live "/applications/:id/connect", ConnectApplication
@@ -94,7 +108,6 @@ defmodule VirtualCryptoWeb.Router do
   end
 
   scope "/", VirtualCryptoWeb do
-    get "/sw.js", ServiceWorkerController, :index
     post "/token", WebAuthController, :token
   end
 
@@ -152,19 +165,18 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
-  # Enables LiveDashboard only for development
-  #
-  # If you want to use the LiveDashboard in production, you should put
-  # it behind authentication and allow only admins to access it.
-  # If your application does not have an admins-only section yet,
-  # you can use Plug.BasicAuth to set up some basic authentication
-  # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
+  # Enable LiveDashboard in development
+  if Application.compile_env(:virtualCrypto, :dev_routes) do
+    # If you want to use the LiveDashboard in production, you should put
+    # it behind authentication and allow only admins to access it.
+    # If your application does not have an admins-only section yet,
+    # you can use Plug.BasicAuth to set up some basic authentication
+    # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
-    scope "/" do
+    scope "/dev" do
       pipe_through :browser
-      #      pipe_through [:fetch_session, :protect_from_forgery, :browser]
+
       live_dashboard "/dashboard",
         ecto_repos: [VirtualCrypto.Repo],
         metrics: VirtualCryptoWeb.Telemetry

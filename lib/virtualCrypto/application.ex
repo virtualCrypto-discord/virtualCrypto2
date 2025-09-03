@@ -6,19 +6,17 @@ defmodule VirtualCrypto.Application do
   use Application
   import Cachex.Spec
 
+  @impl true
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
-      VirtualCrypto.Repo,
-      # Start the Telemetry supervisor
       VirtualCryptoWeb.Telemetry,
-      # Start the PubSub system
+      VirtualCrypto.Repo,
+      {DNSCluster, query: Application.get_env(:virtualCrypto, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: VirtualCrypto.PubSub},
-      # Start the Endpoint (http/https)
-      VirtualCryptoWeb.Endpoint,
       # Start a worker by calling: VirtualCrypto.Worker.start_link(arg)
-      # {VirtualCrypto.Worker, arg}
-
+      # {VirtualCrypto.Worker, arg},
+      # Start to serve requests, typically the last entry
+      VirtualCryptoWeb.Endpoint,
       VirtualCrypto.Scheduler,
       {Discord.Api.UserCache, expiration: expiration(default: 15 * 60 * 1000), stats: true},
       {Discord.Api.GuildCache, expiration: expiration(default: 15 * 60 * 1000), stats: true}
@@ -32,6 +30,7 @@ defmodule VirtualCrypto.Application do
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
+  @impl true
   def config_change(changed, _new, removed) do
     VirtualCryptoWeb.Endpoint.config_change(changed, removed)
     :ok

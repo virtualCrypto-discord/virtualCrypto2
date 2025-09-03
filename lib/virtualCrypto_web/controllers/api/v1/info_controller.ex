@@ -56,12 +56,12 @@ defmodule VirtualCryptoWeb.Api.V1.InfoController do
 
     case params do
       {:ok, res} ->
-        render(conn, "ok.json", params: res)
+        render(conn, :ok, %{params: res})
 
       {:error, {error, error_description}} ->
         conn
         |> response_code(error)
-        |> render("error.json", error: error, error_description: error_description)
+        |> render(:error, %{error: error, error_description: error_description})
     end
   end
 end

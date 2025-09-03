@@ -2,7 +2,7 @@ defmodule InteractionsControllerTest.Claim.List.All do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Claim.Helper
 
-  import VirtualCryptoWeb.Api.InteractionsView.Util,
+  import VirtualCryptoWeb.Api.Interactions.Util,
     only: [format_date_time: 1, color_brand: 0, mention: 1]
 
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser

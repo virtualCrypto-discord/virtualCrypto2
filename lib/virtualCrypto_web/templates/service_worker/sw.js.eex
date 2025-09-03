@@ -1,4 +1,0 @@
-importScripts(
-  "<%= "/static" <> Routes.static_path(@conn, "/js/vendor.js") %>",
-  "<%= "/static" <> Routes.static_path(@conn, "/js/credential-manager-sw.js") %>"
-)

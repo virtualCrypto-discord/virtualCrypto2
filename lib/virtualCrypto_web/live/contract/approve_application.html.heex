@@ -1,0 +1,99 @@
+<div class="flex flex-col space-y-4">
+  <div class="flex space-x-12 mx-auto">
+    <img src="https://smdr.io/icon.jpeg" class="h-30 w-auto rounded-full" />
+    <span class="my-auto">...</span>
+    <img src="/images/logo.jpg" class="h-30 w-auto rounded-full" />
+  </div>
+  <div class="mx-auto">
+    <h2 class="font-bold text-3xl">Contract from VirtualCrypto</h2>
+  </div>
+</div>
+<div class="mt-6 bg-gray-100/80 p-6 rounded-lg">
+  <h3 class="mb-6 text-slate-800 text-sm font-bold">このContractでは、以下のユーザーに承諾が求められています．</h3>
+  <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+    <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow">
+      <div class="flex w-full items-center justify-between space-x-4 p-6">
+        <img
+          class="size-10 shrink-0 rounded-full bg-gray-300"
+          src="https://smdr.io/icon.jpeg"
+          alt=""
+        />
+        <div class="flex-1 truncate">
+          <div class="flex items-center space-x-3">
+            <span class="inline-flex shrink-0 items-center rounded-full bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-600/20">
+              承認待ち
+            </span>
+          </div>
+          <p class="mt-1 truncate text-sm text-gray-500 font-bold">@sizumita</p>
+        </div>
+      </div>
+    </li>
+    <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow">
+      <div class="flex w-full items-center justify-between space-x-4 p-6">
+        <img
+          class="size-10 shrink-0 rounded-full bg-gray-300"
+          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60"
+          alt=""
+        />
+        <div class="flex-1 truncate">
+          <div class="flex items-center space-x-3">
+            <span class="inline-flex shrink-0 items-center rounded-full bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+              承認済み
+            </span>
+          </div>
+          <p class="mt-1 truncate text-sm text-gray-500 font-bold">@tignear</p>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+<div class="flow-root mt-6 bg-gray-100/80 p-6 rounded-lg">
+  <h3 class="mb-6 text-slate-800 text-sm font-bold">
+    このContractでは、以下の通貨がその理由のためVirtualCryptoが移動する権限を委譲されます．
+  </h3>
+  <ul role="list" class="-mb-8">
+    <li>
+      <div class="relative pb-8">
+        <div class="relative flex space-x-3">
+          <div>
+            <span class="flex size-8 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white">
+              <svg
+                class="size-5 text-white"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                data-slot="icon"
+              >
+                <path d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
+              </svg>
+            </span>
+          </div>
+          <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+            <div>
+              <p class="text-sm text-gray-500">
+                <span class="font-bold">100v</span> from @sizumita
+              </p>
+            </div>
+            <div class="whitespace-nowrap text-right text-sm text-gray-500">
+              <p>pay to @tignear</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+<div class="flex justify-between mt-4">
+  <button
+    type="button"
+    class="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+  >
+    キャンセル
+  </button>
+  <button
+    type="button"
+    class="transition hover:cursor-pointer rounded-lg bg-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+  >
+    承認する
+  </button>
+</div>

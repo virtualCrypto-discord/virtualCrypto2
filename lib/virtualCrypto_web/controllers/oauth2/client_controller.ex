@@ -21,16 +21,16 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
 
     case params do
       {:ok, %{application: application, redirect_uris: redirect_uris, user: user}} ->
-        render(conn, "client.json",
+        render(conn, :client, %{
           application: application,
           redirect_uris: redirect_uris,
           user: user
-        )
+        })
 
       {:error, {:invalid_token, more}} ->
         conn
         |> put_status(403)
-        |> render("error.json", error: :invalid_token, error_description: more)
+        |> render(:error, %{error: :invalid_token, error_description: more})
     end
   end
 
@@ -51,7 +51,7 @@ defmodule VirtualCryptoWeb.OAuth2.ClientController do
       {:error, {error, error_description}} ->
         conn
         |> put_status(400)
-        |> render("error.json", error: error, error_description: error_description)
+        |> render(:error, %{error: error, error_description: error_description})
     end
   end
 end

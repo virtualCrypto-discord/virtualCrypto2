@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Claim.Show do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Helper.Common
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
   setup :setup_claim
 
   def show_from_guild(user, id) do

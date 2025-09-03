@@ -6,7 +6,7 @@ defmodule InteractionsControllerTest.Claim.Helper do
       import InteractionsControllerTest.Claim.Helper
 
       def assert_discord_message(conn, message) do
-        color_error = VirtualCryptoWeb.Api.InteractionsView.Util.color_error()
+        color_error = VirtualCryptoWeb.Api.Interactions.Util.color_error()
 
         assert %{
                  "data" => %{

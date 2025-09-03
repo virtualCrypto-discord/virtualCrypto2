@@ -1,7 +1,7 @@
 defmodule InteractionsControllerTest.Create do
   use VirtualCryptoWeb.InteractionsCase, async: true
   import InteractionsControllerTest.Create.Helper
-  import VirtualCryptoWeb.Api.InteractionsView.Util
+  import VirtualCryptoWeb.Api.Interactions.Util
   alias VirtualCrypto.Exterior.User.Discord, as: DiscordUser
   setup :setup_money
 

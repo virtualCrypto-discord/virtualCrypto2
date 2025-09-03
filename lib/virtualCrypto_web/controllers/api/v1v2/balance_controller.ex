@@ -10,7 +10,7 @@ defmodule VirtualCryptoWeb.Api.V1V2.BalanceController do
 
       %{"sub" => user_id} ->
         balance_ = Money.balance(user: %VCUser{id: user_id})
-        render(conn, "balance.json", params: %{data: balance_})
+        render(conn, :balance, %{params: %{data: balance_}})
     end
   end
 end
