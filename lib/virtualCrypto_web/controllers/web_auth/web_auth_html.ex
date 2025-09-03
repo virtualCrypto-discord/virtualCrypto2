@@ -12,7 +12,7 @@ defmodule VirtualCryptoWeb.WebAuthHTML do
       :script,
       raw(""),
       type: "text/javascript",
-      src: "/assets/credential-manager-cb.js",
+      src: "/assets/js/credential-manager-cb.js",
       data: [redirect_to: @redirect_to, access_token: @access_token, expires_in: @expires_in]
     )}
     """

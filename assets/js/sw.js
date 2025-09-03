@@ -1,3 +1,3 @@
 importScripts(
-    "/assets/credential-manager-sw.js",
+    "/assets/js/credential-manager-sw.js",
 )

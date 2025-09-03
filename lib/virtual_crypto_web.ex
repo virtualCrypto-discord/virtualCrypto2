@@ -41,23 +41,27 @@ defmodule VirtualCryptoWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: VirtualCryptoWeb.Layouts]
+      use Phoenix.Controller, formats: [:html, :json]
 
       use Gettext, backend: VirtualCryptoWeb.Gettext
 
       import Plug.Conn
-      alias VirtualCryptoWeb.Router.Helpers, as: Routes
 
       unquote(verified_routes())
     end
   end
 
+  def app_live_view do
+    quote do
+      use Phoenix.LiveView
+
+      unquote(html_helpers())
+    end
+  end
+
   def live_view do
     quote do
-      use Phoenix.LiveView,
-        layout: {VirtualCryptoWeb.Layouts, :app}
+      use Phoenix.LiveView
 
       unquote(html_helpers())
     end
@@ -77,7 +81,7 @@ defmodule VirtualCryptoWeb do
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, get_csrf_token: 0, view_module: 1, view_template: 1]
+        only: [get_csrf_token: 0, view_module: 1, view_template: 1]
 
       # Include general helpers for rendering HTML
       unquote(html_helpers())
@@ -94,8 +98,10 @@ defmodule VirtualCryptoWeb do
       # Core UI components
       import VirtualCryptoWeb.CoreComponents
 
-      # Shortcut for generating JS commands
+      # Common modules used in templates
       alias Phoenix.LiveView.JS
+      alias VirtualCryptoWeb.Layouts
+      alias VirtualCryptoWeb.AppLayouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

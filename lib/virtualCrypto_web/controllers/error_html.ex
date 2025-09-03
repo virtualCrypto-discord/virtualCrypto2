@@ -10,8 +10,8 @@ defmodule VirtualCryptoWeb.ErrorHTML do
   # uncomment the embed_templates/1 call below
   # and add pages to the error directory:
   #
-  #   * lib/virtualCrypto_web/controllers/error_html/404.html.heex
-  #   * lib/virtualCrypto_web/controllers/error_html/500.html.heex
+  #   * lib/virtual_crypto_web/controllers/error_html/404.html.heex
+  #   * lib/virtual_crypto_web/controllers/error_html/500.html.heex
   #
   # embed_templates "error_html/*"
 

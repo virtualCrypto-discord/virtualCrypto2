@@ -21,17 +21,18 @@
         <.icon name="hero-bars-3" class="size-6" />
       </button>
     </div>
-    <div class="hidden md:flex">
-      <a href={~p"/me"} class="text-sm/6 font-semibold text-gray-900">
-        Log in <span aria-hidden="true">&rarr;</span>
-      </a>
+    <div class="flex space-x-2">
+      <div class="hidden md:flex my-auto">
+        <a href={~p"/app"} class="text-sm/6 font-semibold text-gray-900">
+          Log in <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
     </div>
   </nav>
 </header>
 <main>
-  <.flash_group flash={@flash} />
   <div class="mx-auto max-w-7xl px-6 py-12 sm:py-16 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-20">
-    {@inner_content}
+    {render_slot(@inner_block)}
   </div>
 </main>
 <footer class="bg-gray-900">
@@ -43,7 +44,7 @@
       <a href={~p"/features"} class="text-gray-400 hover:text-white">Features</a>
       <a href={~p"/docs"} class="text-gray-400 hover:text-white">Document</a>
       <a href={~p"/developer"} class="text-gray-400 hover:text-white">Developer</a>
-      <a href={~p"/me"} class="text-gray-400 hover:text-white">Dashboard</a>
+      <a href={~p"/app"} class="text-gray-400 hover:text-white">Dashboard</a>
       <a href={~p"/pos"} class="text-gray-400 hover:text-white">ToS</a>
       <a href={~p"/privacy"} class="text-gray-400 hover:text-white">Privacy Policy</a>
     </nav>
@@ -53,7 +54,7 @@
         <.icon name="simple-github" class="size-6 bg-white" />
       </a>
       <a href={~p"/support"} class="text-gray-400 hover:text-gray-300">
-        <span class="sr-only">YouTube</span>
+        <span class="sr-only">Discord</span>
         <.icon name="simple-discord" class="size-6 bg-white" />
       </a>
     </div>

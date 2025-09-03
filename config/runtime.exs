@@ -25,10 +25,6 @@ if config_env() == :prod do
   private_key_pem = System.get_env("VCRYPTO_WEBHOOK_PROXY_KEY") |> String.replace("#", "\n")
   [{ty, der, :not_encrypted}] = :public_key.pem_decode(private_key_pem)
 
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
-
-  config :virtualCrypto, VirtualCrypto.Repo, socket_options: maybe_ipv6
-
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
@@ -36,10 +32,14 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
+  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
   config :virtualCrypto, VirtualCrypto.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+    # For machines with several cores, consider starting multiple pools of `pool_size`
+    # pool_count: 4,
     socket_options: maybe_ipv6
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
@@ -57,7 +57,10 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  config :virtualCrypto, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+
   config :virtualCrypto, VirtualCryptoWeb.Endpoint,
+    url: [host: host, port: 443, scheme: "https"],
     http: [
       port: 8080,
       transport_options: [socket_opts: [:inet6]]
@@ -95,22 +98,4 @@ if config_env() == :prod do
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
-
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Also, you may need to configure the Swoosh API client of your choice if you
-  # are not using SMTP. Here is an example of the configuration:
-  #
-  #     config :virtualCrypto, VirtualCrypto.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
-  #
-  # For this example you need include a HTTP client required by Swoosh API client.
-  # Swoosh supports Hackney and Finch out of the box:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
-  #
-  # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end

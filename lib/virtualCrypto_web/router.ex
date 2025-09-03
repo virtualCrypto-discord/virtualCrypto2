@@ -1,5 +1,6 @@
 defmodule VirtualCryptoWeb.Router do
   use VirtualCryptoWeb, :router
+  alias VirtualCryptoWeb.App
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -8,10 +9,6 @@ defmodule VirtualCryptoWeb.Router do
     plug :put_root_layout, html: {VirtualCryptoWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-  end
-
-  pipeline :landing_page do
-    plug :put_layout, html: {VirtualCryptoWeb.Layouts, :landing}
   end
 
   pipeline :browser_auth do
@@ -28,11 +25,21 @@ defmodule VirtualCryptoWeb.Router do
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
-    pipe_through :landing_page
 
-    get "/", LandingController, :home
-    get "/features", LandingController, :features
+    get "/", PageController, :home
   end
+
+  scope "/" do
+    pipe_through :browser
+    pipe_through :browser_auth
+    live "/app", App.OverviewLive
+    get "/applications/:id", ApplicationController, :index
+  end
+
+  # Other scopes may use custom stacks.
+  # scope "/api", VirtualCryptoWeb do
+  #   pipe_through :api
+  # end
 
   scope "/", VirtualCryptoWeb do
     pipe_through :browser
@@ -56,7 +63,7 @@ defmodule VirtualCryptoWeb.Router do
     # required auth
     scope "/" do
       pipe_through :browser_auth
-      get "/me", DashboardController, :index
+      live "/me", DashboardApplication
       get "/applications/:id", ApplicationController, :index
     end
   end
@@ -158,7 +165,7 @@ defmodule VirtualCryptoWeb.Router do
     end
   end
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
+  # Enable LiveDashboard in development
   if Application.compile_env(:virtualCrypto, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
     # it behind authentication and allow only admins to access it.
