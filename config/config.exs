@@ -26,7 +26,8 @@ config :virtualCrypto, VirtualCryptoWeb.Endpoint,
 config :esbuild,
   version: "0.25.1",
   virtualCrypto: [
-    args: ~w(js/app.js
+    args:
+      ~w(js/app.js
        js/credential-manager-cb.js
        js/credential-manager-common.js
        js/credential-manager-dom.js

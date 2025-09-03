@@ -1,19 +1,8 @@
 <ul role="list" class="-mx-2 space-y-1">
   <li>
-    <!-- Current: "bg-white/5 text-white", Default: "text-gray-400 hover:text-white hover:bg-white/5" -->
-    <a
-      href="#"
-      class="group flex gap-x-3 rounded-md bg-white/5 p-2 text-sm/6 font-semibold text-white"
-    >
-      <.icon name="hero-home" class="size-6 shrink-0" /> Dashboard
-    </a>
+    <.sidebar_nav name="Overview" icon="hero-home" href={~p"/app"} />
   </li>
   <li>
-    <a
-      href="#"
-      class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-white/5 hover:text-white"
-    >
-      <.icon name="hero-inbox" class="size-6 shrink-0" /> Inbox
-    </a>
+    <.sidebar_nav name="Inbox" icon="hero-inbox" href={~p"/app/inbox"} />
   </li>
 </ul>

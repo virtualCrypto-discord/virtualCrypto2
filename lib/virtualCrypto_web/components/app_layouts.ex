@@ -148,6 +148,8 @@ defmodule VirtualCryptoWeb.AppLayouts do
                 </a>
               </el-menu>
             </el-dropdown>
+
+            <Layouts.theme_toggle />
           </div>
         </div>
       </div>
