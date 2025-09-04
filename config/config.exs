@@ -11,6 +11,11 @@ config :virtualCrypto,
   ecto_repos: [VirtualCrypto.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :phoenix_sync,
+  env: config_env(),
+  mode: :embedded,
+  repo: VirtualCrypto.Repo
+
 # Configures the endpoint
 config :virtualCrypto, VirtualCryptoWeb.Endpoint,
   url: [host: "localhost"],

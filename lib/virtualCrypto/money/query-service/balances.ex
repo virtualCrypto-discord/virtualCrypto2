@@ -6,6 +6,26 @@ defmodule VirtualCrypto.Money.Query.Balance do
   import Ecto.Query
   alias VirtualCrypto.Repo
 
+  def get_balances_query(%VCUser{id: user_id}) do
+    from asset in Money.Asset,
+      where: asset.user_id == ^user_id,
+      select: {asset}
+  end
+
+  def get_balances_query(%DiscordUser{id: discord_user_id}) do
+    from asset in Money.Asset,
+      join: currency in Money.Currency,
+      on: asset.currency_id == currency.id,
+      join: users in VirtualCrypto.User.User,
+      on: users.discord_id == ^discord_user_id and users.id == asset.user_id,
+      select: {asset, currency},
+      order_by: currency.unit
+  end
+
+  def get_balances_query(resolvable) do
+    get_balances_query(%VCUser{id: UserResolvable.resolve_id(resolvable)})
+  end
+
   @moduledoc """
   Query service module for balances
   """

@@ -86,7 +86,9 @@ defmodule VirtualCrypto.MixProject do
       {:ecto_psql_extras, "~> 0.8.8"},
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.7"},
-      {:phoenix_html_helpers, "~> 1.0"}
+      {:phoenix_html_helpers, "~> 1.0"},
+      {:electric, ">= 1.0.0-beta.18"},
+      {:phoenix_sync, "~> 0.5.1"}
     ]
   end
 

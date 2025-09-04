@@ -1,6 +1,6 @@
 defmodule VirtualCryptoWeb.Router do
   use VirtualCryptoWeb, :router
-  alias VirtualCryptoWeb.App
+  alias VirtualCryptoWeb.AppLive
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -32,7 +32,12 @@ defmodule VirtualCryptoWeb.Router do
   scope "/" do
     pipe_through :browser
     pipe_through :browser_auth
-    live "/app", App.OverviewLive
+
+    scope "/app" do
+      live "/", AppLive.Overview
+      live "/balances", AppLive.Balances
+    end
+
     get "/applications/:id", ApplicationController, :index
   end
 

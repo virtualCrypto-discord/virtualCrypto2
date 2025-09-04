@@ -16,7 +16,7 @@ defmodule VirtualCrypto.Application do
       # Start a worker by calling: VirtualCrypto.Worker.start_link(arg)
       # {VirtualCrypto.Worker, arg},
       # Start to serve requests, typically the last entry
-      VirtualCryptoWeb.Endpoint,
+      {VirtualCryptoWeb.Endpoint, phoenix_sync: Phoenix.Sync.plug_opts()},
       VirtualCrypto.Scheduler,
       {Discord.Api.UserCache, expiration: expiration(default: 15 * 60 * 1000), stats: true},
       {Discord.Api.GuildCache, expiration: expiration(default: 15 * 60 * 1000), stats: true}

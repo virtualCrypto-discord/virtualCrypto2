@@ -88,6 +88,16 @@ defmodule VirtualCryptoWeb do
     end
   end
 
+  def ui do
+    quote do
+      use Phoenix.Component
+      import VirtualCryptoWeb.CoreComponents
+      import Phoenix.HTML
+
+      unquote(html_helpers())
+    end
+  end
+
   defp html_helpers do
     quote do
       # Translation
@@ -102,6 +112,7 @@ defmodule VirtualCryptoWeb do
       alias Phoenix.LiveView.JS
       alias VirtualCryptoWeb.Layouts
       alias VirtualCryptoWeb.AppLayouts
+      alias VirtualCryptoWeb.UI
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

@@ -1,15 +1,13 @@
-defmodule VirtualCryptoWeb.AppComponents do
-  use VirtualCryptoWeb, :html
-  alias Phoenix.LiveView.JS
-  import VirtualCryptoWeb.CoreComponents
+defmodule VirtualCryptoWeb.UI.Sidebar do
+  use VirtualCryptoWeb, :ui
 
-  embed_templates "app_component_layouts/*"
+  embed_templates "sidebar_html/*"
 
   attr :href, :any, required: true
   attr :icon, :string, required: true
   attr :name, :string, required: true
 
-  def sidebar_nav(assigns) do
+  def nav_link(assigns) do
     ~H"""
     <li>
       <a

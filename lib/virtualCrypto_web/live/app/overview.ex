@@ -1,4 +1,4 @@
-defmodule VirtualCryptoWeb.App.OverviewLive do
+defmodule VirtualCryptoWeb.AppLive.Overview do
   use VirtualCryptoWeb, :live_view
 
   def render(assigns) do
