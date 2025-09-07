@@ -87,10 +87,10 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
 
   def post(conn, params) do
     case Guardian.Plug.current_resource(conn) do
-      %{"sub" => intermediary_id, "vc.contract" => true} ->
+      %{"sub" => intermediary_id, "vc.contract" => true, "kind" => "app"} ->
         create_contract(conn, intermediary_id, params)
 
-      %{"sub" => _, "vc.contract" => false} ->
+      _ ->
         conn |> permission_denied()
     end
   end

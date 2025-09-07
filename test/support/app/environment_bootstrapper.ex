@@ -19,6 +19,7 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
           :unit2 => String.t(),
           :user1 => non_neg_integer,
           :user2 => non_neg_integer,
+          :app1 => non_neg_integer(),
           optional(any) => any
         }
   def setup_money(ctx) do
@@ -63,7 +64,13 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
 
     {:ok, _} =
       VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
-
+    {:ok,app1} = VirtualCrypto.Auth.register_application(
+      VirtualCrypto.Exterior.User.Resolvable.resolve_id(%VirtualCrypto.Exterior.User.Discord{id: user1}),
+      %{
+        :owner_discord_id => user1,
+        "redirect_uris" => [],
+      }
+    )
     Map.merge(ctx, %{
       user1: user1,
       guild: guild,
@@ -76,7 +83,8 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
       currency: currency.id,
       currency_guild: guild,
       currency2: currency2.id,
-      currency2_guild: guild2
+      currency2_guild: guild2,
+      app1: app1.application.id
     })
   end
 

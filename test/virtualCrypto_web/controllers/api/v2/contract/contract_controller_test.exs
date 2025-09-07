@@ -18,7 +18,7 @@ defmodule ContractControllerTest.V2 do
     )
   end
 
-  test "create simple contract", %{conn: conn, user1: user1} do
+  test "create simple contract with invalid token", %{conn: conn, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.contract"])
 
     conn =
@@ -27,9 +27,9 @@ defmodule ContractControllerTest.V2 do
         Routes.v2_contract_path(conn, :post)
       )
 
-    assert json_response(conn, 400) == %{
-             "error" => "invalid_request",
-             "error_description" => "payer_discord_id_field_is_required"
+    assert json_response(conn, 403) == %{
+             "error" => "invalid_token",
+             "error_description" => "permission_denied"
            }
   end
 end
