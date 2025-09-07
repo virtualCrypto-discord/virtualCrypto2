@@ -4,12 +4,14 @@ defmodule VirtualCrypto.User.User do
 
   @type t() :: %VirtualCrypto.User.User{
           discord_id: binary() | nil,
-          application_id: binary() | nil
+          application_id: binary() | nil,
+          contract_id: binary() | nil
         }
 
   schema "users" do
     field(:discord_id, :integer)
     field(:application_id, :integer)
+    field(:contract_id, :integer)
     field(:status, :integer)
 
     timestamps()
@@ -22,5 +24,6 @@ defmodule VirtualCrypto.User.User do
     |> validate_required([:status])
     |> unique_constraint(:discord_id)
     |> unique_constraint(:application_id)
+    |> unique_constraint(:contract_id)
   end
 end

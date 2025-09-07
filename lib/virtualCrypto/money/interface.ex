@@ -22,6 +22,7 @@ defmodule VirtualCrypto.Money do
           currency: %VirtualCrypto.Money.Currency{}
         }
   @type page :: pos_integer() | :last
+
   @typedoc """
   "pending" | "approved" | "denied" | "canceled"
   """
@@ -1100,5 +1101,15 @@ defmodule VirtualCrypto.Money do
       end)
 
     x
+  end
+
+  @spec create_contract(
+          non_neg_integer(),
+          VirtualCrypto.Money.QueryService.Contracts.contract_create_t()
+        ) :: VirtualCrypto.Money.QueryService.Contracts.contract_t()
+  def create_contract(intermediary_id, contract) do
+    Repo.transaction(fn ->
+      VirtualCrypto.Money.QueryService.Contracts.create_contract(intermediary_id, contract)
+    end)
   end
 end
