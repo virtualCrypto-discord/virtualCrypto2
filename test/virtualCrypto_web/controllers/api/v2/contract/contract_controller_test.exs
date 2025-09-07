@@ -63,21 +63,23 @@ defmodule ContractControllerTest.V2 do
         Routes.v2_contract_path(conn, :post),
         valid_contract_request(user1)
       )
-      user1 = to_string(user1)
+
+    user1 = to_string(user1)
+
     assert %{
-      "contractor" => [
-        %{
-          "user" => %{
-            "id" => _,
-            "discord" => %{
-              "id" => ^user1
-            }
-          },
-          "deposits" => []
-        }
-      ],
-      "created_at" => _,
-      "updated_at" => _,
-    } = json_response(conn, 201)
+             "contractor" => [
+               %{
+                 "user" => %{
+                   "id" => _,
+                   "discord" => %{
+                     "id" => ^user1
+                   }
+                 },
+                 "deposits" => []
+               }
+             ],
+             "created_at" => _,
+             "updated_at" => _
+           } = json_response(conn, 201)
   end
 end
