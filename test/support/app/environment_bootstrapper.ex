@@ -172,6 +172,11 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
   def denied_claim(claims), do: claims |> Enum.at(3)
   def canceled_claim(claims), do: claims |> Enum.at(4)
 
+  def setup_contract(ctx) do
+    d = setup_money(ctx)
+    d
+  end
+
   def set_user_auth(conn, kind, uid, scopes) do
     {:ok, conn} =
       case {kind, uid, scopes} do

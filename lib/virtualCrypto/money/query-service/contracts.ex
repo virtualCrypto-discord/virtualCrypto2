@@ -70,13 +70,12 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
       query_results ->
         first_result = hd(query_results)
-        contract = first_result.contract
         intermediate_user = first_result.intermediate_user
 
         contractors_list =
           query_results
           |> Enum.group_by(
-            &(&1.user),
+            & &1.user,
             &%{deposit_agreement: &1.deposit_agreement, currency: &1.currency}
           )
           |> Enum.map(fn {user, deposits_data} ->
@@ -117,7 +116,6 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
             |> Enum.all?(fn e -> e.deposit_amount >= 0 end)},
          {:ok, [contract_id]} =
            %Contract{
-             status: "unclosed",
              intermediary_id: intermediary_id
            }
            |> Repo.insert(returning: [:id]),
@@ -157,92 +155,111 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
       {error, _} -> {:error, error}
     end
   end
-  @spec agree_contract(non_neg_integer(),UserResolvable.t()) ::
-  def agree_contract(contract_id,contractor) do
+
+  @spec agree_contract(non_neg_integer(), UserResolvable.t()) :: any()
+  def agree_contract(contract_id, contractor) do
     contractor_id = UserResolvable.resolve_id(contractor)
+
     query =
       from(
         contractors in Contractor,
         left_join: deposit_agreement in DepositAgreement,
-        on: contractors.contract_id == ^contract_id and contractors.user_id == ^contractor_id and contractors.id == deposit_agreement.contractor_id,
-        select: {contractors.status,deposit_agreement},
+        on:
+          contractors.contract_id == ^contract_id and contractors.user_id == ^contractor_id and
+            contractors.id == deposit_agreement.contractor_id,
+        select: {contractors.status, deposit_agreement},
         lock: fragment("FOR UPDATE OF ?", deposit_agreement)
       )
+
     with deposit_agreements = Repo.all(query),
-      # contains user? if not, return error
-      {_,true} <-{:contract_not_found,Enum.empty?(deposit_agreements)},
-      # is contractor status be pending? if not, return error
-      {_,{"unclosed",_}} <- {:invalid_contractor_status,Enum.fetch!(deposit_agreements,0)},
-      contract_user_id = UserResolvable.resolve_id(%VirtualCrypto.Exterior.User.Contract{id: contract_id}),
-      # transfer user account balance to contract account. if failed, return error
-      {_,{:ok,_}} <- {:transfer,Query.Asset.Transfer.transfer_bulk_by_id(
-          contractor_id,
-          deposit_agreements
-          |> Enum.map(fn {_,%{
-                          currency_id: currency_id,
-                          deposit_amount: amount
-                        }} ->
-            {currency_id, contract_user_id, amount}
-          end)
-        )
-      },
-      # update deposit agreement
-      _ = Repo.update(deposit_agreements
-          |> Enum.map(fn {_,x} ->
-            DepositAgreement.changeset(x,%{executed_amount: x.deposit_amount})
-          end)
-        ) do
+         # contains user? if not, return error
+         {_, true} <- {:contract_not_found, Enum.empty?(deposit_agreements)},
+         # is contractor status be pending? if not, return error
+         {_, {"unclosed", _}} <- {:invalid_contractor_status, Enum.fetch!(deposit_agreements, 0)},
+         contract_user_id =
+           UserResolvable.resolve_id(%VirtualCrypto.Exterior.User.Contract{id: contract_id}),
+         # transfer user account balance to contract account. if failed, return error
+         {_, {:ok, _}} <-
+           {:transfer,
+            Query.Asset.Transfer.transfer_bulk_by_id(
+              contractor_id,
+              deposit_agreements
+              |> Enum.map(fn {_,
+                              %{
+                                currency_id: currency_id,
+                                deposit_amount: amount
+                              }} ->
+                {currency_id, contract_user_id, amount}
+              end)
+            )},
+         # update deposit agreement
+         _ =
+           Repo.update(
+             deposit_agreements
+             |> Enum.map(fn {_, x} ->
+               DepositAgreement.changeset(x, %{executed_amount: x.deposit_amount})
+             end)
+           ) do
       {:ok, nil}
     else
-      {:transfer,{:error,error}} -> {:error,error}
+      {:transfer, {:error, error}} -> {:error, error}
       {error, _} -> {:error, error}
     end
   end
+
   # TODO: if contract is executed or canceled. MUST set all contactor status be closed.
 
-  @spec close_contract(non_neg_integer(),non_neg_integer()) :: any()
+  @spec close_contract(non_neg_integer(), non_neg_integer()) :: any()
   def close_contract(intermediary_id, contract_id) do
     query =
       from(
         contract in Contract,
         join: contractors in Contractor,
-        on: contract.id == ^contract_id and contract.intermediary_id == ^intermediary_id and contract.id == contractors.contract_id,
+        on:
+          contract.id == ^contract_id and contract.intermediary_id == ^intermediary_id and
+            contract.id == contractors.contract_id,
         left_join: deposit_agreement in DepositAgreement,
-        on: contractors.id == deposit_agreement.contractor_id
-        select: {contractors,deposit_agreement},
+        on: contractors.id == deposit_agreement.contractor_id,
+        select: {contractors, deposit_agreement},
         lock: fragment("FOR UPDATE OF ?,?", contractors, deposit_agreement)
       )
-    with deposit_agreement = Repo.all(query),
-      contract_user_id = UserResolvable.resolve_id(%VirtualCrypto.Exterior.User.Contract{id: contract_id}),
-      # transfer contract account balance to user account. expected never fails.
-      {_,{:ok,_}} <- {:transfer,Query.Asset.Transfer.transfer_bulk_by_id(
-          contract_user_id,
-          deposit_agreements
-          |> Enum.map(fn {_,%{
-                          user_id: user_id
-                          currency_id: currency_id,
-                          executed_amount: amount
-                        }} ->
-            {currency_id, user_id, amount}
-          end)
-        )
-      }
-      # update deposit agreement
-      _ = Repo.update(deposit_agreements
-        |> Enum.map(fn {_,x} ->
-          DepositAgreement.changeset(x,%{executed_amount: 0})
-        end)
-      ),
-      # update contractor status
-      _ = Repo.update(deposit_agreements
-        |> Enum.map(fn {x,_} ->
-          Contractor.changeset(x,%{status: "closed"})
-        end)
-      ) do
-        {:ok,nil}
-      else
-        {:transfer,{:error,error}} -> {:error,error}
-        {error, _} -> {:error, error}
-      end
+
+    with deposit_agreements = Repo.all(query),
+         contract_user_id =
+           UserResolvable.resolve_id(%VirtualCrypto.Exterior.User.Contract{id: contract_id}),
+         # transfer contract account balance to user account. expected never fails.
+         {_, {:ok, _}} <-
+           {:transfer,
+            Query.Asset.Transfer.transfer_bulk_by_id(
+              contract_user_id,
+              deposit_agreements
+              |> Enum.map(fn {_,
+                              %{
+                                user_id: user_id,
+                                currency_id: currency_id,
+                                executed_amount: amount
+                              }} ->
+                {currency_id, user_id, amount}
+              end)
+            )},
+
+         # update deposit agreement
+         _ =
+           Repo.update(
+             deposit_agreements
+             |> Enum.map(fn {_, x} ->
+               DepositAgreement.changeset(x, %{executed_amount: 0})
+             end)
+           ),
+         _ =
+           Repo.update(
+             deposit_agreements
+             |> Enum.map(fn {x, _} -> Contractor.changeset(x, %{status: "closed"}) end)
+           ) do
+      {:ok, nil}
+    else
+      {:transfer, {:error, error}} -> {:error, error}
+      {error, _} -> {:error, error}
+    end
   end
 end

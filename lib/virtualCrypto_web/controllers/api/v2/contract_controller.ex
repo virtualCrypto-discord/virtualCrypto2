@@ -1,19 +1,29 @@
 defmodule VirtualCryptoWeb.Api.V2.ContractController do
   use VirtualCryptoWeb, :controller
   alias VirtualCrypto.Money
+  alias VirtualCryptoWeb.Filtering.Discord, as: Filtering
+
   import VirtualCryptoWeb.Plug.DiscordApiService, only: [get_service: 1]
+
+  defp get_discord_user(discord_user_id, service) do
+    user = Discord.Api.Cached.get_user(discord_user_id, service)
+
+    Filtering.user(user)
+  end
 
   defp permission_denied(conn) do
     conn
     |> put_status(403)
     |> render(:error, %{error: :invalid_token, error_description: :permission_denied})
   end
-  defp format_contractor(contractor,service) do
+
+  defp format_contractor(contractor, service) do
     %{
       "user" => format_user(contractor.user, service),
       "deposits" => Enum.map(contractor.deposit_agreements, &format_deposit/1)
     }
   end
+
   defp format_user(user, service) do
     %{
       "id" => to_string(user.id),
@@ -25,20 +35,21 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
         end
     }
   end
+
   defp format_contract(
          %{
-            contract: contract,
-            intermediate: intermediate,
-            contractor: contractor,
+           contract: contract,
+           intermediate: intermediate,
+           contractor: contractor
          },
          service
        ) do
     %{
       "id" => contract.id |> to_string,
-      "intermediate" => format_user(intermediate,service),
-      "contractor" => contractor|>Enum.map(&format_contractor(&1,service)),
+      "intermediate" => format_user(intermediate, service),
+      "contractor" => contractor |> Enum.map(&format_contractor(&1, service)),
       "created_at" => DateTime.from_naive!(contract.inserted_at, "Etc/UTC"),
-      "updated_at" => DateTime.from_naive!(contract.updated_at, "Etc/UTC"),
+      "updated_at" => DateTime.from_naive!(contract.updated_at, "Etc/UTC")
     }
   end
 
@@ -60,18 +71,25 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     }
   end
 
-  defp create_contract(intermediary_id,params) do
-    case Money.create_contract(intermediary_id,params) do
-      {:ok,contract} ->
+  defp create_contract(conn, intermediary_id, params) do
+    case Money.create_contract(intermediary_id, params) do
+      {:ok, contract} ->
         conn
         |> put_status(201)
-        |> render(:data, %{params: format_contract(contract, get_service(conn))})
-      {:error,error} ->
+        |> render(:data, format_contract(contract, get_service(conn)))
+
+      {:error, error} ->
+        conn
+        |> put_status(400)
+        |> render(:error, %{error: error})
     end
   end
-  def post(conn,params) do
+
+  def post(conn, params) do
     case Guardian.Plug.current_resource(conn) do
-      %{"sub" => intermediary_id, "vc.contract" => true} -> create_contract(intermediary_id, params)
+      %{"sub" => intermediary_id, "vc.contract" => true} ->
+        create_contract(conn, intermediary_id, params)
+
       %{"sub" => _, "vc.contract" => false} ->
         conn |> permission_denied()
     end

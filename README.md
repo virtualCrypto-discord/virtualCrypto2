@@ -9,9 +9,10 @@ rewrite [virtualCrypto](https://github.com/virtualCrypto-discord/virtualCrypto) 
   - Add redirect url(e.g. `https://localhost:4000/callback/discord`),at [discord dev portal](https://discord.com/developers),according to dev.exs.
   - Put `bot_token`,`public_key`,`client_id`,`client_secret`,`invite_url` to dev.exs by seeing [discord dev portal](https://discord.com/developers).
   - Install PostgreSQL and check database configuration.
+  - Install pnpm and run `pnpm install` in `assets` directory.
   - Execute `mix setup`,including `["deps.get", "ecto.setup", "cmd npm install --prefix assets"]`,to do initial setup.
   - Execute `mix guardian.gen.secret` and put `secret_key` to dev.exs for signing jwt token.
-  - Execute `mix phx.gen.cert` to create self-signed cerificature for developing.
+  - Execute `mix phx.gen.cert` to create self-signed certificate for developing.
   - Execute `iex -S mix phx.server` to execute server.
   - Fill Interactions Endpoint URL(e.g. `https://d7ddb13e81ae.ngrok.io/api/integrations/discord/interactions`) at [discord dev portal](https://discord.com/developers) to receive interactions via http.
   - Add your bot to server.
