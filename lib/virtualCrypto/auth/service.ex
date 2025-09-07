@@ -271,8 +271,4 @@ defmodule VirtualCrypto.Auth do
 
     Repo.delete_all(q)
   end
-
-  def get_application_id_from_user_id() do
-    
-  end
 end
