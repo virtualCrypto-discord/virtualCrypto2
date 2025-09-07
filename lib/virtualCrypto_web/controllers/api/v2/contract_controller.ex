@@ -26,7 +26,8 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
   defp format_contractor(contractor, service) do
     %{
       "user" => format_user(contractor.user, service),
-      "deposits" => Enum.map(contractor.deposits, &format_deposit/1)
+      "deposits" => Enum.map(contractor.deposits, &format_deposit/1),
+      "status" => contractor.status
     }
   end
 
@@ -67,7 +68,6 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     %{
       "deposit_amount" => to_string(deposit.deposit_amount),
       "executed_amount" => to_string(deposit.executed_amount),
-      "status" => deposit.status,
       "currency" => format_currency(deposit.currency)
     }
   end
@@ -91,8 +91,7 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
 
         {:error, error} ->
           conn
-          |> put_status(400)
-          |> render(:error, %{error: error})
+          |> invalid_request(error)
       end
     else
       conn
@@ -101,8 +100,16 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     end
   end
 
+  defp convert_deposit(%{"currency_unit" => unit, "deposit_amount" => deposit_amount}) do
+    {:ok,
+     %{
+       currency_unit: unit,
+       deposit_amount: deposit_amount
+     }}
+  end
+
   defp convert_deposit(%{}) do
-    %{}
+    {:error, :currency_unit_and_amount_is_required}
   end
 
   defp convert_deposits([], acc) do
@@ -114,6 +121,10 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
       {:ok, head} -> convert_deposits(tail, [head | acc])
       {:error, error} -> {:error, error}
     end
+  end
+
+  defp convert_deposits(_, _acc) do
+    {:error, :deposits_must_be_list}
   end
 
   defp convert_contractor(%{"discord_id" => discord_id, "deposits" => deposits})
@@ -174,11 +185,98 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     |> invalid_request(:contractors_field_is_required)
   end
 
-  def execute_beta1(conn, %{"version" => "beta1", "actions" => [%{"op" => "close"}]}) do
+  def execute_beta1(conn, %{
+        "id" => contract_id,
+        "version" => "beta1",
+        "action" => %{"op" => "close"}
+      }) do
+    case Integer.parse(contract_id) do
+      {contract_id, ""} ->
+        case Guardian.Plug.current_resource(conn) do
+          %{"sub" => intermediary_id, "vc.contract" => true, "kind" => "app"} ->
+            case Money.cancel_contract(intermediary_id, contract_id) do
+              {:ok, _} ->
+                conn |> send_resp(204, "")
+
+              {:error, error} ->
+                conn
+                |> put_status(500)
+                |> json(%{error: "inernal_server_error", error_description: to_string(error)})
+            end
+
+          _ ->
+            conn |> permission_denied()
+        end
+
+      _ ->
+        conn
+        |> invalid_request(:contract_id_must_be_integer)
+    end
+  end
+
+  def execute_beta1(conn, %{
+        "id" => contract_id,
+        "version" => "beta1",
+        "action" => %{"op" => "commit", "transactions" => trs}
+      })
+      when is_list(trs) do
+    case Guardian.Plug.current_resource(conn) do
+      %{"sub" => intermediary_id, "vc.contract" => true, "kind" => "app"} ->
+        raise "TODO: "
+
+      _ ->
+        conn |> permission_denied()
+    end
+  end
+
+  def execute_beta1(conn, %{
+        "id" => _contract_id,
+        "version" => "beta1",
+        "action" => %{"op" => "commit", "transactions" => _trs}
+      }) do
+    conn
+    |> invalid_request(:transactions_must_be_list)
+  end
+
+  def execute_beta1(conn, %{
+        "id" => _contract_id,
+        "version" => "beta1",
+        "action" => %{"op" => "commit"}
+      }) do
+    conn
+    |> invalid_request(:missing_transactions)
+  end
+
+  def execute_beta1(conn, %{
+        "id" => _contract_id,
+        "version" => "beta1",
+        "action" => %{"op" => _}
+      }) do
+    conn
+    |> invalid_request(:invalid_action_op)
+  end
+
+  def execute_beta1(conn, %{
+        "id" => _contract_id,
+        "version" => "beta1",
+        "action" => _
+      }) do
+    conn
+    |> invalid_request(:missing_action_op)
+  end
+
+  def execute_beta1(
+        conn,
+        %{
+          "id" => _contract_id,
+          "version" => "beta1"
+        } = params
+      ) do
+    conn
+    |> invalid_request(:action_is_required)
   end
 
   def execute(conn, %{"version" => "beta1"} = params) do
-    # TODO:
     execute_beta1(conn, params)
   end
 

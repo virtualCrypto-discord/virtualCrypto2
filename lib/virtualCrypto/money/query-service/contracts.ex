@@ -80,7 +80,8 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
             &%{
               user: &1.users,
               deposit_agreement: &1.deposit_agreement,
-              currency: &1.currency
+              currency: &1.currency,
+              status: &1.contractor.status
             }
           )
           |> Enum.map(fn {_user, deposits_data} ->
@@ -91,7 +92,6 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
                 %{
                   deposit_amount: da.deposit_amount,
                   executed_amount: da.executed_amount,
-                  status: da.status,
                   currency: c
                 }
               end)
@@ -100,7 +100,8 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
             %{
               user: head.user,
-              deposits: deposits_list
+              deposits: deposits_list,
+              status: head.status
             }
           end)
 
@@ -118,16 +119,43 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
     length(list) == MapSet.size(MapSet.new(list))
   end
 
+  defp has_one_or_more_agreements?(contractor) do
+    case contractor.deposits do
+      [] -> false
+      _ -> true
+    end
+  end
+
+  defp resolve_currencies(units) do
+    units = units |> Enum.uniq()
+    currencies = VirtualCrypto.Money.Currency |> where([i], i.unit in ^units) |> Repo.all()
+
+    if length(currencies) == length(units) do
+      {:ok, currencies |> Map.new(&{&1.unit, &1.id})}
+    else
+      {:error, nil}
+    end
+  end
+
   @spec create_contract(non_neg_integer(), contract_create_t()) ::
           {:ok, contract_t()} | {:error, term()}
   def create_contract(intermediary_id, %{contractors: contractors}) do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
+    deposit_agreements =
+      contractors
+      |> Enum.flat_map(fn e -> e.deposits end)
+
     with {_, true} <-
-           {:valid_deposit_amount,
-            contractors
-            |> Enum.flat_map(fn e -> e.deposits end)
+           {:invalid_deposit_amount,
+            deposit_agreements
             |> Enum.all?(fn e -> e.deposit_amount >= 0 end)},
+         {_, true} <-
+           {:contractor_must_have_one_or_more_agreements,
+            Enum.all?(contractors, &has_one_or_more_agreements?/1)},
+         units = deposit_agreements |> Enum.map(& &1.currency_unit),
+         {_, {:ok, unit_id_mapping}} <-
+           {:failed_to_resolve_currency_unit, resolve_currencies(units)},
          {:ok, created_contract} =
            %Contract{
              intermediary_id: intermediary_id
@@ -163,11 +191,13 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
              e.deposits
              |> Enum.map(fn x ->
-               %DepositAgreement{
+               %{
                  contractor_id: contractor_id,
-                 currency_id: x.currency_id,
+                 currency_id: unit_id_mapping[x.currency_unit],
                  deposit_amount: x.deposit_amount,
-                 executed_amount: 0
+                 executed_amount: 0,
+                 inserted_at: now,
+                 updated_at: now
                }
              end)
            end),
@@ -231,8 +261,8 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
   # TODO: if contract is executed or canceled. MUST set all contactor status be closed.
 
-  @spec close_contract(non_neg_integer(), non_neg_integer()) :: any()
-  def close_contract(intermediary_id, contract_id) do
+  @spec cancel_contract(non_neg_integer(), non_neg_integer()) :: any()
+  def cancel_contract(intermediary_id, contract_id) do
     query =
       from(
         contract in Contract,
@@ -240,7 +270,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
         on:
           contract.id == ^contract_id and contract.intermediary_id == ^intermediary_id and
             contract.id == contractors.contract_id,
-        left_join: deposit_agreement in DepositAgreement,
+        join: deposit_agreement in DepositAgreement,
         on: contractors.id == deposit_agreement.contractor_id,
         select: {contractors, deposit_agreement},
         lock: fragment("FOR UPDATE OF ?,?", contractors, deposit_agreement)
@@ -263,23 +293,30 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
                               }} ->
                 {currency_id, user_id, amount}
               end)
-            )},
+            )} do
+      case deposit_agreements do
+        [_ | _] ->
+          _ =
+            Repo.update_all(
+              DepositAgreement,
+              deposit_agreements
+              |> Enum.map(fn {_, x} ->
+                DepositAgreement.changeset(x, %{executed_amount: 0})
+              end)
+            )
 
-         # update deposit agreement
-         _ =
-           Repo.update_all(
-             DepositAgreement,
-             deposit_agreements
-             |> Enum.map(fn {_, x} ->
-               DepositAgreement.changeset(x, %{executed_amount: 0})
-             end)
-           ),
-         _ =
-           Repo.update_all(
-             DepositAgreement,
-             deposit_agreements
-             |> Enum.map(fn {x, _} -> Contractor.changeset(x, %{status: "closed"}) end)
-           ) do
+          _ =
+            Repo.update_all(
+              DepositAgreement,
+              deposit_agreements
+              |> Enum.map(fn {x, _} -> Contractor.changeset(x, %{status: "closed"}) end)
+            )
+
+        # do nothing
+        [] ->
+          nil
+      end
+
       {:ok, nil}
     else
       {:transfer, {:error, error}} -> {:error, error}

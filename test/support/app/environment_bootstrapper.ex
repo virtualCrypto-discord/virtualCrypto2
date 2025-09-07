@@ -191,7 +191,12 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
 
     {:ok, contract1} =
       VirtualCrypto.Money.create_contract(d.app1_app, %{
-        contractors: [%{discord_id: d.user1, deposits: []}]
+        contractors: [%{discord_id: d.user1, deposits: [
+          %{
+            deposit_amount: 100,
+            currency_unit: d.unit
+          }
+        ]}]
       })
 
     Map.put(d, :contracts, %{contract1: contract1})

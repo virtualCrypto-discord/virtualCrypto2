@@ -18,7 +18,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreateContracts do
 
     create table(:deposit_agreements) do
       add(:contractor_id, references(:contracts, on_delete: :restrict), null: false)
-      add(:currency_id, references(:users, on_delete: :restrict), null: false)
+      add(:currency_id, references(:currencies, on_delete: :restrict), null: false)
       add(:deposit_amount, :bigint, null: false)
       add(:executed_amount, :bigint, null: false)
 

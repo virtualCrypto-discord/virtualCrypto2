@@ -1110,8 +1110,8 @@ defmodule VirtualCrypto.Money do
   def create_contract(intermediary_id, contract) do
     Repo.transaction(fn ->
       case VirtualCrypto.Money.QueryService.Contracts.create_contract(intermediary_id, contract) do
-        {:ok,x} -> x
-        {:error,err} -> Repo.rollback(err)
+        {:ok, x} -> x
+        {:error, err} -> Repo.rollback(err)
       end
     end)
   end
@@ -1138,7 +1138,10 @@ defmodule VirtualCrypto.Money do
   @spec cancel_contract(non_neg_integer(), non_neg_integer()) :: any()
   def cancel_contract(intermediary_id, contract) do
     Repo.transaction(fn ->
-      VirtualCrypto.Money.QueryService.Contracts.cancel_contract(intermediary_id, contract)
+      case VirtualCrypto.Money.QueryService.Contracts.cancel_contract(intermediary_id, contract) do
+        {:ok, x} -> x
+        {:error, err} -> Repo.rollback(err)
+      end
     end)
   end
 end
