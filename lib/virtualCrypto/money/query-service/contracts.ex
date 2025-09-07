@@ -149,7 +149,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
       },
       # update deposit agreement
       _ = Repo.update(deposit_agreements
-          |> Enum.map(fn x ->
+          |> Enum.map(fn {_,x} ->
             DepositAgreement.changeset(x,%{executed_amount: x.deposit_amount})
           end)
         ) do
@@ -170,7 +170,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
         on: contract.id == ^contract_id and contract.intermediary_id == ^intermediary_id and contract.id == contractors.contract_id,
         left_join: deposit_agreement in DepositAgreement,
         on: contractors.id == deposit_agreement.contractor_id
-        select: {contractors.status,deposit_agreement},
+        select: {contractors,deposit_agreement},
         lock: fragment("FOR UPDATE OF ?,?", contractors, deposit_agreement)
       )
     with deposit_agreement = Repo.all(query),
@@ -187,10 +187,23 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
             {currency_id, user_id, amount}
           end)
         )
-      } do
-              # TODO: update deposit agreement
-              # TODO: update contractor status
-
+      }
+      # update deposit agreement
+      _ = Repo.update(deposit_agreements
+        |> Enum.map(fn {_,x} ->
+          DepositAgreement.changeset(x,%{executed_amount: 0})
+        end)
+      ),
+      # update contractor status
+      _ = Repo.update(deposit_agreements
+        |> Enum.map(fn {x,_} ->
+          Contractor.changeset(x,%{status: "closed"})
+        end)
+      ) do
+        {:ok,nil}
+      else
+        {:transfer,{:error,error}} -> {:error,error}
+        {error, _} -> {:error, error}
       end
   end
 end
