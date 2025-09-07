@@ -48,6 +48,26 @@ defmodule VirtualCrypto.Exterior.User do
     end
   end
 
+  defmodule Contract do
+    @type t :: %Contract{id: non_neg_integer()}
+    defstruct [:id]
+
+    def resolves(contracts) do
+      contract_ids = contracts |> Enum.map(& &1.id)
+      {:ok, users} = U.insert_contract_users_if_not_exists(contracts)
+
+      users =
+        users
+        |> Map.new(fn user -> {user.contract_id, user} end)
+
+      contract_ids |> Enum.map(fn contract_id -> Map.get(users, contract_id) end)
+    end
+
+    def resolve_ids(contracts) do
+      resolves(contracts) |> Enum.map(& &1.id)
+    end
+  end
+
   defimpl Resolvable, for: Discord do
     def resolve(exterior) do
       {:ok, u} = U.insert_user_if_not_exists(exterior.id)
@@ -82,6 +102,25 @@ defmodule VirtualCrypto.Exterior.User do
 
     def is?(exterior, user) do
       exterior.id == user.id
+    end
+  end
+
+  defimpl Resolvable, for: Contract do
+    def resolve(exterior) do
+      {:ok, [u]} = U.insert_contract_users_if_not_exists([exterior.id])
+      u
+    end
+
+    def resolve_id(exterior) do
+      resolve(exterior).id
+    end
+
+    def resolver(_exterior) do
+      Discord
+    end
+
+    def is?(exterior, user) do
+      exterior.id == user.discord_id
     end
   end
 

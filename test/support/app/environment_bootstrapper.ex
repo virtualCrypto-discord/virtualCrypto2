@@ -19,6 +19,7 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
           :unit2 => String.t(),
           :user1 => non_neg_integer,
           :user2 => non_neg_integer,
+          :app1 => non_neg_integer(),
           optional(any) => any
         }
   def setup_money(ctx) do
@@ -64,6 +65,17 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
     {:ok, _} =
       VirtualCrypto.Money.give(receiver: %DiscordUser{id: user2}, amount: 500, guild: guild)
 
+    {:ok, app1} =
+      VirtualCrypto.Auth.register_application(
+        VirtualCrypto.Exterior.User.Resolvable.resolve_id(%VirtualCrypto.Exterior.User.Discord{
+          id: user1
+        }),
+        %{
+          :owner_discord_id => user1,
+          "redirect_uris" => []
+        }
+      )
+
     Map.merge(ctx, %{
       user1: user1,
       guild: guild,
@@ -76,7 +88,9 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
       currency: currency.id,
       currency_guild: guild,
       currency2: currency2.id,
-      currency2_guild: guild2
+      currency2_guild: guild2,
+      app1: app1.user.id,
+      app1_app: app1.application.id
     })
   end
 
@@ -171,6 +185,27 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
   def approved_claim(claims), do: claims |> Enum.at(2)
   def denied_claim(claims), do: claims |> Enum.at(3)
   def canceled_claim(claims), do: claims |> Enum.at(4)
+
+  def setup_contract(ctx) do
+    d = setup_money(ctx)
+
+    {:ok, contract1} =
+      VirtualCrypto.Money.create_contract(d.app1_app, %{
+        contractors: [
+          %{
+            discord_id: d.user1,
+            deposits: [
+              %{
+                deposit_amount: 100,
+                currency_unit: d.unit
+              }
+            ]
+          }
+        ]
+      })
+
+    Map.put(d, :contracts, %{contract1: contract1})
+  end
 
   def set_user_auth(conn, kind, uid, scopes) do
     {:ok, conn} =

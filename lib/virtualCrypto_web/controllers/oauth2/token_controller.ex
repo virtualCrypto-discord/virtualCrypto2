@@ -68,7 +68,7 @@ defmodule VirtualCryptoWeb.OAuth2.TokenController do
   end
 
   def post(conn, %{"grant_type" => "client_credentials", "scope" => scope}) do
-    allowed_scope_set = MapSet.new(["vc.pay", "vc.claim", "oauth2.register"])
+    allowed_scope_set = MapSet.new(["vc.pay", "vc.claim", "vc.contract", "oauth2.register"])
 
     params =
       with {:validate_credentials, {client_id, client_secret}} <-

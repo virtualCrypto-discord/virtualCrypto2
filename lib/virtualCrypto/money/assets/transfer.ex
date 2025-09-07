@@ -144,4 +144,82 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
       err -> {:error, err}
     end
   end
+
+  def transfer_bulk_by_id(sender_id, currency_id_receiver_id_and_amount, time \\ nil) do
+    time = (time || NaiveDateTime.utc_now()) |> NaiveDateTime.truncate(:second)
+
+    with {:check_amount, true} <-
+           {:check_amount,
+            currency_id_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
+         currency_id_receiver_id_and_amount_grouped <-
+           currency_id_receiver_id_and_amount
+           |> Enum.group_by(fn {currency_id, _, _} -> currency_id end),
+         currency_ids <- Map.keys(currency_id_receiver_id_and_amount_grouped),
+         q <-
+           from(assets in Money.Asset,
+             join: currencies in Money.Currency,
+             on: currencies.id == assets.currency_id,
+             where: assets.user_id == ^sender_id and currencies.id in ^currency_ids,
+             select: {assets.id, currencies.id, currencies.unit, assets.amount},
+             lock: fragment("FOR UPDATE OF ?", assets)
+           ),
+         asset_id_sender_currency_id_unit_amount <- Repo.all(q),
+         sender_currency_id_amount_pair <-
+           asset_id_sender_currency_id_unit_amount
+           |> Enum.map(fn {_aid, currency_id, _unit, amount} -> {currency_id, amount} end)
+           |> Map.new(),
+         sender_currency_id_asset_id_pair <-
+           asset_id_sender_currency_id_unit_amount
+           |> Enum.map(fn {aid, currency_id, _unit, _amount} -> {currency_id, aid} end)
+           |> Map.new(),
+         sent_currency_id_amount_pair <-
+           currency_id_receiver_id_and_amount_grouped
+           |> Enum.map(fn {currency_id, currency_id_receiver_id_and_amount_grouped_entry} ->
+             {currency_id,
+              currency_id_receiver_id_and_amount_grouped_entry
+              |> Enum.map(fn {_currency_id, _receiver, amount} -> amount end)
+              |> Enum.sum()}
+           end),
+         {:sender_asset_amount, true} <-
+           {:sender_asset_amount,
+            sent_currency_id_amount_pair
+            |> Enum.all?(fn {currency_id, sent_amount} ->
+              Map.get(sender_currency_id_amount_pair, currency_id, 0) >= sent_amount
+            end)},
+         {:ok, _} <-
+           upsert_asset_amounts(
+             currency_id_receiver_id_and_amount,
+             time
+           ),
+         {_, _} <-
+           update_asset_amounts(
+             sent_currency_id_amount_pair
+             |> Enum.map(fn {currency_id, sent_amount} ->
+               {sender_currency_id_asset_id_pair[currency_id], -sent_amount}
+             end),
+             time
+           ),
+         {_, _} <-
+           Repo.insert_all(
+             VirtualCrypto.Money.PaymentHistory,
+             currency_id_receiver_id_and_amount
+             |> Enum.map(fn {currency_id, receiver_id, amount} ->
+               %{
+                 amount: amount,
+                 currency_id: currency_id,
+                 receiver_id: receiver_id,
+                 sender_id: sender_id,
+                 time: time,
+                 inserted_at: time,
+                 updated_at: time
+               }
+             end)
+           ) do
+      {:ok, nil}
+    else
+      {:check_amount, _} -> {:error, :invalid_amount}
+      {:sender_asset_amount, _} -> {:error, :not_enough_amount}
+      err -> {:error, err}
+    end
+  end
 end

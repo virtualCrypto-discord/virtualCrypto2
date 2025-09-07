@@ -59,7 +59,7 @@ defmodule VirtualCrypto.Auth.InternalAction.Application do
            {:validate_redirect_uris,
             redirect_uris |> Enum.all?(&(URI.parse(&1).scheme in ["http", "https"]))},
          client_id <- Ecto.UUID.generate(),
-         {:ECPrivateKey, 1, private_key, _params, public_key, :asn1_NOVALUE} <-
+         {:ECPrivateKey, _, private_key, _params, public_key, :asn1_NOVALUE} <-
            :public_key.generate_key({:namedCurve, :ed25519}),
          {:verify_webhook_url, :ok} <-
            {:verify_webhook_url,

@@ -22,6 +22,7 @@ defmodule VirtualCrypto.Money do
           currency: %VirtualCrypto.Money.Currency{}
         }
   @type page :: pos_integer() | :last
+
   @typedoc """
   "pending" | "approved" | "denied" | "canceled"
   """
@@ -1100,5 +1101,47 @@ defmodule VirtualCrypto.Money do
       end)
 
     x
+  end
+
+  @spec create_contract(
+          non_neg_integer(),
+          VirtualCrypto.Money.QueryService.Contracts.contract_create_t()
+        ) :: VirtualCrypto.Money.QueryService.Contracts.contract_t()
+  def create_contract(intermediary_id, contract) do
+    Repo.transaction(fn ->
+      case VirtualCrypto.Money.QueryService.Contracts.create_contract(intermediary_id, contract) do
+        {:ok, x} -> x
+        {:error, err} -> Repo.rollback(err)
+      end
+    end)
+  end
+
+  @spec agree_contract(non_neg_integer(), UserResolvable.t()) :: any()
+  def agree_contract(contract, contractor) do
+    Repo.transaction(fn ->
+      VirtualCrypto.Money.QueryService.Contracts.agree_contract(contract, contractor)
+    end)
+  end
+
+  @spec execute_contract(non_neg_integer(), non_neg_integer(), [any()], [any()]) :: any()
+  def execute_contract(intermediary_id, contract, input, output) do
+    Repo.transaction(fn ->
+      VirtualCrypto.Money.QueryService.Contracts.execute_contract(
+        intermediary_id,
+        contract,
+        input,
+        output
+      )
+    end)
+  end
+
+  @spec cancel_contract(non_neg_integer(), non_neg_integer()) :: any()
+  def cancel_contract(intermediary_id, contract) do
+    Repo.transaction(fn ->
+      case VirtualCrypto.Money.QueryService.Contracts.cancel_contract(intermediary_id, contract) do
+        {:ok, x} -> x
+        {:error, err} -> Repo.rollback(err)
+      end
+    end)
   end
 end
