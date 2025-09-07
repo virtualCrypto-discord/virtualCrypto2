@@ -105,7 +105,7 @@ defmodule VirtualCrypto.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": [
         "tailwind.install --if-missing",
-        "esbuild.install --if-missing",
+        "esbuild.install --if-missing"
       ],
       "assets.build": ["tailwind virtualCrypto", "esbuild virtualCrypto"],
       "assets.deploy": [

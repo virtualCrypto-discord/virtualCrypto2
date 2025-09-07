@@ -200,6 +200,7 @@ defmodule VirtualCryptoWeb.CoreComponents do
           />{@label}
         </span>
       </label>
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -297,6 +298,7 @@ defmodule VirtualCryptoWeb.CoreComponents do
           {render_slot(@subtitle)}
         </p>
       </div>
+
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """

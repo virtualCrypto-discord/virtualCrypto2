@@ -1113,22 +1113,29 @@ defmodule VirtualCrypto.Money do
     end)
   end
 
-  @spec agree_contract(non_neg_integer(),UserResolvable.t()) :: any()
-  def agree_contract(contract,contractor) do
+  @spec agree_contract(non_neg_integer(), UserResolvable.t()) :: any()
+  def agree_contract(contract, contractor) do
     Repo.transaction(fn ->
-      VirtualCrypto.Money.QueryService.Contracts.agree_contract(contract,contractor)
+      VirtualCrypto.Money.QueryService.Contracts.agree_contract(contract, contractor)
     end)
   end
-  @spec execute_contract(non_neg_integer(),non_neg_integer(),[any()],[any()]) :: any()
-  def execute_contract(intermediary_id,contract,input,output) do
+
+  @spec execute_contract(non_neg_integer(), non_neg_integer(), [any()], [any()]) :: any()
+  def execute_contract(intermediary_id, contract, input, output) do
     Repo.transaction(fn ->
-      VirtualCrypto.Money.QueryService.Contracts.execute_contract(intermediary_id,contract,input,output)
+      VirtualCrypto.Money.QueryService.Contracts.execute_contract(
+        intermediary_id,
+        contract,
+        input,
+        output
+      )
     end)
   end
-  @spec cancel_contract(non_neg_integer(),non_neg_integer()) :: any()
-  def cancel_contract(intermediary_id,contract) do
+
+  @spec cancel_contract(non_neg_integer(), non_neg_integer()) :: any()
+  def cancel_contract(intermediary_id, contract) do
     Repo.transaction(fn ->
-      VirtualCrypto.Money.QueryService.Contracts.cancel_contract(intermediary_id,contract)
+      VirtualCrypto.Money.QueryService.Contracts.cancel_contract(intermediary_id, contract)
     end)
   end
 end

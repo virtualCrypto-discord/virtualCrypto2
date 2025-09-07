@@ -152,7 +152,8 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
            {:check_amount,
             currency_id_receiver_id_and_amount |> Enum.all?(fn {_, _, amount} -> amount > 0 end)},
          currency_id_receiver_id_and_amount_grouped <-
-           currency_id_receiver_id_and_amount |> Enum.group_by(fn {currency_id, _, _} -> currency_id end),
+           currency_id_receiver_id_and_amount
+           |> Enum.group_by(fn {currency_id, _, _} -> currency_id end),
          currency_ids <- Map.keys(currency_id_receiver_id_and_amount_grouped),
          q <-
            from(assets in Money.Asset,
@@ -194,8 +195,7 @@ defmodule VirtualCrypto.Money.Query.Asset.Transfer do
            update_asset_amounts(
              sent_currency_id_amount_pair
              |> Enum.map(fn {currency_id, sent_amount} ->
-               {sender_currency_id_asset_id_pair[currency_id],
-                -sent_amount}
+               {sender_currency_id_asset_id_pair[currency_id], -sent_amount}
              end),
              time
            ),

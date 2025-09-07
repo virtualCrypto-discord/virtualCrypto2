@@ -1,6 +1,7 @@
 defmodule VirtualCrypto.Money.DepositAgreement do
   use Ecto.Schema
   import Ecto.Changeset
+
   schema "deposit_agreements" do
     field :contractor_id, :integer
     field :currency_id, :integer
