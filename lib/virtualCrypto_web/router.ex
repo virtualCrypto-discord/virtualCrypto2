@@ -152,6 +152,7 @@ defmodule VirtualCryptoWeb.Router do
         post "/users/@me/claims", ClaimController, :post
         patch "/users/@me/claims/:id", ClaimController, :patch
         post "/users/@me/transactions", UserTransactionController, :post
+        post "/users/@me/contracts", ContractController, :post
       end
     end
 

@@ -19,17 +19,13 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
             ]
           }
         ]
+
   @typedoc """
-  live | completed
-  """
-  @type contract_status_t() :: String.t()
-  @typedoc """
-  pending | accepted | denied | canceled
+  unclosed | closed
   """
   @type deposit_status_t() :: String.t()
   @type contract_t() :: %{
           intermediate: %VirtualCrypto.User.User{},
-          status: contract_status_t(),
           contractors: [
             %{
               contractor: %VirtualCrypto.User.User{},
@@ -44,7 +40,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
             }
           ]
         }
-  @spec get_contract(non_neg_integer()) :: {:ok, contract_t()}
+  @spec get_contract(non_neg_integer()) :: {:ok, contract_t()} | {:error, :not_found}
   def get_contract(contract_id) do
     query =
       from(contract in Contract,
@@ -52,6 +48,8 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
         on: contractor.contract_id == contract.id,
         join: users in VirtualCrypto.User.User,
         on: contractor.user_id == users.id,
+        join: intermediate_user in VirtualCrypto.User.User,
+        on: contract.intermediate_id == intermediate_user.id,
         left_join: deposit_agreement in DepositAgreement,
         on: deposit_agreement.contractor_id == contractor.id,
         left_join: currency in Currency,
@@ -61,11 +59,52 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
           contract: contract,
           contractor: contractor,
           deposit_agreement: deposit_agreement,
+          intermediate_user: intermediate_user,
           currency: currency
         }
       )
 
-    query |> Repo.one()
+    case Repo.all(query) do
+      [] ->
+        {:error, :not_found}
+
+      query_results ->
+        first_result = hd(query_results)
+        contract = first_result.contract
+        intermediate_user = first_result.intermediate_user
+
+        contractors_list =
+          query_results
+          |> Enum.group_by(
+            &(&1.user),
+            &%{deposit_agreement: &1.deposit_agreement, currency: &1.currency}
+          )
+          |> Enum.map(fn {user, deposits_data} ->
+            deposits_list =
+              deposits_data
+              |> Enum.filter(& &1.deposit_agreement)
+              |> Enum.map(fn %{deposit_agreement: da, currency: c} ->
+                %{
+                  deposit_amount: da.deposit_amount,
+                  executed_amount: da.executed_amount,
+                  status: da.status,
+                  currency: c
+                }
+              end)
+
+            %{
+              contractor: user,
+              deposits: deposits_list
+            }
+          end)
+
+        result = %{
+          intermediate: intermediate_user,
+          contractors: contractors_list
+        }
+
+        {:ok, result}
+    end
   end
 
   @spec create_contract(non_neg_integer(), contract_create_t()) ::
