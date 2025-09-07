@@ -25,7 +25,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
   """
   @type deposit_status_t() :: String.t()
   @type contract_t() :: %{
-          intermediate: %VirtualCrypto.User.User{},
+          intermediate: %VirtualCrypto.Auth.Application{},
           contractors: [
             %{
               contractor: %VirtualCrypto.User.User{},
@@ -203,7 +203,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
          # transfer user account balance to contract account. if failed, return error
          {_, {:ok, _}} <-
            {:transfer,
-            VirtualCrypto.Query.Asset.Transfer.transfer_bulk_by_id(
+            VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk_by_id(
               contractor_id,
               deposit_agreements
               |> Enum.map(fn {_,
@@ -252,7 +252,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
          # transfer contract account balance to user account. expected never fails.
          {_, {:ok, _}} <-
            {:transfer,
-            VirtualCrypto.Query.Asset.Transfer.transfer_bulk_by_id(
+            VirtualCrypto.Money.Query.Asset.Transfer.transfer_bulk_by_id(
               contract_user_id,
               deposit_agreements
               |> Enum.map(fn {_,
@@ -267,14 +267,16 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
          # update deposit agreement
          _ =
-           Repo.update(
+           Repo.update_all(
+             DepositAgreement,
              deposit_agreements
              |> Enum.map(fn {_, x} ->
                DepositAgreement.changeset(x, %{executed_amount: 0})
              end)
            ),
          _ =
-           Repo.update(
+           Repo.update_all(
+             DepositAgreement,
              deposit_agreements
              |> Enum.map(fn {x, _} -> Contractor.changeset(x, %{status: "closed"}) end)
            ) do

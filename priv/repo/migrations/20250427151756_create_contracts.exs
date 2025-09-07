@@ -29,7 +29,7 @@ defmodule VirtualCrypto.Repo.Migrations.CreateContracts do
       add :contract_id, references(:contracts, on_delete: :restrict), null: true
     end
 
-    create unique_index(:contracts, [:intermediary_id])
+    create index(:contracts, [:intermediary_id])
     create unique_index(:contractors, [:contract_id, :user_id])
     create index(:contractors, [:user_id])
     create unique_index(:deposit_agreements, [:contractor_id, :currency_id])

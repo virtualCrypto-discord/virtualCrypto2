@@ -85,8 +85,6 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     if user = VirtualCrypto.User.get_user_by_id(intermediary_id) do
       case Money.create_contract(user.application_id, params) do
         {:ok, contract} ->
-          IO.inspect(contract)
-
           conn
           |> put_status(201)
           |> render(:data, %{contract: format_contract(contract, get_service(conn))})
@@ -152,7 +150,7 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     end
   end
 
-  def post(conn, %{"contractors" => contractors})
+  def create(conn, %{"contractors" => contractors})
       when is_list(contractors) and length(contractors) >= 1 do
     case convert_contractors(contractors, []) do
       {:ok, contractors} ->
@@ -171,8 +169,26 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     end
   end
 
-  def post(conn, _) do
+  def create(conn, _) do
     conn
     |> invalid_request(:contractors_field_is_required)
+  end
+
+  def execute_beta1(conn, %{"version" => "beta1", "actions" => [%{"op" => "close"}]}) do
+  end
+
+  def execute(conn, %{"version" => "beta1"} = params) do
+    # TODO:
+    execute_beta1(conn, params)
+  end
+
+  def execute(conn, %{"version" => _}) do
+    conn
+    |> invalid_request(:invalid_version_field)
+  end
+
+  def execute(conn, _) do
+    conn
+    |> invalid_request(:version_is_required)
   end
 end
