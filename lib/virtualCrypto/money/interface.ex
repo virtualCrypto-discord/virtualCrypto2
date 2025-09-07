@@ -1109,7 +1109,10 @@ defmodule VirtualCrypto.Money do
         ) :: VirtualCrypto.Money.QueryService.Contracts.contract_t()
   def create_contract(intermediary_id, contract) do
     Repo.transaction(fn ->
-      VirtualCrypto.Money.QueryService.Contracts.create_contract(intermediary_id, contract)
+      case VirtualCrypto.Money.QueryService.Contracts.create_contract(intermediary_id, contract) do
+        {:ok,x} -> x
+        {:error,err} -> Repo.rollback(err)
+      end
     end)
   end
 

@@ -18,13 +18,50 @@ defmodule ContractControllerTest.V2 do
     )
   end
 
+  defp valid_contract_request(user) do
+    %{"contractors" => [%{"discord_id" => to_string(user), "deposits" => []}]}
+  end
+
   test "create simple contract with invalid token", %{conn: conn, user1: user1} do
     conn = set_user_auth(conn, :user, user1, ["vc.contract"])
 
     conn =
       post(
         conn,
-        Routes.v2_contract_path(conn, :post)
+        Routes.v2_contract_path(conn, :post),
+        valid_contract_request(user1)
+      )
+
+    assert json_response(conn, 403) == %{
+             "error" => "invalid_token",
+             "error_description" => "permission_denied"
+           }
+  end
+
+  test "create simple contract with insufficient scope", %{conn: conn, user1: user1, app1: app1} do
+    conn = set_user_auth(conn, :app, app1, ["vc.claim"])
+
+    conn =
+      post(
+        conn,
+        Routes.v2_contract_path(conn, :post),
+        valid_contract_request(user1)
+      )
+
+    assert json_response(conn, 403) == %{
+             "error" => "invalid_token",
+             "error_description" => "permission_denied"
+           }
+  end
+
+  test "create simple contract", %{conn: conn, user1: user1, app1: app1} do
+    conn = set_user_auth(conn, :app, app1, ["vc.contract"])
+
+    conn =
+      post(
+        conn,
+        Routes.v2_contract_path(conn, :post),
+        valid_contract_request(user1)
       )
 
     assert json_response(conn, 403) == %{

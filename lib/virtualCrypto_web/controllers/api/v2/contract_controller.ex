@@ -17,11 +17,21 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
     |> render(:error, %{error: :invalid_token, error_description: :permission_denied})
   end
 
+  defp invalid_request(conn, desc) do
+    conn
+    |> put_status(400)
+    |> render(:error, %{error: :invalid_request, error_description: desc})
+  end
+
   defp format_contractor(contractor, service) do
     %{
       "user" => format_user(contractor.user, service),
-      "deposits" => Enum.map(contractor.deposit_agreements, &format_deposit/1)
+      "deposits" => Enum.map(contractor.deposits, &format_deposit/1)
     }
+  end
+
+  defp format_app(%{id: id}) do
+    %{id: to_string(id)}
   end
 
   defp format_user(user, service) do
@@ -40,14 +50,14 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
          %{
            contract: contract,
            intermediate: intermediate,
-           contractor: contractor
+           contractors: contractors
          },
          service
        ) do
     %{
       "id" => contract.id |> to_string,
-      "intermediate" => format_user(intermediate, service),
-      "contractor" => contractor |> Enum.map(&format_contractor(&1, service)),
+      "intermediate" => format_app(intermediate),
+      "contractor" => contractors |> Enum.map(&format_contractor(&1, service)),
       "created_at" => DateTime.from_naive!(contract.inserted_at, "Etc/UTC"),
       "updated_at" => DateTime.from_naive!(contract.updated_at, "Etc/UTC")
     }
@@ -72,26 +82,97 @@ defmodule VirtualCryptoWeb.Api.V2.ContractController do
   end
 
   defp create_contract(conn, intermediary_id, params) do
-    case Money.create_contract(intermediary_id, params) do
-      {:ok, contract} ->
-        conn
-        |> put_status(201)
-        |> render(:data, format_contract(contract, get_service(conn)))
+    if user = VirtualCrypto.User.get_user_by_id(intermediary_id) do
+      case Money.create_contract(user.application_id, params) do
+        {:ok, contract} ->
+          IO.inspect(contract)
 
-      {:error, error} ->
-        conn
-        |> put_status(400)
-        |> render(:error, %{error: error})
+          conn
+          |> put_status(201)
+          |> render(:data, %{contract: format_contract(contract, get_service(conn))})
+
+        {:error, error} ->
+          conn
+          |> put_status(400)
+          |> render(:error, %{error: error})
+      end
+    else
+      conn
+      |> put_status(400)
+      |> render(:error, %{error: :invalid_request, error_description: :intermediary_not_found})
     end
   end
 
-  def post(conn, params) do
-    case Guardian.Plug.current_resource(conn) do
-      %{"sub" => intermediary_id, "vc.contract" => true, "kind" => "app"} ->
-        create_contract(conn, intermediary_id, params)
+  defp convert_deposit(%{}) do
+    %{}
+  end
 
-      _ ->
-        conn |> permission_denied()
+  defp convert_deposits([], acc) do
+    {:ok, acc}
+  end
+
+  defp convert_deposits([head | tail], acc) do
+    case convert_deposit(head) do
+      {:ok, head} -> convert_deposits(tail, [head | acc])
+      {:error, error} -> {:error, error}
     end
+  end
+
+  defp convert_contractor(%{"discord_id" => discord_id, "deposits" => deposits})
+       when is_list(deposits) do
+    with {:ok, deposits} <- convert_deposits(deposits, []),
+         {_, {discord_id, ""}} <- {:parse_discord_id, Integer.parse(discord_id)} do
+      {:ok, %{discord_id: discord_id, deposits: deposits}}
+    else
+      {:error, error} -> {:error, error}
+      {:parse_discord_id, _} -> {:error, :failed_to_parse_discord_id}
+    end
+  end
+
+  defp convert_contractor(%{"deposits" => _deposits}) do
+    {:error, :invalid_deposit_field_type}
+  end
+
+  defp convert_contractor(%{}) do
+    {:error, :deposits_field_is_required}
+  end
+
+  defp convert_contractor(_) do
+    {:error, :invalid_contractor_type}
+  end
+
+  defp convert_contractors([], acc) do
+    {:ok, acc}
+  end
+
+  defp convert_contractors([head | tail], acc) do
+    case convert_contractor(head) do
+      {:ok, head} -> convert_contractors(tail, [head | acc])
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def post(conn, %{"contractors" => contractors})
+      when is_list(contractors) and length(contractors) >= 1 do
+    case convert_contractors(contractors, []) do
+      {:ok, contractors} ->
+        case Guardian.Plug.current_resource(conn) do
+          %{"sub" => intermediary_id, "vc.contract" => true, "kind" => "app"} ->
+            create_contract(conn, intermediary_id, %{
+              contractors: contractors
+            })
+
+          _ ->
+            conn |> permission_denied()
+        end
+
+      {:error, err} ->
+        conn |> invalid_request(err)
+    end
+  end
+
+  def post(conn, _) do
+    conn
+    |> invalid_request(:contractors_field_is_required)
   end
 end

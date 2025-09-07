@@ -89,7 +89,7 @@ defmodule VirtualCrypto.EnvironmentBootstrapper do
       currency_guild: guild,
       currency2: currency2.id,
       currency2_guild: guild2,
-      app1: app1.application.id
+      app1: app1.user.id
     })
   end
 

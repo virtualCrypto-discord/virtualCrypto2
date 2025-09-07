@@ -12,7 +12,7 @@ defmodule VirtualCryptoWeb.Api.V2.ContractJSON do
     }
   end
 
-  def data(data) do
-    data
+  def data(%{contract: contract}) do
+    contract
   end
 end

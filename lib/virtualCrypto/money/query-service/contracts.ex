@@ -48,8 +48,8 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
         on: contractor.contract_id == contract.id,
         join: users in VirtualCrypto.User.User,
         on: contractor.user_id == users.id,
-        join: intermediate_user in VirtualCrypto.User.User,
-        on: contract.intermediate_id == intermediate_user.id,
+        join: intermediate_app in VirtualCrypto.Auth.Application,
+        on: contract.intermediary_id == intermediate_app.id,
         left_join: deposit_agreement in DepositAgreement,
         on: deposit_agreement.contractor_id == contractor.id,
         left_join: currency in Currency,
@@ -58,8 +58,9 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
         select: %{
           contract: contract,
           contractor: contractor,
+          users: users,
           deposit_agreement: deposit_agreement,
-          intermediate_user: intermediate_user,
+          intermediate_app: intermediate_app,
           currency: currency
         }
       )
@@ -70,15 +71,19 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
 
       query_results ->
         first_result = hd(query_results)
-        intermediate_user = first_result.intermediate_user
+        intermediate_app = first_result.intermediate_app
 
         contractors_list =
           query_results
           |> Enum.group_by(
-            & &1.user,
-            &%{deposit_agreement: &1.deposit_agreement, currency: &1.currency}
+            & &1.contractor.id,
+            &%{
+              user: &1.users,
+              deposit_agreement: &1.deposit_agreement,
+              currency: &1.currency
+            }
           )
-          |> Enum.map(fn {user, deposits_data} ->
+          |> Enum.map(fn {_user, deposits_data} ->
             deposits_list =
               deposits_data
               |> Enum.filter(& &1.deposit_agreement)
@@ -91,14 +96,17 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
                 }
               end)
 
+            head = hd(deposits_data)
+
             %{
-              contractor: user,
+              user: head.user,
               deposits: deposits_list
             }
           end)
 
         result = %{
-          intermediate: intermediate_user,
+          contract: first_result.contract,
+          intermediate: intermediate_app,
           contractors: contractors_list
         }
 
@@ -106,38 +114,52 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
     end
   end
 
+  defp all_unique?(list) do
+    length(list) == MapSet.size(MapSet.new(list))
+  end
+
   @spec create_contract(non_neg_integer(), contract_create_t()) ::
           {:ok, contract_t()} | {:error, term()}
-  def create_contract(intermediary_id, contract) do
+  def create_contract(intermediary_id, %{contractors: contractors}) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
     with {_, true} <-
            {:valid_deposit_amount,
-            contract
+            contractors
             |> Enum.flat_map(fn e -> e.deposits end)
             |> Enum.all?(fn e -> e.deposit_amount >= 0 end)},
-         {:ok, [contract_id]} =
+         {:ok, created_contract} =
            %Contract{
              intermediary_id: intermediary_id
            }
            |> Repo.insert(returning: [:id]),
+         contract_id = created_contract.id,
          contractor_user_ids =
-           UserResolver.resolve_ids(contract |> Enum.map(fn x -> x.contractor end)),
-         {_, true} <- {:unique_contractors, Stream.dedup(contractor_user_ids) |> Enum.empty?()},
-         contractors =
+           UserResolver.resolve_ids(
+             contractors
+             |> Enum.map(fn x -> %VirtualCrypto.Exterior.User.Discord{id: x.discord_id} end)
+           ),
+         {_, true} <- {:unique_contractors, all_unique?(contractor_user_ids)},
+         contractors_to_insert =
            contractor_user_ids
            |> Enum.map(fn id ->
-             %Contractor{
+             %{
                status: "unclosed",
                contract_id: contract_id,
-               user_id: id
+               user_id: id,
+               inserted_at: now,
+               updated_at: now
              }
            end),
-         {_, contractors} = Repo.insert_all(Contractor, contractors, returning: [:user_id, :id]),
-         contractors = contractors |> Map.new(fn [user_id, id] -> {user_id, id} end),
+         {_, created_contractors} =
+           Repo.insert_all(Contractor, contractors_to_insert, returning: [:user_id, :id]),
+         user_id_contractor_id_map =
+           created_contractors |> Map.new(fn e -> {e.user_id, e.id} end),
          deposit_agreements =
-           contract
+           contractors
            |> Enum.zip(contractor_user_ids)
            |> Enum.flat_map(fn {e, user_id} ->
-             contractor_id = contractors[user_id]
+             contractor_id = user_id_contractor_id_map[user_id]
 
              e.deposits
              |> Enum.map(fn x ->
@@ -181,7 +203,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
          # transfer user account balance to contract account. if failed, return error
          {_, {:ok, _}} <-
            {:transfer,
-            Query.Asset.Transfer.transfer_bulk_by_id(
+            VirtualCrypto.Query.Asset.Transfer.transfer_bulk_by_id(
               contractor_id,
               deposit_agreements
               |> Enum.map(fn {_,
@@ -230,7 +252,7 @@ defmodule VirtualCrypto.Money.QueryService.Contracts do
          # transfer contract account balance to user account. expected never fails.
          {_, {:ok, _}} <-
            {:transfer,
-            Query.Asset.Transfer.transfer_bulk_by_id(
+            VirtualCrypto.Query.Asset.Transfer.transfer_bulk_by_id(
               contract_user_id,
               deposit_agreements
               |> Enum.map(fn {_,
