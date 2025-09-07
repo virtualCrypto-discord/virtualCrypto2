@@ -31,6 +31,25 @@ defmodule VirtualCrypto.User do
     {:ok, Repo.all(q)}
   end
 
+  def insert_contract_users_if_not_exists(contract_ids) when is_list(contract_ids) do
+    time = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    {_, _} =
+      Repo.insert_all(
+        VirtualCrypto.User.User,
+        contract_ids
+        |> Enum.map(&%{contract_id: &1, status: 0, inserted_at: time, updated_at: time}),
+        on_conflict: :nothing,
+        conflict_target: [:contract_id]
+      )
+
+    q =
+      from users in VirtualCrypto.User.User,
+        where: users.contract_id in ^contract_ids
+
+    {:ok, Repo.all(q)}
+  end
+
   def get_user_by_id(id) do
     Repo.get_by(VirtualCrypto.User.User, id: id)
   end

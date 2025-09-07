@@ -4,15 +4,12 @@ defmodule VirtualCrypto.Money.Contract do
   @type status_t() :: String.t()
   schema "contracts" do
     field :intermediary_id, :integer
-    field :status, :string
 
     timestamps()
   end
 
   @doc false
-  def changeset(contract, attrs) do
+  def changeset(contract, _attrs) do
     contract
-    |> cast(attrs, [:status])
-    |> validate_required([:status])
   end
 end

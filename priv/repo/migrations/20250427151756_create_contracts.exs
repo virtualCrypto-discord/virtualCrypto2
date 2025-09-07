@@ -4,7 +4,6 @@ defmodule VirtualCrypto.Repo.Migrations.CreateContracts do
   def change do
     create table(:contracts) do
       add(:intermediary_id, references(:applications, on_delete: :restrict), null: false)
-      add(:status, :string, null: false)
 
       timestamps()
     end
